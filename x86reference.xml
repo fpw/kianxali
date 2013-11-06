@@ -24,9 +24,7 @@
     ignored." -->
 
 <x86reference version="1.11">
-
     <one-byte>
-
         <pri_opcd value="00">
             <entry direction="0" op_size="0" r="yes" lock="yes">
                 <syntax>

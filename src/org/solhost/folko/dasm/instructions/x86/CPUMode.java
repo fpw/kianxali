@@ -1,5 +1,5 @@
 package org.solhost.folko.dasm.instructions.x86;
 
 public enum CPUMode {
-    REAL, PROTECTED;
+    REAL, PROTECTED, LONG, SMM;
 }
