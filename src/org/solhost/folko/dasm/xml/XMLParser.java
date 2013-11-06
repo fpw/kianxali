@@ -286,12 +286,4 @@ public class XMLParser {
     public OpcodeHandler[] getTwoByteHandlers() {
         return twoByte;
     }
-
-    public static void main(String[] args) throws Exception {
-        XMLParser xml = new XMLParser();
-        xml.parseXML("x86reference.xml", "x86reference.dtd");
-
-        OpcodeHandler[] one = xml.getOneByteHandlers();
-        OpcodeHandler[] two = xml.getTwoByteHandlers();
-    }
 }
