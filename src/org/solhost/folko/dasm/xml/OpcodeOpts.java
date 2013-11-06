@@ -2,7 +2,8 @@ package org.solhost.folko.dasm.xml;
 
 import org.solhost.folko.dasm.instructions.x86.CPUMode;
 
-public class ModeOpts {
+// an opcode can have a different meaning depending on CPU mode, hence store it here
+public class OpcodeOpts {
     public CPUMode mode;
 
     public boolean invalid, undefined;

@@ -11,7 +11,7 @@ public class OpcodeHandler {
     public enum Mode {R, P, E, S};
     private final boolean isTwoByte;
     private final short opcode;
-    private final Map<CPUMode, ModeOpts> modeOpts;
+    private final Map<CPUMode, OpcodeOpts> modeOpts;
     private final List<Syntax> syntaxes;
 
     public OpcodeHandler(boolean isTwoByte, short opcode) {
@@ -21,7 +21,7 @@ public class OpcodeHandler {
         this.opcode = opcode;
     }
 
-    public void addModeAttributes(CPUMode mode, ModeOpts opts) {
+    public void addModeAttributes(CPUMode mode, OpcodeOpts opts) {
         modeOpts.put(mode, opts);
     }
 

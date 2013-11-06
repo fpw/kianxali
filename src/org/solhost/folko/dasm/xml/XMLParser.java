@@ -16,19 +16,33 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 public class XMLParser {
+    private static XMLParser instance;
     private final OpcodeHandler[] oneByte, twoByte;
     private OpcodeHandler currentHandler;
-    private ModeOpts currentModeOpts;
+    private OpcodeOpts currentModeOpts;
     private Syntax currentSyntax;
     private OperandDesc currentOpDesc;
     private boolean inOneByte, inTwoByte, inSyntax, inMnem, inSrc, inDst, inA, inT;
 
-    public XMLParser() {
+    private XMLParser() {
         this.oneByte = new OpcodeHandler[256];
         this.twoByte = new OpcodeHandler[256];
     }
 
-    public void parseXML(String xmlPath, String dtdPath) throws SAXException, IOException {
+    public static void init(String xmlPath, String dtdPath) throws SAXException, IOException {
+        instance = new XMLParser();
+        instance.parseXML(xmlPath, dtdPath);
+    }
+
+    public static OpcodeHandler get1ByteHandler(short opcode) {
+        return instance.oneByte[opcode];
+    }
+
+    public static OpcodeHandler get2ByteHandler(short opcode) {
+        return instance.twoByte[opcode];
+    }
+
+    private void parseXML(String xmlPath, String dtdPath) throws SAXException, IOException {
         XMLReader xmlReader = XMLReaderFactory.createXMLReader();
         FileReader reader = new FileReader(xmlPath);
         InputSource source = new InputSource(reader);
@@ -58,7 +72,7 @@ public class XMLParser {
                     currentHandler = new OpcodeHandler(inTwoByte, opcode);
                     break;
                 case "entry":
-                    currentModeOpts = new ModeOpts();
+                    currentModeOpts = new OpcodeOpts();
                     String modeStr = atts.getValue("mode");
                     if(modeStr == null) {
                         modeStr = "r";
