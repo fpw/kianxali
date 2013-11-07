@@ -22,4 +22,15 @@ public class Syntax {
     public String getMnemonic() {
         return mnemonic;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        res.append("<syntax mnemonic=" + mnemonic);
+        for(int i = 0; i < operands.size(); i++) {
+            res.append(String.format(" op%d=%s", i + 1, operands.get(i).toString()));
+        }
+        res.append(">");
+        return res.toString();
+    }
 }

@@ -1,6 +1,5 @@
 package org.solhost.folko.dasm;
 
-import org.solhost.folko.dasm.pe.PEFile;
 import org.solhost.folko.dasm.xml.XMLParser;
 
 public class Disassembler {
@@ -9,7 +8,7 @@ public class Disassembler {
         XMLParser.init("x86reference.xml", "x86reference.dtd");
         System.out.println("done");
 
-        PEFile image = new PEFile("client.exe");
-        image.disassemble();
+        // PEFile image = new PEFile("client.exe");
+        // image.disassemble();
     }
 }
