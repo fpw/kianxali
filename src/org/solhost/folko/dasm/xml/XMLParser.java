@@ -215,7 +215,7 @@ public class XMLParser {
                         }
                     } else if(inTwoByte) {
                         if(twoByte[opcode] != null) {
-                            System.err.println(String.format("two-byte opcode %02X already present", opcode));
+                            System.err.println(String.format("two-byte opcode 0F%02X already present", opcode));
                         } else {
                             twoByte[opcode] = currentHandler;
                         }

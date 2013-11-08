@@ -24,6 +24,10 @@ public class Context {
         opSizeOverride = null;
     }
 
+    public CPUMode getMode() {
+        return mode;
+    }
+
     public void setOpSizeOverride(OperandSize pointerOpSize) {
         this.opSizeOverride = pointerOpSize;
     }

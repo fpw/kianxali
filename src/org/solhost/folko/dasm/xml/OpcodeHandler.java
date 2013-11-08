@@ -8,7 +8,6 @@ import java.util.Map;
 import org.solhost.folko.dasm.instructions.x86.CPUMode;
 
 public class OpcodeHandler {
-    public enum Mode {R, P, E, S};
     private final boolean isTwoByte;
     private final short opcode;
     private final Map<CPUMode, Map<Short, List<OpcodeOpts>>> extensions;
