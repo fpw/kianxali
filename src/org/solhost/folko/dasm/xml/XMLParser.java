@@ -2,20 +2,18 @@ package org.solhost.folko.dasm.xml;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
-import org.solhost.folko.dasm.instructions.x86.CPUMode;
-import org.solhost.folko.dasm.xml.OpcodeOpts.Extension;
-import org.solhost.folko.dasm.xml.OpcodeOpts.OpcodeGroup;
-import org.solhost.folko.dasm.xml.OpcodeOpts.Prefix;
-import org.solhost.folko.dasm.xml.OpcodeOpts.Processor;
-import org.solhost.folko.dasm.xml.OperandDesc.AddressType;
-import org.solhost.folko.dasm.xml.OperandDesc.DirectGroup;
-import org.solhost.folko.dasm.xml.OperandDesc.OperandType;
-import org.solhost.folko.dasm.xml.OperandDesc.UsageType;
+import org.solhost.folko.dasm.cpu.x86.X86CPU.InstructionSetExtension;
+import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
+import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
+import org.solhost.folko.dasm.xml.OpcodeOperand.AddressType;
+import org.solhost.folko.dasm.xml.OpcodeOperand.DirectGroup;
+import org.solhost.folko.dasm.xml.OpcodeOperand.OperandType;
+import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -25,50 +23,28 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 public class XMLParser {
-    private static XMLParser instance;
-    private final OpcodeHandler[] oneByte, twoByte;
-    private final Map<String, Set<OpcodeHandler>> mnemonics;
+    private final List<OpcodeSyntax> syntaxes;
 
     // parsing stuff
-    private OpcodeHandler currentHandler;
-    private OpcodeOpts currentModeOpts;
-    private Syntax currentSyntax;
-    private OperandDesc currentOpDesc;
+    private Short currentOpcode;
+    private OpcodeEntry currentEntry;
+    private OpcodeSyntax currentSyntax;
+    private OpcodeOperand currentOpDesc;
     private Short opcdExt;
-    private Processor inheritProcStart;
+    private Model inheritProcStart;
     private boolean inOneByte, inTwoByte, inSyntax, inMnem;
     private boolean inSrc, inDst, inA, inT, inOpcdExt, inGroup, inInstrExt;
     private boolean inProcStart, inProcEnd, in2ndOpcode, inPref;
 
-    private XMLParser() {
-        this.mnemonics = new HashMap<>();
-        this.oneByte = new OpcodeHandler[256];
-        this.twoByte = new OpcodeHandler[256];
+    public XMLParser() {
+        syntaxes = new LinkedList<>();
     }
 
-    public static void init(String xmlPath, String dtdPath) throws SAXException, IOException {
-        instance = new XMLParser();
-        instance.parseXML(xmlPath, dtdPath);
+    public List<OpcodeSyntax> getSyntaxEntries() {
+        return Collections.unmodifiableList(syntaxes);
     }
 
-    public static OpcodeHandler get1ByteHandler(short opcode) {
-        return instance.oneByte[opcode];
-    }
-
-    public static OpcodeHandler get2ByteHandler(short opcode) {
-        return instance.twoByte[opcode];
-    }
-
-    public static Set<OpcodeHandler> getSyntaxes(String mnemonic) {
-        Set<OpcodeHandler> ours = instance.mnemonics.get(mnemonic);
-        if(ours != null) {
-            return new HashSet<>(ours);
-        } else {
-            return null;
-        }
-    }
-
-    private void parseXML(String xmlPath, String dtdPath) throws SAXException, IOException {
+    public void loadXML(String xmlPath, String dtdPath) throws SAXException, IOException {
         XMLReader xmlReader = XMLReaderFactory.createXMLReader();
         FileReader reader = new FileReader(xmlPath);
         InputSource source = new InputSource(reader);
@@ -96,19 +72,26 @@ public class XMLParser {
                     inTwoByte = true;
                     break;
                 case "pri_opcd":
-                    short opcode = Short.parseShort(atts.getValue("value"), 16);
-                    currentHandler = new OpcodeHandler(inTwoByte, opcode);
+                    currentOpcode = Short.parseShort(atts.getValue("value"), 16);
                     break;
                 case "entry":
-                    currentModeOpts = new OpcodeOpts();
-                    fillEntry(currentModeOpts, atts);
+                    currentEntry = new OpcodeEntry();
+                    currentEntry.opcode = currentOpcode;
+                    if(!inOneByte && inTwoByte) {
+                        currentEntry.twoByte = inTwoByte;
+                    }
+                    fillEntry(currentEntry, atts);
                     break;
                 case "opcd_ext":
                     inOpcdExt = true;
                     break;
                 case "syntax":
                     // TODO: attribute mod: mem|nomem
-                    currentSyntax = new Syntax();
+                    if(opcdExt != null) {
+                        currentSyntax = new OpcodeSyntax(currentEntry, opcdExt);
+                    } else {
+                        currentSyntax = new OpcodeSyntax(currentEntry);
+                    }
                     inSyntax = true;
                     break;
                 case "mnem":
@@ -119,7 +102,7 @@ public class XMLParser {
                     break;
                 case "src":
                     if(inSyntax) {
-                        currentOpDesc = new OperandDesc();
+                        currentOpDesc = new OpcodeOperand();
                         currentOpDesc.usageType = UsageType.SOURCE;
                         parseOperandAtts(currentOpDesc, atts);
                         inSrc = true;
@@ -127,7 +110,7 @@ public class XMLParser {
                     break;
                 case "dst":
                     if(inSyntax) {
-                        currentOpDesc = new OperandDesc();
+                        currentOpDesc = new OpcodeOperand();
                         currentOpDesc.usageType = UsageType.DEST;
                         parseOperandAtts(currentOpDesc, atts);
                         inDst = true;
@@ -204,28 +187,28 @@ public class XMLParser {
                 } else if(inT) {
                     currentOpDesc.operType = parseOperandType(val);
                 } else if(inProcStart) {
-                    Processor proc = parseProcessor(val);
-                    if(currentModeOpts != null) {
-                        currentModeOpts.setStartProcessor(proc);
+                    Model proc = parseProcessor(val);
+                    if(currentEntry != null) {
+                        currentEntry.setStartProcessor(proc);
                     } else {
                         inheritProcStart = proc;
                     }
                 } else if(inProcEnd) {
-                    if(currentModeOpts.supportedProcessors.size() == 0) {
+                    if(currentEntry.supportedProcessors.size() == 0) {
                         // there was no proc_start -> default is 8086
-                        currentModeOpts.setStartProcessor(Processor.I8086);
+                        currentEntry.setStartProcessor(Model.I8086);
                     }
-                    currentModeOpts.setEndProcessor(parseProcessor(val));
+                    currentEntry.setEndProcessor(parseProcessor(val));
                 } else if(inOpcdExt) {
                     opcdExt = Short.parseShort(val);
                 } else if(inGroup) {
-                    currentModeOpts.addGroup(parseOpcodeGroup(currentModeOpts.instrExt, currentModeOpts.groups, val));
+                    currentEntry.addOpcodeGroup(parseOpcodeGroup(currentEntry.instrExt, currentEntry.groups, val));
                 } else if(inInstrExt) {
-                    currentModeOpts.instrExt = parseInstrExt(val);
+                    currentEntry.instrExt = parseInstrExt(val);
                 } else if(in2ndOpcode) {
-                    currentModeOpts.secondOpcode = Short.parseShort(val, 16);
+                    currentEntry.secondOpcode = Short.parseShort(val, 16);
                 } else if(inPref) {
-                    currentModeOpts.prefix = parsePrefix(val);
+                    currentEntry.prefix = Short.parseShort(val, 16);
                 }
             }
 
@@ -238,32 +221,12 @@ public class XMLParser {
                     inOneByte = false;
                     break;
                 case "pri_opcd":
-                    short opcode = currentHandler.getOpcode();
-                    if(inOneByte) {
-                        if(oneByte[opcode] != null) {
-                            System.err.println(String.format("one-byte opcode %02X already present", opcode));
-                        } else {
-                            oneByte[opcode] = currentHandler;
-                        }
-                    } else if(inTwoByte) {
-                        if(twoByte[opcode] != null) {
-                            System.err.println(String.format("two-byte opcode 0F%02X already present", opcode));
-                        } else {
-                            twoByte[opcode] = currentHandler;
-                        }
-                    }
                     inheritProcStart = null;
-                    currentHandler = null;
+                    currentOpcode = null;
                     break;
                 case "syntax":
-                    Set<OpcodeHandler> syntaxes = mnemonics.get(currentSyntax.getMnemonic());
-                    if(syntaxes == null) {
-                        syntaxes = new HashSet<>();
-                        mnemonics.put(currentSyntax.getMnemonic(), syntaxes);
-                    }
-                    syntaxes.add(currentHandler);
-
-                    currentModeOpts.addSyntax(currentSyntax);
+                    currentEntry.addSyntax(currentSyntax);
+                    syntaxes.add(currentSyntax);
                     currentSyntax = null;
                     inSyntax = false;
                     break;
@@ -277,19 +240,14 @@ public class XMLParser {
                     inOpcdExt = false;
                     break;
                 case "entry":
-                    if(opcdExt == null) {
-                        currentHandler.addBaseOptions(currentModeOpts.mode, currentModeOpts);
-                    } else {
-                        currentHandler.addExtensionOptions(currentModeOpts.mode, opcdExt, currentModeOpts);
-                    }
-                    if(currentModeOpts.supportedProcessors.size() == 0) {
+                    if(currentEntry.supportedProcessors.size() == 0) {
                         if(inheritProcStart != null) {
-                            currentModeOpts.setStartProcessor(inheritProcStart);
+                            currentEntry.setStartProcessor(inheritProcStart);
                         } else {
-                            currentModeOpts.setStartProcessor(Processor.I8086);
+                            currentEntry.setStartProcessor(Model.I8086);
                         }
                     }
-                    currentModeOpts = null;
+                    currentEntry = null;
                     opcdExt = null;
                     break;
                 case "sec_opcd":
@@ -332,16 +290,16 @@ public class XMLParser {
         reader.close();
     }
 
-    private void fillEntry(OpcodeOpts currentModeOpts, Attributes atts) {
+    private void fillEntry(OpcodeEntry currentModeOpts, Attributes atts) {
         String modeStr = atts.getValue("mode");
         if(modeStr == null) {
             modeStr = "r";
         }
         switch(modeStr) {
-        case "r": currentModeOpts.mode = CPUMode.REAL; break;
-        case "p": currentModeOpts.mode = CPUMode.PROTECTED; break;
-        case "e": currentModeOpts.mode = CPUMode.LONG; break;
-        case "s": currentModeOpts.mode = CPUMode.SMM; break;
+        case "r": currentModeOpts.mode = ExecutionMode.REAL; break;
+        case "p": currentModeOpts.mode = ExecutionMode.PROTECTED; break;
+        case "e": currentModeOpts.mode = ExecutionMode.LONG; break;
+        case "s": currentModeOpts.mode = ExecutionMode.SMM; break;
         default: throw new UnsupportedOperationException("invalid mode: " + modeStr);
         }
 
@@ -475,59 +433,47 @@ public class XMLParser {
         }
     }
 
-    private Processor parseProcessor(String val) {
+    private Model parseProcessor(String val) {
         switch(val) {
-        case "00": return Processor.I8086;
-        case "01": return Processor.I80186;
-        case "02": return Processor.I80286;
-        case "03": return Processor.I80386;
-        case "04": return Processor.I80486;
-        case "05": return Processor.PENTIUM;
-        case "06": return Processor.PENTIUM_MMX;
-        case "07": return Processor.PENTIUM_MMX;
-        case "08": return Processor.PENTIUM_II;
-        case "09": return Processor.PENTIUM_III;
-        case "10": return Processor.PENTIUM_IV;
-        case "11": return Processor.CORE_1;
-        case "12": return Processor.CORE_2;
-        case "13": return Processor.CORE_I7;
-        case "99": return Processor.ITANIUM;
+        case "00": return Model.I8086;
+        case "01": return Model.I80186;
+        case "02": return Model.I80286;
+        case "03": return Model.I80386;
+        case "04": return Model.I80486;
+        case "05": return Model.PENTIUM;
+        case "06": return Model.PENTIUM_MMX;
+        case "07": return Model.PENTIUM_MMX;
+        case "08": return Model.PENTIUM_II;
+        case "09": return Model.PENTIUM_III;
+        case "10": return Model.PENTIUM_IV;
+        case "11": return Model.CORE_1;
+        case "12": return Model.CORE_2;
+        case "13": return Model.CORE_I7;
+        case "99": return Model.ITANIUM;
         default:
             System.err.println("Unknown processor entry: " + val);
             return null;
         }
     }
 
-    private Prefix parsePrefix(String val) {
+    private InstructionSetExtension parseInstrExt(String val) {
         switch(val) {
-        case "66": return Prefix.OPERAND_SIZE;
-        case "F2": return Prefix.REP_NZ;
-        case "F3": return Prefix.REP_Z;
-        case "9B": return Prefix.WAIT;
-        default:
-            System.err.println("Unknown prefix: " + val);
-            return null;
-        }
-    }
-
-    private Extension parseInstrExt(String val) {
-        switch(val) {
-        case "mmx":     return Extension.MMX;
-        case "sse1":    return Extension.SSE_1;
-        case "sse2":    return Extension.SSE_2;
-        case "sse3":    return Extension.SSE_3;
-        case "sse41":   return Extension.SSE_4_1;
-        case "sse42":   return Extension.SSE_4_2;
-        case "ssse3":   return Extension.SSSE_3;
-        case "vmx":     return Extension.VMX;
-        case "smx":     return Extension.SMX;
+        case "mmx":     return InstructionSetExtension.MMX;
+        case "sse1":    return InstructionSetExtension.SSE_1;
+        case "sse2":    return InstructionSetExtension.SSE_2;
+        case "sse3":    return InstructionSetExtension.SSE_3;
+        case "sse41":   return InstructionSetExtension.SSE_4_1;
+        case "sse42":   return InstructionSetExtension.SSE_4_2;
+        case "ssse3":   return InstructionSetExtension.SSSE_3;
+        case "vmx":     return InstructionSetExtension.VMX;
+        case "smx":     return InstructionSetExtension.SMX;
         default:
             System.err.println("Unhandled instruction extension: " + val);
             return null;
         }
     }
 
-    private OpcodeGroup parseOpcodeGroup(Extension ext, Set<OpcodeGroup> groups, String group) {
+    private OpcodeGroup parseOpcodeGroup(InstructionSetExtension ext, Set<OpcodeGroup> groups, String group) {
         switch (group) {
         case "prefix":
             return OpcodeGroup.PREFIX;
@@ -556,21 +502,21 @@ public class XMLParser {
                 return OpcodeGroup.SSE41_INT_ARITHMETIC;
             } else if(groups.contains(OpcodeGroup.SSE41_FLOAT)) {
                 return OpcodeGroup.SSE41_FLOAT_ARITHMETIC;
-            } else if(ext == Extension.MMX) {
+            } else if(ext == InstructionSetExtension.MMX) {
                 return OpcodeGroup.MMX_ARITHMETIC;
             } else {
                 System.err.println("invalid top group: " + group);
             }
         case "simdint":
-            if(ext == Extension.SSE_1) {
+            if(ext == InstructionSetExtension.SSE_1) {
                 return OpcodeGroup.SSE1_INT64;
-            } else if(ext == Extension.SSE_2) {
+            } else if(ext == InstructionSetExtension.SSE_2) {
                 return OpcodeGroup.SSE2_INT128;
-            } else if(ext == Extension.SSSE_3) {
+            } else if(ext == InstructionSetExtension.SSSE_3) {
                 return OpcodeGroup.SSSE3_INT;
-            } else if(ext == Extension.SSE_4_1) {
+            } else if(ext == InstructionSetExtension.SSE_4_1) {
                 return OpcodeGroup.SSE41_INT;
-            } else if(ext == Extension.SSE_4_2) {
+            } else if(ext == InstructionSetExtension.SSE_4_2) {
                 return OpcodeGroup.SSE42_INT;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -578,22 +524,22 @@ public class XMLParser {
         case "shift":
             if(groups.contains(OpcodeGroup.SSE2_INT128)) {
                 return OpcodeGroup.SSE2_INT128_SHIFT;
-            } else if(ext == Extension.MMX) {
+            } else if(ext == InstructionSetExtension.MMX) {
                 return OpcodeGroup.MMX_SHIFT;
-            } else if(ext == Extension.SSE_2) {
+            } else if(ext == InstructionSetExtension.SSE_2) {
                 // TODO: verify that this is correct
                 return OpcodeGroup.SSE2_INT128_SHIFT;
             } else {
                 System.err.println("invalid top group: " + group);
             }
         case "cachect":
-            if(ext == Extension.SSE_1) {
+            if(ext == InstructionSetExtension.SSE_1) {
                 return OpcodeGroup.SSE1_CACHE;
-            } else if(ext == Extension.SSE_2) {
+            } else if(ext == InstructionSetExtension.SSE_2) {
                 return OpcodeGroup.SSE2_CACHE;
-            } else if(ext == Extension.SSE_3) {
+            } else if(ext == InstructionSetExtension.SSE_3) {
                 return OpcodeGroup.SSE3_CACHE;
-            } else if(ext == Extension.SSE_4_1) {
+            } else if(ext == InstructionSetExtension.SSE_4_1) {
                 return OpcodeGroup.SSE41_CACHE;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -607,7 +553,7 @@ public class XMLParser {
                 return OpcodeGroup.SSE2_DOUBLE_LOGICAL;
             } else if(groups.contains(OpcodeGroup.SSE2_INT128)) {
                 return OpcodeGroup.SSE2_INT128_LOGICAL;
-            } else if(ext == Extension.MMX) {
+            } else if(ext == InstructionSetExtension.MMX) {
                 return OpcodeGroup.MMX_LOGICAL;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -617,9 +563,9 @@ public class XMLParser {
                 return OpcodeGroup.GENERAL_CONVERSION;
             } else if(groups.contains(OpcodeGroup.FPU)) {
                 return OpcodeGroup.FPU_CONVERSION;
-            } else if(ext == Extension.MMX) {
+            } else if(ext == InstructionSetExtension.MMX) {
                 return OpcodeGroup.MMX_CONVERSION;
-            } else if(ext == Extension.SSE_1) {
+            } else if(ext == InstructionSetExtension.SSE_1) {
                 return OpcodeGroup.SSE1_CONVERSION;
             } else if(groups.contains(OpcodeGroup.SSE2_DOUBLE)) {
                 return OpcodeGroup.SSE2_DOUBLE_CONVERSION;
@@ -633,7 +579,7 @@ public class XMLParser {
                 System.err.println("invalid top group: " + group);
             }
         case "pcksclr":
-            if(ext == Extension.SSE_2) {
+            if(ext == InstructionSetExtension.SSE_2) {
                 return OpcodeGroup.SSE2_DOUBLE;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -655,7 +601,7 @@ public class XMLParser {
                 return OpcodeGroup.SSE41_INT_DATAMOVE;
             } else if(groups.contains(OpcodeGroup.SSE41_FLOAT)) {
                 return OpcodeGroup.SSE41_FLOAT_DATAMOVE;
-            } else if(ext == Extension.MMX) {
+            } else if(ext == InstructionSetExtension.MMX) {
                 return OpcodeGroup.MMX_DATAMOV;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -679,11 +625,11 @@ public class XMLParser {
                 System.err.println("invalid top group: " + group);
             }
         case "simdfp":
-            if(ext == Extension.SSE_1) {
+            if(ext == InstructionSetExtension.SSE_1) {
                 return OpcodeGroup.SSE1_SINGLE;
-            } else if(ext == Extension.SSE_3) {
+            } else if(ext == InstructionSetExtension.SSE_3) {
                 return OpcodeGroup.SSE3_FLOAT;
-            } else if(ext == Extension.SSE_4_1) {
+            } else if(ext == InstructionSetExtension.SSE_4_1) {
                 return OpcodeGroup.SSE41_FLOAT;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -701,7 +647,7 @@ public class XMLParser {
                 return OpcodeGroup.SSE41_INT_COMPARISON;
             } else if(groups.contains(OpcodeGroup.SSE42_INT)) {
                 return OpcodeGroup.SSE42_INT_COMPARISON;
-            } else if(ext == Extension.MMX) {
+            } else if(ext == InstructionSetExtension.MMX) {
                 return OpcodeGroup.MMX_COMPARISON;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -743,9 +689,9 @@ public class XMLParser {
                 System.err.println("invalid top group: " + group);
             }
         case "order":
-            if(ext == Extension.SSE_1) {
+            if(ext == InstructionSetExtension.SSE_1) {
                 return OpcodeGroup.SSE1_INSTRUCTIONORDER;
-            } else if(ext == Extension.SSE_2) {
+            } else if(ext == InstructionSetExtension.SSE_2) {
                 return OpcodeGroup.SSE2_INSTRUCTIONORDER;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -753,7 +699,7 @@ public class XMLParser {
         case "sm":
             return OpcodeGroup.FPUSIMDSTATE;
         case "mxcsrsm":
-            if(ext == Extension.SSE_1) {
+            if(ext == InstructionSetExtension.SSE_1) {
                 return OpcodeGroup.SSE1_MXCSR;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -773,7 +719,7 @@ public class XMLParser {
                 System.err.println("invalid top group: " + group);
             }
         case "unpack":
-            if(ext == Extension.MMX) {
+            if(ext == InstructionSetExtension.MMX) {
                 return OpcodeGroup.MMX_UNPACK;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -785,19 +731,19 @@ public class XMLParser {
                 return OpcodeGroup.FPU;
             }
         case "strtxt":
-            if(ext == Extension.SSE_4_2) {
+            if(ext == InstructionSetExtension.SSE_4_2) {
                 return OpcodeGroup.SSE42_STRINGTEXT;
             } else {
                 System.err.println("invalid top group: " + group);
             }
         case "pcksp":
-            if(ext == Extension.SSE_2) {
+            if(ext == InstructionSetExtension.SSE_2) {
                 return OpcodeGroup.SSE2_SINGLE;
             } else {
                 System.err.println("invalid top group: " + group);
             }
         case "fetch":
-            if(ext == Extension.SSE_1) {
+            if(ext == InstructionSetExtension.SSE_1) {
                 return OpcodeGroup.SSE1_PREFETCH;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -817,7 +763,7 @@ public class XMLParser {
                 System.err.println("invalid top group: " + group);
             }
         case "sync":
-            if(ext == Extension.SSE_3) {
+            if(ext == InstructionSetExtension.SSE_3) {
                 return OpcodeGroup.SSE3_CACHE;
             } else {
                 System.err.println("invalid top group: " + group);
@@ -862,7 +808,7 @@ public class XMLParser {
         }
     }
 
-    private void parseOperandAtts(OperandDesc currentOpDesc, Attributes atts) {
+    private void parseOperandAtts(OpcodeOperand currentOpDesc, Attributes atts) {
         boolean hasGroup = false;
         for(int i = 0; i < atts.getLength(); i++) {
             String key = atts.getLocalName(i);
@@ -914,13 +860,5 @@ public class XMLParser {
         if(currentOpDesc.adrType == null && hasGroup) {
             currentOpDesc.adrType = AddressType.GROUP;
         }
-    }
-
-    public OpcodeHandler[] getOneByteHandlers() {
-        return oneByte;
-    }
-
-    public OpcodeHandler[] getTwoByteHandlers() {
-        return twoByte;
     }
 }

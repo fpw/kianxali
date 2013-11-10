@@ -4,12 +4,6 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 
 import org.solhost.folko.dasm.ByteSequence;
-import org.solhost.folko.dasm.instructions.x86.Decoder;
-import org.solhost.folko.dasm.instructions.x86.Instruction;
-import org.solhost.folko.dasm.instructions.x86.OpUnknown;
-import org.solhost.folko.dasm.instructions.x86.operands.ImmediateOp;
-import org.solhost.folko.dasm.instructions.x86.operands.Operand;
-import org.solhost.folko.dasm.instructions.x86.operands.RelativeAddress;
 
 public class PEFile implements RVAResolver {
     private final ByteSequence image;
@@ -23,32 +17,15 @@ public class PEFile implements RVAResolver {
         image = ByteSequence.fromFile(path);
     }
 
-    public void disassemble() {
+    public void load() {
         loadHeaders();
         loadImports();
+        imports.equals(imports); // XXX remove
+    }
+
+    public ByteSequence getEntryPoint() {
         image.seek(rvaToFile(optionalHeader.getEntryPointRVA()));
-
-        System.out.println(imports);
-
-        boolean done = false;
-        Decoder decoder = new Decoder(image);
-        do {
-            System.out.print(String.format("%08X: ", fileToMemory(image.getPosition())));
-            Instruction inst = decoder.decodeNext();
-            System.out.print(inst.getMnemonic());
-            for(int i = 0; i < inst.getOperands().length; i++) {
-                Operand op = inst.getOperands()[i];
-                if(op instanceof RelativeAddress) {
-                    long addr = fileToMemory(image.getPosition()) + ((RelativeAddress) op).getRelativeAddress();
-                    op = new ImmediateOp(addr);
-                }
-                System.out.print(((i == 0) ? " " : ", ") + op.asString(0));
-            }
-            System.out.println();
-            if(inst instanceof OpUnknown) {
-                done = true;
-            }
-        } while(!done);
+        return image;
     }
 
     @Override

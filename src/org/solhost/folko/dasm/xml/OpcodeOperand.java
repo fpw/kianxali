@@ -1,6 +1,6 @@
 package org.solhost.folko.dasm.xml;
 
-public class OperandDesc {
+public class OpcodeOperand {
     public enum UsageType {SOURCE, DEST};
 
     public enum AddressType {
