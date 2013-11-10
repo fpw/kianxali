@@ -82,6 +82,10 @@ public class ByteSequence {
         return bytes.getInt();
     }
 
+    public long readSQword() {
+        return bytes.getLong();
+    }
+
     public String readString() {
         StringBuilder res = new StringBuilder();
         do {

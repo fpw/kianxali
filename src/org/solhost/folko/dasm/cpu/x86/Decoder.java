@@ -21,19 +21,19 @@ public class Decoder {
         Context ctx = new Context(Model.CORE_I7, ExecutionMode.PROTECTED);
         boolean goOn = true;
         while(goOn) {
-            long pos = seq.getPosition();
-            Instruction inst = decodeNext(seq, decodeTree);
+            ctx.setFileOffset(seq.getPosition());
+            Instruction inst = decodeNext(seq, ctx, decodeTree);
             if(inst != null) {
                 if(inst.isPrefix()) {
                     ctx.applyPrefix(inst);
                 } else {
                     inst.decode(seq, ctx);
-                    listener.onDecode(pos, (int) (seq.getPosition() - pos), inst);
+                    long size = seq.getPosition() - ctx.getFileOffset();
+                    listener.onDecode(ctx.getFileOffset(), (int) size, inst);
                     ctx.reset();
-                    goOn = false;
                 }
             } else {
-                listener.onDecode(pos, 1, new DecodedEntity() {
+                listener.onDecode(ctx.getFileOffset(), 1, new DecodedEntity() {
                     @Override
                     public String toString() {
                         return String.format("Unknown opcode: %02X", seq.readUByte());
@@ -44,12 +44,13 @@ public class Decoder {
         }
     }
 
-    private Instruction decodeNext(ByteSequence sequence, DecodeTree<OpcodeSyntax> tree) {
+    private Instruction decodeNext(ByteSequence sequence, Context ctx, DecodeTree<OpcodeSyntax> tree) {
         short s = sequence.readUByte();
+        ctx.addDecodedPrefix(s);
 
         DecodeTree<OpcodeSyntax> subTree = tree.getSubTree(s);
         if(subTree != null) {
-            Instruction res = decodeNext(sequence, subTree);
+            Instruction res = decodeNext(sequence, ctx, subTree);
             if(res != null) {
                 return res;
             }
@@ -59,6 +60,7 @@ public class Decoder {
         List<OpcodeSyntax> leaves = tree.getLeaves(s);
         if(leaves == null) {
             sequence.skip(-1);
+            ctx.removeDecodedPrefixTop();
             return null;
         }
 
