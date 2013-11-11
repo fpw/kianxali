@@ -98,6 +98,7 @@ public class OpcodeOperand {
         WORD_DWORD_S64  // word or dword (depending op size) sign ext to 64 bit if REX.W
     }
 
+    public String hardcoded; // hardcoded operand
     public boolean indirect; // only indirect modification, e.g. LEAVE modifying EBP
     public boolean depends; // resulting value depends on its previous value
     public DirectGroup directGroup;

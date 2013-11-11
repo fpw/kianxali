@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 
 import org.solhost.folko.dasm.ByteSequence;
+import org.solhost.folko.dasm.cpu.x86.Context;
+import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
+import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 
-public class PEFile implements RVAResolver {
+public class PEFile implements AddressConverter {
     private final ByteSequence image;
     private DOSStub dosStub;
     private PEHeader peHeader;
@@ -15,6 +18,11 @@ public class PEFile implements RVAResolver {
 
     public PEFile(String path) throws IOException {
         image = ByteSequence.fromFile(path);
+    }
+
+    public Context createContext() {
+        // TODO
+        return new Context(Model.CORE_I7, ExecutionMode.PROTECTED, this);
     }
 
     public void load() {

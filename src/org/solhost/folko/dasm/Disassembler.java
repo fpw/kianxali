@@ -8,6 +8,13 @@ import org.solhost.folko.dasm.pe.PEFile;
 import org.solhost.folko.dasm.xml.OpcodeSyntax;
 import org.solhost.folko.dasm.xml.XMLParser;
 
+/*
+ * Ideas:
+ *  - create fuzzer by iterating syntaxes and operands
+ *  - string prefixes
+ *  - sib32
+ */
+
 public class Disassembler {
     public static void main(String[] args) throws Exception {
         XMLParser parser = new XMLParser();
@@ -36,10 +43,10 @@ public class Disassembler {
         PEFile image = new PEFile("client.exe");
         image.load();
 
-        decoder.decode(image.getEntryPoint(), new DecodeListener() {
+        decoder.decode(image.createContext(), image.getEntryPoint(), new DecodeListener() {
             @Override
-            public void onDecode(long offset, int length, DecodedEntity entity) {
-                System.out.println(String.format("%08X: %s", offset, entity));
+            public void onDecode(long address, int length, DecodedEntity entity) {
+                System.out.println(String.format("%08X: %s", address, entity));
             }
         });
     }

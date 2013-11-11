@@ -107,6 +107,8 @@ public class X86CPU {
             } else {
                 return getGenericRegister32(id);
             }
+        case WORD:
+            return getGenericRegister16(id);
         case WORD_DWORD:
             if(ctx.hasOpSizePrefix()) {
                 return getGenericRegister16(id);

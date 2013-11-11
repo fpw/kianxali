@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
+import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
 import org.solhost.folko.dasm.decoder.DecodedEntity;
 import org.solhost.folko.dasm.decoder.Operand;
 import org.solhost.folko.dasm.xml.OpcodeEntry;
@@ -83,7 +84,14 @@ public class Instruction implements DecodedEntity {
             return modRM.getMem(op);
 
         case IMMEDIATE:             return decodeImmediate(seq, op, ctx);
-
+        case RELATIVE:              return decoreRelative(seq, op, ctx);
+        case ES_EDI_RDI:
+            // TODO: RDI
+            PointerOp res = new PointerOp(ctx, Register.EDI);
+            res.setSegment(Segment.ES);
+            res.setOpType(op.operType);
+            res.setUsage(op.usageType);
+            return res;
         case MOD_RM_MMX:
         case MOD_RM_XMM:
         case DIRECT:
@@ -93,9 +101,7 @@ public class Instruction implements DecodedEntity {
         case DS_EAX_RAX:
         case DS_EDI_RDI:
         case DS_ESI_RSI:
-        case ES_EDI_RDI:
         case FLAGS:
-        case RELATIVE:
         case SEGMENT2:
         case SEGMENT30:
         case SEGMENT33:
@@ -106,26 +112,56 @@ public class Instruction implements DecodedEntity {
         }
     }
 
-    private Operand decodeImmediate(ByteSequence seq, OpcodeOperand op, Context ctx) {
-        long immediate;
+    private Operand decoreRelative(ByteSequence seq, OpcodeOperand op, Context ctx) {
+        long relOffset;
         switch(op.operType) {
-        case BYTE:
-            immediate = seq.readUByte();
-            break;
-        case BYTE_STACK:
-            immediate = seq.readSByte();
+        case WORD_DWORD_S64:
+            relOffset = seq.readSDword();
             break;
         case BYTE_SGN:
-            immediate = seq.readSByte();
-            break;
-        case WORD_DWORD_STACK:
-            immediate = seq.readSDword();
-            break;
-        case WORD_DWORD_S64:
-            immediate = seq.readSDword();
+            relOffset = seq.readSByte();
             break;
         default:
-            throw new UnsupportedOperationException("unsupported immediate type: " + op.operType);
+            throw new UnsupportedOperationException("unsupported relative type: " + op.operType);
+        }
+        long baseAddr = seq.getPosition() - ctx.getFileOffset() + ctx.getVirtualOffset();
+        return new RelativeOp(op.usageType, baseAddr, relOffset);
+    }
+
+    private Operand decodeImmediate(ByteSequence seq, OpcodeOperand op, Context ctx) {
+        long immediate;
+        if(op.operType == null) {
+            if(op.hardcoded != null) {
+                immediate = Long.parseLong(op.hardcoded, 16);
+            } else {
+                throw new UnsupportedOperationException("invalid immediate: " + op.adrType);
+            }
+        } else {
+            switch(op.operType) {
+            case BYTE:
+                immediate = seq.readUByte();
+                break;
+            case BYTE_STACK:
+                immediate = seq.readSByte();
+                break;
+            case BYTE_SGN:
+                immediate = seq.readSByte();
+                break;
+            case WORD:
+                immediate = seq.readUWord();
+                break;
+            case WORD_DWORD_STACK:
+                immediate = seq.readSDword();
+                break;
+            case WORD_DWORD_64:
+                immediate = seq.readUDword();
+                break;
+            case WORD_DWORD_S64:
+                immediate = seq.readSDword();
+                break;
+            default:
+                throw new UnsupportedOperationException("unsupported immediate type: " + op.operType);
+            }
         }
         return new ImmediateOp(op.usageType, immediate);
     }
@@ -134,14 +170,14 @@ public class Instruction implements DecodedEntity {
         long offset;
         switch(op.operType) {
         case BYTE:
-            offset = seq.readSByte();
+            offset = seq.readUDword();
             break;
         case WORD_DWORD_64:
             if(ctx.hasRexWPrefix()) {
                 offset = seq.readSQword();
             } else {
                 if(ctx.hasOpSizePrefix()) {
-                    offset = seq.readUWord();
+                    offset = seq.readUDword();
                 } else {
                     offset = seq.readUDword();
                 }

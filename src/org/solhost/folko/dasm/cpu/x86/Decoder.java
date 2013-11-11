@@ -3,8 +3,6 @@ package org.solhost.folko.dasm.cpu.x86;
 import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
-import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
-import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.decoder.DecodeListener;
 import org.solhost.folko.dasm.decoder.DecodeTree;
 import org.solhost.folko.dasm.decoder.DecodedEntity;
@@ -17,8 +15,7 @@ public class Decoder {
         this.decodeTree = decodeTree;
     }
 
-    public void decode(final ByteSequence seq, DecodeListener listener) {
-        Context ctx = new Context(Model.CORE_I7, ExecutionMode.PROTECTED);
+    public void decode(Context ctx, final ByteSequence seq, DecodeListener listener) {
         boolean goOn = true;
         while(goOn) {
             ctx.setFileOffset(seq.getPosition());
@@ -29,7 +26,7 @@ public class Decoder {
                 } else {
                     inst.decode(seq, ctx);
                     long size = seq.getPosition() - ctx.getFileOffset();
-                    listener.onDecode(ctx.getFileOffset(), (int) size, inst);
+                    listener.onDecode(ctx.getVirtualOffset(), (int) size, inst);
                     ctx.reset();
                 }
             } else {

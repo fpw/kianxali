@@ -1,6 +1,7 @@
 package org.solhost.folko.dasm.cpu.x86;
 
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
+import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
 import org.solhost.folko.dasm.decoder.Operand;
 import org.solhost.folko.dasm.xml.OpcodeOperand.OperandType;
 import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
@@ -8,6 +9,7 @@ import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
 public class PointerOp implements Operand {
     private UsageType usage;
     private OperandType opType;
+    private Segment segment;
     private final Context context;
     private Register baseRegister, indexRegister;
     private Integer indexScale;
@@ -81,12 +83,24 @@ public class PointerOp implements Operand {
         this.offset = offset;
     }
 
+    public void addOffset(long add) {
+        if(offset == null) {
+            offset = add;
+        } else {
+            offset += add;
+        }
+    }
+
     public void setOpType(OperandType opType) {
         this.opType = opType;
     }
 
     public void setUsage(UsageType usage) {
         this.usage = usage;
+    }
+
+    public void setSegment(Segment segment) {
+        this.segment = segment;
     }
 
     @Override
@@ -101,7 +115,9 @@ public class PointerOp implements Operand {
         default: throw new RuntimeException("invalid operand size: " + opType);
         }
 
-        if(context.getOverrideSegment() != null) {
+        if(segment != null) {
+            str.append(segment + ":");
+        } else if(context.getOverrideSegment() != null) {
             str.append(context.getOverrideSegment() + ":");
         }
 

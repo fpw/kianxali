@@ -1,6 +1,6 @@
 package org.solhost.folko.dasm.pe;
 
-public interface RVAResolver {
+public interface AddressConverter {
     public long rvaToMemory(long rva);
     public long rvaToFile(long rva);
     public long fileToRVA(long offset);

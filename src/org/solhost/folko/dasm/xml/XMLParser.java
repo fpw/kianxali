@@ -186,6 +186,14 @@ public class XMLParser {
                     currentOpDesc.adrType = parseAddressType(val);
                 } else if(inT) {
                     currentOpDesc.operType = parseOperandType(val);
+                } else if(inSrc) {
+                    if(!currentOpDesc.indirect && val.trim().length() > 0) {
+                        currentOpDesc.hardcoded = val.trim();
+                    }
+                } else if(inDst) {
+                    if(!currentOpDesc.indirect && val.trim().length() > 0) {
+                        currentOpDesc.hardcoded = val.trim();
+                    }
                 } else if(inProcStart) {
                     Model proc = parseProcessor(val);
                     if(currentEntry != null) {

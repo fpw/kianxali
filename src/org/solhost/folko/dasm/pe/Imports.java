@@ -30,7 +30,7 @@ public class Imports {
     public Imports() {
     }
 
-    public Imports(ByteSequence image, RVAResolver rva) {
+    public Imports(ByteSequence image, AddressConverter rva) {
         do {
             Import imp = new Import();
             imp.orgThunk       = image.readUDword();
@@ -51,7 +51,7 @@ public class Imports {
         loadIAT(image, rva);
     }
 
-    private void loadImport(ByteSequence image, Import imp, RVAResolver rva) {
+    private void loadImport(ByteSequence image, Import imp, AddressConverter rva) {
         image.seek(rva.rvaToFile(imp.nameRVA));
         imp.dllName = image.readString();
 
@@ -77,7 +77,7 @@ public class Imports {
         }
     }
 
-    private void loadIAT(ByteSequence image, RVAResolver rva) {
+    private void loadIAT(ByteSequence image, AddressConverter rva) {
         for(Import imp : imports) {
             image.seek(rva.rvaToFile(imp.firstThunk));
             do {
