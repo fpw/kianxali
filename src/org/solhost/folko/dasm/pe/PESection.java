@@ -1,12 +1,15 @@
 package org.solhost.folko.dasm.pe;
 
 import org.solhost.folko.dasm.ByteSequence;
+import org.solhost.folko.dasm.Section;
 
-public class SectionHeader {
+public class PESection implements Section {
     private final String name;
+    private final AddressConverter addrConv;
     private final long virtualAddressRVA, rawSize, filePosition, characteristics;
 
-    public SectionHeader(ByteSequence image) {
+    public PESection(ByteSequence image, AddressConverter conv) {
+        this.addrConv = conv;
         name = image.readString(8);
 
         // ignore unreliable size
@@ -25,6 +28,7 @@ public class SectionHeader {
         characteristics = image.readUDword();
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -51,5 +55,15 @@ public class SectionHeader {
 
     public boolean isUninitializedData() {
         return (characteristics & 0x80) != 0;
+    }
+
+    @Override
+    public long getStartAddress() {
+        return addrConv.rvaToMemory(virtualAddressRVA);
+    }
+
+    @Override
+    public long getEndAddress() {
+        return addrConv.rvaToMemory(virtualAddressRVA + rawSize);
     }
 }

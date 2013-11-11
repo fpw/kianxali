@@ -3,18 +3,18 @@ package org.solhost.folko.dasm.cpu.x86;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.solhost.folko.dasm.ImageFile;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
-import org.solhost.folko.dasm.pe.AddressConverter;
 import org.solhost.folko.dasm.xml.OpcodeEntry;
 import org.solhost.folko.dasm.xml.OpcodeGroup;
 import org.solhost.folko.dasm.xml.OpcodeSyntax;
 
 public class Context {
-    private final AddressConverter addrConverter;
     private final Model model;
     private final ExecutionMode execMode;
+    private final ImageFile image;
     private List<Short> opcodePrefix;
 
     private long fileOffset;
@@ -25,15 +25,11 @@ public class Context {
     private boolean repZPrefix, repNZPrefix, opSizePrefix, adrSizePrefix;
     private boolean rexWPrefix, rexRPrefix, rexBPrefix;
 
-    public Context(Model model, ExecutionMode execMode, AddressConverter converter) {
+    public Context(ImageFile image, Model model, ExecutionMode execMode) {
         this.model = model;
         this.execMode = execMode;
-        this.addrConverter = converter;
+        this.image = image;
         reset();
-    }
-
-    public void setFileOffset(long offset) {
-        this.fileOffset = offset;
     }
 
     public boolean acceptsOpcode(OpcodeSyntax syntax) {
@@ -134,13 +130,18 @@ public class Context {
         return rexRPrefix;
     }
 
+    public void setFileOffset(long offset) {
+        this.fileOffset = offset;
+    }
+
     public long getFileOffset() {
         return fileOffset;
     }
 
-    public long getVirtualOffset() {
-        return addrConverter.fileToMemory(fileOffset);
+    public long getVirtualAddress() {
+        return image.fileToMemAddress(getFileOffset());
     }
+
 
     public void reset() {
         opcodePrefix = new ArrayList<>(5);

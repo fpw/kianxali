@@ -2,18 +2,23 @@ package org.solhost.folko.dasm.pe;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
+import org.solhost.folko.dasm.ImageFile;
+import org.solhost.folko.dasm.Section;
 import org.solhost.folko.dasm.cpu.x86.Context;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 
-public class PEFile implements AddressConverter {
+public class PEFile implements AddressConverter, ImageFile {
     private final ByteSequence image;
     private DOSStub dosStub;
     private PEHeader peHeader;
     private OptionalHeader optionalHeader;
-    private SectionHeader[] sectionHeaders;
+    private List<PESection> sections;
     private Imports imports;
 
     public PEFile(String path) throws IOException {
@@ -22,18 +27,12 @@ public class PEFile implements AddressConverter {
 
     public Context createContext() {
         // TODO
-        return new Context(Model.CORE_I7, ExecutionMode.PROTECTED, this);
+        return new Context(this, Model.CORE_I7, ExecutionMode.PROTECTED);
     }
 
     public void load() {
         loadHeaders();
         loadImports();
-        imports.equals(imports); // XXX remove
-    }
-
-    public ByteSequence getEntryPoint() {
-        image.seek(rvaToFile(optionalHeader.getEntryPointRVA()));
-        return image;
     }
 
     @Override
@@ -43,7 +42,7 @@ public class PEFile implements AddressConverter {
 
     @Override
     public long rvaToFile(long rva) {
-        for(SectionHeader header : sectionHeaders) {
+        for(PESection header : sections) {
             long memOffset = header.getVirtualAddressRVA();
             if(rva >= memOffset && rva < memOffset + header.getRawSize()) {
                 return rva - memOffset + header.getFilePosition();
@@ -54,7 +53,7 @@ public class PEFile implements AddressConverter {
 
     @Override
     public long fileToRVA(long offset) {
-        for(SectionHeader header : sectionHeaders) {
+        for(PESection header : sections) {
             long fileOffset = header.getFilePosition();
             if(offset >= fileOffset && offset < fileOffset + header.getRawSize()) {
                 return offset - header.getFilePosition() + header.getVirtualAddressRVA();
@@ -89,9 +88,9 @@ public class PEFile implements AddressConverter {
 
         optionalHeader = new OptionalHeader(image);
 
-        sectionHeaders = new SectionHeader[peHeader.getNumSections()];
+        sections = new ArrayList<>(peHeader.getNumSections());
         for(int i = 0; i< peHeader.getNumSections(); i++) {
-            sectionHeaders[i] = new SectionHeader(image);
+            sections.add(i, new PESection(image, this));
         }
         image.unlock();
     }
@@ -114,8 +113,54 @@ public class PEFile implements AddressConverter {
     }
 
     public long getMemorySize() {
-        SectionHeader last = sectionHeaders[sectionHeaders.length - 1];
+        PESection last = sections.get(sections.size() - 1);
         long lastAddress = last.getVirtualAddressRVA() + last.getRawSize();
         return lastAddress;
+    }
+
+    @Override
+    public List<Section> getSections() {
+        List<Section> res = new ArrayList<>(sections.size());
+        for(Section section : sections) {
+            res.add(section);
+        }
+        return Collections.unmodifiableList(res);
+    }
+
+    @Override
+    public Section getSectionForMemAddress(long memAddress) {
+        for(Section sec : sections) {
+            if(memAddress >= sec.getStartAddress() && memAddress < sec.getEndAddress()) {
+                return sec;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public long memToFileAddress(long memAddress) {
+        return memoryToFile(memAddress);
+    }
+
+    @Override
+    public long fileToMemAddress(long fileOffset) {
+        return fileToMemory(fileOffset);
+    }
+
+    @Override
+    public long getCodeEntryPointMem() {
+        return rvaToMemory(optionalHeader.getEntryPointRVA());
+    }
+
+    @Override
+    public ByteSequence getByteSequence(long memAddress) {
+        image.seek(memToFileAddress(memAddress));
+        return image;
+    }
+
+    @Override
+    public String getAddressAlias(long memAddress) {
+        String impName = imports.getFunctionName(memAddress);
+        return impName;
     }
 }

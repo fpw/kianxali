@@ -40,13 +40,14 @@ public class Disassembler {
         System.out.println("done");
 
         Decoder decoder = new Decoder(decodeTree);
-        PEFile image = new PEFile("client.exe");
+        PEFile image = new PEFile("swap.exe");
         image.load();
+        final OutputOptions outOpts = new OutputOptions(image);
 
-        decoder.decode(image.createContext(), image.getEntryPoint(), new DecodeListener() {
+        decoder.decode(image, new DecodeListener() {
             @Override
             public void onDecode(long address, int length, DecodedEntity entity) {
-                System.out.println(String.format("%08X: %s", address, entity));
+                System.out.println(String.format("%08X: %s", address, entity.asString(outOpts)));
             }
         });
     }

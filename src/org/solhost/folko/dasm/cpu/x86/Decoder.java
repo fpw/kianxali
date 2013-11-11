@@ -3,6 +3,8 @@ package org.solhost.folko.dasm.cpu.x86;
 import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
+import org.solhost.folko.dasm.ImageFile;
+import org.solhost.folko.dasm.OutputOptions;
 import org.solhost.folko.dasm.decoder.DecodeListener;
 import org.solhost.folko.dasm.decoder.DecodeTree;
 import org.solhost.folko.dasm.decoder.DecodedEntity;
@@ -15,7 +17,10 @@ public class Decoder {
         this.decodeTree = decodeTree;
     }
 
-    public void decode(Context ctx, final ByteSequence seq, DecodeListener listener) {
+    public void decode(ImageFile image, DecodeListener listener) {
+        final ByteSequence seq = image.getByteSequence(image.getCodeEntryPointMem());
+        Context ctx = image.createContext();
+
         boolean goOn = true;
         while(goOn) {
             ctx.setFileOffset(seq.getPosition());
@@ -26,13 +31,12 @@ public class Decoder {
                 } else {
                     inst.decode(seq, ctx);
                     long size = seq.getPosition() - ctx.getFileOffset();
-                    listener.onDecode(ctx.getVirtualOffset(), (int) size, inst);
+                    listener.onDecode(ctx.getVirtualAddress(), (int) size, inst);
                     ctx.reset();
                 }
             } else {
                 listener.onDecode(ctx.getFileOffset(), 1, new DecodedEntity() {
-                    @Override
-                    public String toString() {
+                    public String asString(OutputOptions options) {
                         return String.format("Unknown opcode: %02X", seq.readUByte());
                     }
                 });

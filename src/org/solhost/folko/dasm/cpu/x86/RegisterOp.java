@@ -1,5 +1,6 @@
 package org.solhost.folko.dasm.cpu.x86;
 
+import org.solhost.folko.dasm.OutputOptions;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.decoder.Operand;
 import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
@@ -19,7 +20,7 @@ public class RegisterOp implements Operand {
     }
 
     @Override
-    public String asString(Object options) {
+    public String asString(OutputOptions options) {
         return register.toString().toLowerCase();
     }
 }

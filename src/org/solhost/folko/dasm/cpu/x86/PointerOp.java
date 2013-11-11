@@ -1,5 +1,6 @@
 package org.solhost.folko.dasm.cpu.x86;
 
+import org.solhost.folko.dasm.OutputOptions;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
 import org.solhost.folko.dasm.decoder.Operand;
@@ -104,7 +105,7 @@ public class PointerOp implements Operand {
     }
 
     @Override
-    public String asString(Object options) {
+    public String asString(OutputOptions options) {
         StringBuilder str = new StringBuilder();
 
         switch(opType) {
@@ -145,11 +146,7 @@ public class PointerOp implements Operand {
             if(needsPlus) {
                 str.append(offset < 0 ? " - " : " + ");
             }
-            if(offset < 0) {
-                str.append(String.format("%Xh", -offset));
-            } else {
-                str.append(String.format("%Xh", offset));
-            }
+            str.append(options.formatAddress(offset));
         }
         str.append("]");
 

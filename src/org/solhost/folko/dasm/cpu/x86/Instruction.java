@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
+import org.solhost.folko.dasm.OutputOptions;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
 import org.solhost.folko.dasm.decoder.DecodedEntity;
@@ -124,7 +125,7 @@ public class Instruction implements DecodedEntity {
         default:
             throw new UnsupportedOperationException("unsupported relative type: " + op.operType);
         }
-        long baseAddr = seq.getPosition() - ctx.getFileOffset() + ctx.getVirtualOffset();
+        long baseAddr = seq.getPosition() - ctx.getFileOffset() + ctx.getVirtualAddress();
         return new RelativeOp(op.usageType, baseAddr, relOffset);
     }
 
@@ -218,7 +219,7 @@ public class Instruction implements DecodedEntity {
         }
     }
 
-    public String asString(Object options) {
+    public String asString(OutputOptions options) {
         StringBuilder res = new StringBuilder();
         for(Short b : actualPrefix) {
             res.append(String.format("%02X", b));
@@ -235,10 +236,5 @@ public class Instruction implements DecodedEntity {
         }
 
         return res.toString();
-    }
-
-    @Override
-    public String toString() {
-        return asString(null);
     }
 }
