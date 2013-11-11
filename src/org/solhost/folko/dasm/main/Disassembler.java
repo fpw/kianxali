@@ -1,5 +1,6 @@
-package org.solhost.folko.dasm;
+package org.solhost.folko.dasm.main;
 
+import org.solhost.folko.dasm.OutputFormat;
 import org.solhost.folko.dasm.cpu.x86.Decoder;
 import org.solhost.folko.dasm.decoder.DecodeListener;
 import org.solhost.folko.dasm.decoder.DecodeTree;
@@ -12,7 +13,7 @@ import org.solhost.folko.dasm.xml.XMLParser;
  * Ideas:
  *  - create fuzzer by iterating syntaxes and operands
  *  - string prefixes
- *  - sib32
+ *  - sib16
  */
 
 public class Disassembler {
@@ -40,7 +41,7 @@ public class Disassembler {
         System.out.println("done");
 
         Decoder decoder = new Decoder(decodeTree);
-        PEFile image = new PEFile("swap.exe");
+        PEFile image = new PEFile("targets/swap.exe");
         image.load();
         final OutputFormat format = new OutputFormat(image);
 
