@@ -15,6 +15,8 @@ import org.solhost.folko.dasm.xml.OpcodeOperand;
 public class Instruction implements DecodedEntity {
     private final OpcodeSyntax syntax;
     private final List<Operand> operands;
+    private ModRM modRM;
+    private List<Short> actualPrefix;
 
     public Instruction(OpcodeSyntax syntax) {
         this.syntax = syntax;
@@ -35,10 +37,11 @@ public class Instruction implements DecodedEntity {
 
     // the prefix has been read from seq already
     public void decode(ByteSequence seq, Context ctx) {
+        actualPrefix = ctx.getDecodedPrefix();
         OpcodeEntry entry = syntax.getOpcodeEntry();
         if(entry.modRM) {
             // TODO: parse mod r/m
-            throw new UnsupportedOperationException("mod r/m not supported yet");
+            modRM = new ModRM(seq, ctx);
         }
         for(OpcodeOperand op : syntax.getOperands()) {
             Operand decodedOp = decodeOperand(op, seq, ctx);
@@ -56,22 +59,33 @@ public class Instruction implements DecodedEntity {
         case GROUP:                 return decodeGroup(op, ctx);
         case OFFSET:                return decodeOffset(seq, op, ctx);
         case LEAST_REG:             return decodeLeastReg(op, ctx);
-        case MOD_RM_M:
-        case MOD_RM_MMX:
-        case MOD_RM_M_FORCE:
-        case MOD_RM_M_FPU:
-        case MOD_RM_M_MMX:
-        case MOD_RM_M_XMM:
-        case MOD_RM_R:
+
         case MOD_RM_R_FORCE:
         case MOD_RM_R_FORCE2:
         case MOD_RM_R_FPU:
         case MOD_RM_R_MMX:
         case MOD_RM_R_SEG:
         case MOD_RM_R_XMM:
+        case MOD_RM_R:
+            if(modRM == null) {
+                modRM = new ModRM(seq, ctx);
+            }
+            return modRM.getReg(op);
+
+        case MOD_RM_M_FORCE:
+        case MOD_RM_M_FPU:
+        case MOD_RM_M_MMX:
+        case MOD_RM_M_XMM:
+        case MOD_RM_M:
+            if(modRM == null) {
+                modRM = new ModRM(seq, ctx);
+            }
+            return modRM.getMem(op);
+
+        case IMMEDIATE:             return decodeImmediate(seq, op, ctx);
+
+        case MOD_RM_MMX:
         case MOD_RM_XMM:
-            // TODO: modrm
-            break;
         case DIRECT:
         case CONTROL:
         case DEBUG:
@@ -81,7 +95,6 @@ public class Instruction implements DecodedEntity {
         case DS_ESI_RSI:
         case ES_EDI_RDI:
         case FLAGS:
-        case IMMEDIATE:
         case RELATIVE:
         case SEGMENT2:
         case SEGMENT30:
@@ -91,12 +104,38 @@ public class Instruction implements DecodedEntity {
         default:
             throw new UnsupportedOperationException("unsupported address type: " + op.adrType);
         }
-        return null;
+    }
+
+    private Operand decodeImmediate(ByteSequence seq, OpcodeOperand op, Context ctx) {
+        long immediate;
+        switch(op.operType) {
+        case BYTE:
+            immediate = seq.readUByte();
+            break;
+        case BYTE_STACK:
+            immediate = seq.readSByte();
+            break;
+        case BYTE_SGN:
+            immediate = seq.readSByte();
+            break;
+        case WORD_DWORD_STACK:
+            immediate = seq.readSDword();
+            break;
+        case WORD_DWORD_S64:
+            immediate = seq.readSDword();
+            break;
+        default:
+            throw new UnsupportedOperationException("unsupported immediate type: " + op.operType);
+        }
+        return new ImmediateOp(op.usageType, immediate);
     }
 
     private Operand decodeOffset(ByteSequence seq, OpcodeOperand op, Context ctx) {
         long offset;
         switch(op.operType) {
+        case BYTE:
+            offset = seq.readSByte();
+            break;
         case WORD_DWORD_64:
             if(ctx.hasRexWPrefix()) {
                 offset = seq.readSQword();
@@ -111,7 +150,10 @@ public class Instruction implements DecodedEntity {
         default:
             throw new UnsupportedOperationException("unsupported offset type: " + op.operType);
         }
-        return new OffsetOp(op.usageType, offset, ctx.getOverrideSegment());
+        PointerOp res = new PointerOp(ctx, offset);
+        res.setOpType(op.operType);
+        res.setUsage(op.usageType);
+        return res;
     }
 
     private Operand decodeLeastReg(OpcodeOperand op, Context ctx) {
@@ -142,6 +184,10 @@ public class Instruction implements DecodedEntity {
 
     public String asString(Object options) {
         StringBuilder res = new StringBuilder();
+        for(Short b : actualPrefix) {
+            res.append(String.format("%02X", b));
+        }
+        res.append("\t");
         res.append(syntax.getMnemonic().toLowerCase());
         for(int i = 0; i < operands.size(); i++) {
             if(i == 0) {

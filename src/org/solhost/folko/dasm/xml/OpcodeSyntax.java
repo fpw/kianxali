@@ -30,6 +30,10 @@ public class OpcodeSyntax {
         return entry;
     }
 
+    public boolean isExtended() {
+        return extension != null;
+    }
+
     public Short getExtension() {
         return extension;
     }

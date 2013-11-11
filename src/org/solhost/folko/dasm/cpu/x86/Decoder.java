@@ -64,9 +64,29 @@ public class Decoder {
             return null;
         }
 
-        // TODO: what if there are multiple syntaxes for this sequence? take first for now
-        OpcodeSyntax syntax = leaves.get(0);
-
-        return new Instruction(syntax);
+        OpcodeSyntax res = null;
+        Short extension = null;
+        for(OpcodeSyntax syntax : leaves) {
+            if(syntax.isExtended()) {
+                if(extension == null) {
+                    extension = (short) ((sequence.readUByte() >> 3) & 0x07);
+                    sequence.skip(-1);
+                }
+                if(syntax.getExtension() == extension) {
+                    res = syntax;
+                    break;
+                }
+            } else {
+                // TODO: what if there are multiple syntaxes for this sequence without extension?
+                // take first match for now
+                res = syntax;
+                break;
+            }
+        }
+        if(res != null) {
+            return new Instruction(res);
+        } else {
+            return null;
+        }
     }
 }

@@ -21,7 +21,7 @@ public class Context {
     private Segment overrideSegment;
     private boolean lockPrefix, waitPrefix;
     private boolean repZPrefix, repNZPrefix, opSizePrefix, adrSizePrefix;
-    private boolean rexWPrefix;
+    private boolean rexWPrefix, rexRPrefix, rexBPrefix;
 
     public Context(Model model, ExecutionMode execMode) {
         this.model = model;
@@ -70,6 +70,10 @@ public class Context {
 
     public void addDecodedPrefix(short b) {
         opcodePrefix.add(b);
+    }
+
+    public List<Short> getDecodedPrefix() {
+        return new ArrayList<Short>(opcodePrefix);
     }
 
     public void removeDecodedPrefixTop() {
@@ -121,6 +125,14 @@ public class Context {
 
     public boolean hasRexWPrefix() {
         return rexWPrefix;
+    }
+
+    public boolean hasRexBPrefix() {
+        return rexBPrefix;
+    }
+
+    public boolean hasRexRPrefix() {
+        return rexRPrefix;
     }
 
     public long getFileOffset() {

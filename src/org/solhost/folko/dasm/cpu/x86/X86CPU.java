@@ -113,6 +113,8 @@ public class X86CPU {
             } else {
                 return getGenericRegister32(id);
             }
+        case BYTE:
+            return getGenericRegister8(id);
         default:
             throw new UnsupportedOperationException("invalid generic register type: " + opType);
         }
