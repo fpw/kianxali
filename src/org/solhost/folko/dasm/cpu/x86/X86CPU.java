@@ -10,6 +10,14 @@ public class X86CPU {
         ITANIUM
     }
 
+    public enum OperandSize {
+        O8, O16, O32, O64
+    }
+
+    public enum AddressSize {
+        A16, A32, A64
+    }
+
     public enum Register {
         // generic 8 bit
         AL, AH, BL, BH, CL, CH, DL, DH,
@@ -22,6 +30,9 @@ public class X86CPU {
 
         // generic 64 bit
         RAX, RBX, RCX, RDX, RSP, RBP, RSI, RDI,
+
+        // segment registers
+        CS, DS, ES, FS, GS, SS,
     }
 
     public enum ExecutionMode {
@@ -37,7 +48,71 @@ public class X86CPU {
         SSE_1, SSE_2, SSE_3, SSE_4_1, SSE_4_2, SSSE_3
     }
 
-    public static Register getGenericRegister8(short id) {
+    public static AddressSize getAddressSize(Context ctx) {
+        switch(ctx.getExecMode()) {
+        case SMM:
+            // TODO: not sure if fall-through to long mode is correct here
+        case LONG:
+            if(ctx.hasAdrSizePrefix()) {
+                return AddressSize.A32;
+            } else {
+                return AddressSize.A64;
+            }
+        case PROTECTED:
+            if(ctx.hasAdrSizePrefix()) {
+                return AddressSize.A16;
+            } else {
+                return AddressSize.A32;
+            }
+        case REAL:
+            return AddressSize.A16;
+        default:
+            throw new RuntimeException("invalid cpu mode: " + ctx.getExecMode());
+        }
+    }
+
+    private static OperandSize getDefaultOperandSize(Context ctx) {
+        switch(ctx.getExecMode()) {
+        case SMM:
+            // TODO: not sure if fall-through to long mode is correct here
+        case LONG:
+            if(ctx.hasRexWPrefix()) {
+                return OperandSize.O64;
+            } else if(ctx.hasOpSizePrefix()) {
+                return OperandSize.O16;
+            } else {
+                return OperandSize.O32;
+            }
+        case PROTECTED:
+            if(ctx.hasOpSizePrefix()) {
+                return OperandSize.O16;
+            } else {
+                return OperandSize.O32;
+            }
+        case REAL:
+            return OperandSize.O16;
+        default:
+            throw new RuntimeException("invalid cpu mode: " + ctx.getExecMode());
+        }
+    }
+
+    public static OperandSize getOperandSize(Context ctx, OperandType opType) {
+        switch(opType) {
+        case WORD_DWORD_64: return getDefaultOperandSize(ctx);
+        case WORD:          return OperandSize.O16;
+        case WORD_DWORD:
+            if(ctx.hasOpSizePrefix()) {
+                return OperandSize.O16;
+            } else {
+                return OperandSize.O32;
+            }
+        case BYTE:          return OperandSize.O8;
+        default:
+            throw new UnsupportedOperationException("invalid generic register type: " + opType);
+        }
+    }
+
+    private static Register getGenericRegister8(short id) {
         switch(id) {
         case 0: return Register.AL;
         case 1: return Register.CL;
@@ -52,7 +127,7 @@ public class X86CPU {
         }
     }
 
-    public static Register getGenericRegister16(short id) {
+    private static Register getGenericRegister16(short id) {
         switch(id) {
         case 0: return Register.AX;
         case 1: return Register.CX;
@@ -67,7 +142,7 @@ public class X86CPU {
         }
     }
 
-    public static Register getGenericRegister32(short id) {
+    private static Register getGenericRegister32(short id) {
         switch(id) {
         case 0: return Register.EAX;
         case 1: return Register.ECX;
@@ -82,7 +157,7 @@ public class X86CPU {
         }
     }
 
-    public static Register getGenericRegister64(short id) {
+    private static Register getGenericRegister64(short id) {
         switch(id) {
         case 0: return Register.RAX;
         case 1: return Register.RCX;
@@ -97,28 +172,24 @@ public class X86CPU {
         }
     }
 
-    public static Register getGenericRegister(OperandType opType, Context ctx, short id) {
-        switch(opType) {
-        case WORD_DWORD_64:
-            if(ctx.hasRexWPrefix()) {
-                return getGenericRegister64(id);
-            } else if(ctx.hasOpSizePrefix()) {
-                return getGenericRegister16(id);
-            } else {
-                return getGenericRegister32(id);
-            }
-        case WORD:
-            return getGenericRegister16(id);
-        case WORD_DWORD:
-            if(ctx.hasOpSizePrefix()) {
-                return getGenericRegister16(id);
-            } else {
-                return getGenericRegister32(id);
-            }
-        case BYTE:
-            return getGenericRegister8(id);
-        default:
-            throw new UnsupportedOperationException("invalid generic register type: " + opType);
+    public static Register getGenericAddressRegister(Context ctx, short id) {
+        AddressSize adrSize = getAddressSize(ctx);
+        switch(adrSize) {
+        case A16:   return getGenericRegister16(id);
+        case A32:   return getGenericRegister32(id);
+        case A64:   return getGenericRegister64(id);
+        default:    throw new UnsupportedOperationException("invalid adrSize: " + adrSize);
+        }
+    }
+
+    public static Register getGenericOperandRegister(OperandType opType, Context ctx, short id) {
+        OperandSize opSize = getOperandSize(ctx, opType);
+        switch(getOperandSize(ctx, opType)) {
+        case O8:    return getGenericRegister8(id);
+        case O16:   return getGenericRegister16(id);
+        case O32:   return getGenericRegister32(id);
+        case O64:   return getGenericRegister64(id);
+        default:    throw new UnsupportedOperationException("invalid opSize: " + opSize);
         }
     }
 }

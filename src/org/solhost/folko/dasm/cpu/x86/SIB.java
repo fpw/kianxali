@@ -27,7 +27,7 @@ public class SIB {
         if(index == 4) {
             indexReg = null;
         } else {
-            indexReg =  X86CPU.getGenericRegister32(index);
+            indexReg =  X86CPU.getGenericAddressRegister(ctx, index);
         }
 
         if(base == 5) {
@@ -48,7 +48,7 @@ public class SIB {
                 throw new RuntimeException("invalid base");
             }
         } else {
-            Register baseReg = X86CPU.getGenericRegister32(base);
+            Register baseReg = X86CPU.getGenericAddressRegister(ctx, base);
             sibOp = new PointerOp(ctx, baseReg, scale, indexReg);
         }
         sibOp.setOpType(operType);

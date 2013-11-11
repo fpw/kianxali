@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
 import org.solhost.folko.dasm.ImageFile;
-import org.solhost.folko.dasm.OutputOptions;
+import org.solhost.folko.dasm.OutputFormat;
 import org.solhost.folko.dasm.decoder.DecodeListener;
 import org.solhost.folko.dasm.decoder.DecodeTree;
 import org.solhost.folko.dasm.decoder.DecodedEntity;
@@ -36,7 +36,7 @@ public class Decoder {
                 }
             } else {
                 listener.onDecode(ctx.getFileOffset(), 1, new DecodedEntity() {
-                    public String asString(OutputOptions options) {
+                    public String asString(OutputFormat options) {
                         return String.format("Unknown opcode: %02X", seq.readUByte());
                     }
                 });

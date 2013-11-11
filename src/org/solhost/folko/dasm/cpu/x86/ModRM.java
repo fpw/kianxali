@@ -34,7 +34,7 @@ public class ModRM {
     public Operand getReg(OpcodeOperand op) {
         switch(op.adrType) {
         case MOD_RM_R:
-            Register reg = X86CPU.getGenericRegister(op.operType, ctx, codedReg);
+            Register reg = X86CPU.getGenericOperandRegister(op.operType, ctx, codedReg);
             return new RegisterOp(op.usageType, reg);
         default:
             throw new UnsupportedOperationException("invalid adrType: " + op.adrType);
@@ -63,11 +63,7 @@ public class ModRM {
                 return res;
             } else {
                 PointerOp res;
-                if(ctx.hasAdrSizePrefix()) {
-                    res = new PointerOp(ctx, X86CPU.getGenericRegister16(codedMem));
-                } else {
-                    res = new PointerOp(ctx, X86CPU.getGenericRegister32(codedMem));
-                }
+                res = new PointerOp(ctx, X86CPU.getGenericAddressRegister(ctx, codedMem));
                 res.setOpType(operType);
                 res.setUsage(op.usageType);
                 return res;
@@ -81,11 +77,7 @@ public class ModRM {
             } else {
                 long disp = seq.readSByte();
                 PointerOp res;
-                if(ctx.hasAdrSizePrefix()) {
-                    res = new PointerOp(ctx, X86CPU.getGenericRegister16(codedMem), disp);
-                } else {
-                    res = new PointerOp(ctx, X86CPU.getGenericRegister32(codedMem), disp);
-                }
+                res = new PointerOp(ctx, X86CPU.getGenericAddressRegister(ctx, codedMem), disp);
                 res.setOpType(operType);
                 res.setUsage(op.usageType);
                 return res;
@@ -99,17 +91,13 @@ public class ModRM {
             } else {
                 long disp = seq.readSDword();
                 PointerOp res;
-                if(ctx.hasAdrSizePrefix()) {
-                    res = new PointerOp(ctx, X86CPU.getGenericRegister16(codedMem), disp);
-                } else {
-                    res = new PointerOp(ctx, X86CPU.getGenericRegister32(codedMem), disp);
-                }
+                res = new PointerOp(ctx, X86CPU.getGenericAddressRegister(ctx, codedMem), disp);
                 res.setOpType(operType);
                 res.setUsage(op.usageType);
                 return res;
             }
         case 3:
-            return new RegisterOp(op.usageType, X86CPU.getGenericRegister(op.operType, ctx, codedMem));
+            return new RegisterOp(op.usageType, X86CPU.getGenericOperandRegister(op.operType, ctx, codedMem));
         default:
             throw new UnsupportedOperationException("unsupported mode: " + codedMod);
         }

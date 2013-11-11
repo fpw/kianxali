@@ -1,9 +1,9 @@
 package org.solhost.folko.dasm;
 
-public class OutputOptions {
+public class OutputFormat {
     private final AliasResolver aliases;
 
-    public OutputOptions(AliasResolver resolver) {
+    public OutputFormat(AliasResolver resolver) {
         this.aliases = resolver;
     }
 

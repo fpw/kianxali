@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
-import org.solhost.folko.dasm.OutputOptions;
+import org.solhost.folko.dasm.OutputFormat;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
 import org.solhost.folko.dasm.decoder.DecodedEntity;
@@ -196,14 +196,14 @@ public class Instruction implements DecodedEntity {
     private Operand decodeLeastReg(OpcodeOperand op, Context ctx) {
         int idx = syntax.getEncodedRegisterPrefixIndex();
         short regId = (short) (ctx.getFromDecodedPrefix(idx) & 0x7);
-        Register reg = X86CPU.getGenericRegister(op.operType, ctx, regId);
+        Register reg = X86CPU.getGenericOperandRegister(op.operType, ctx, regId);
         return new RegisterOp(op.usageType, reg);
     }
 
     private Operand decodeGroup(OpcodeOperand op, Context ctx) {
         switch(op.directGroup) {
         case GENERIC:
-            Register reg = X86CPU.getGenericRegister(op.operType, ctx, (short) op.numForGroup);
+            Register reg = X86CPU.getGenericOperandRegister(op.operType, ctx, (short) op.numForGroup);
             return new RegisterOp(op.usageType, reg);
         case CONTROL:
         case DEBUG:
@@ -219,7 +219,7 @@ public class Instruction implements DecodedEntity {
         }
     }
 
-    public String asString(OutputOptions options) {
+    public String asString(OutputFormat options) {
         StringBuilder res = new StringBuilder();
         for(Short b : actualPrefix) {
             res.append(String.format("%02X", b));
