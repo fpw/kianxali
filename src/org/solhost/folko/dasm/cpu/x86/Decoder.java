@@ -31,6 +31,9 @@ public class Decoder {
                 long size = seq.getPosition() - ctx.getFileOffset();
                 listener.onDecode(ctx.getVirtualAddress(), (int) size, inst);
                 ctx.reset();
+                if(inst.stopsTrace()) {
+                    goOn = false;
+                }
             } else {
                 listener.onDecode(ctx.getFileOffset(), 1, new DecodedEntity() {
                     public String asString(OutputFormat options) {
@@ -42,6 +45,7 @@ public class Decoder {
         }
     }
 
+    // used mainly for testing
     public Instruction decodeOpcode(X86Context ctx, ByteSequence seq) {
         Instruction inst = decodeNext(seq, ctx, decodeTree);
         if(inst != null) {

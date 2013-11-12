@@ -1,4 +1,4 @@
-package org.solhost.folko.dasm.main;
+package org.solhost.folko.dasm.gui;
 
 import org.solhost.folko.dasm.OutputFormat;
 import org.solhost.folko.dasm.cpu.x86.Decoder;

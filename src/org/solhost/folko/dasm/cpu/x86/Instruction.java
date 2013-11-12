@@ -233,6 +233,20 @@ public class Instruction implements DecodedEntity {
         }
     }
 
+    // whether this instruction stops an execution trace
+    public boolean stopsTrace() {
+        switch(syntax.getMnemonic()) {
+        case JMP:
+        case JMPE:
+        case JMPF:
+        case RETN:
+        case RETF:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     public String asString(OutputFormat options) {
         StringBuilder res = new StringBuilder();
         if(options.isIncludePrefixBytes()) {
