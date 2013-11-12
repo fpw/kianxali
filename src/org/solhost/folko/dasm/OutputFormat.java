@@ -2,9 +2,18 @@ package org.solhost.folko.dasm;
 
 public class OutputFormat {
     private final AliasResolver aliases;
+    private boolean includePrefixBytes;
 
     public OutputFormat(AliasResolver resolver) {
         this.aliases = resolver;
+    }
+
+    public void setIncludePrefixBytes(boolean includePrefixBytes) {
+        this.includePrefixBytes = includePrefixBytes;
+    }
+
+    public boolean isIncludePrefixBytes() {
+        return includePrefixBytes;
     }
 
     public String formatImmediate(long immediate) {

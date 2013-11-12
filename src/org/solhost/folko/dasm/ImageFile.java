@@ -2,8 +2,6 @@ package org.solhost.folko.dasm;
 
 import java.util.List;
 
-import org.solhost.folko.dasm.cpu.x86.Context;
-
 public interface ImageFile extends AliasResolver {
     public List<Section> getSections();
     public Section getSectionForMemAddress(long memAddress);

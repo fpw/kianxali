@@ -3,6 +3,7 @@ package org.solhost.folko.dasm.cpu.x86;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.solhost.folko.dasm.Context;
 import org.solhost.folko.dasm.ImageFile;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
@@ -11,7 +12,7 @@ import org.solhost.folko.dasm.xml.OpcodeEntry;
 import org.solhost.folko.dasm.xml.OpcodeGroup;
 import org.solhost.folko.dasm.xml.OpcodeSyntax;
 
-public class Context {
+public class X86Context implements Context {
     private final Model model;
     private final ExecutionMode execMode;
     private final ImageFile image;
@@ -23,9 +24,9 @@ public class Context {
     private Segment overrideSegment;
     private boolean lockPrefix, waitPrefix;
     private boolean repZPrefix, repNZPrefix, opSizePrefix, adrSizePrefix;
-    private boolean rexWPrefix, rexRPrefix, rexBPrefix;
+    private boolean rexWPrefix, rexRPrefix, rexBPrefix, rexXPrefix;
 
-    public Context(ImageFile image, Model model, ExecutionMode execMode) {
+    public X86Context(ImageFile image, Model model, ExecutionMode execMode) {
         this.model = model;
         this.execMode = execMode;
         this.image = image;
@@ -33,9 +34,27 @@ public class Context {
     }
 
     public boolean acceptsOpcode(OpcodeSyntax syntax) {
-        if(!syntax.getOpcodeEntry().supportedProcessors.contains(model)) {
-            return false;
+        if(model != Model.ANY) {
+            if(!syntax.getOpcodeEntry().supportedProcessors.contains(model)) {
+                return false;
+            }
         }
+
+        switch(syntax.getOpcodeEntry().mode) {
+        case LONG:
+            if(execMode != ExecutionMode.LONG) {
+                return false;
+            } break;
+        case PROTECTED:
+            if(execMode == ExecutionMode.REAL) {
+                return false;
+            } break;
+        case REAL:
+        case SMM:
+            break;
+        default:        throw new UnsupportedOperationException("invalid execution mode: " + syntax.getOpcodeEntry().mode);
+        }
+
         return true;
     }
 
@@ -52,6 +71,19 @@ public class Context {
         case 0x2E: overrideSegment = Segment.CS; break;
         case 0x36: overrideSegment = Segment.SS; break;
         case 0x3E: overrideSegment = Segment.DS; break;
+        case 0x40:
+        case 0x41:
+        case 0x42:
+        case 0x43:
+        case 0x44:
+        case 0x45:
+        case 0x46:
+        case 0x47:
+                rexWPrefix = (opcode.opcode & 8) != 0;
+                rexRPrefix = (opcode.opcode & 4) != 0;
+                rexXPrefix = (opcode.opcode & 2) != 0;
+                rexBPrefix = (opcode.opcode & 1) != 0;
+                break;
         case 0x26: overrideSegment = Segment.ES; break;
         case 0x64: overrideSegment = Segment.FS; break;
         case 0x65: overrideSegment = Segment.GS; break;
@@ -130,6 +162,10 @@ public class Context {
         return rexRPrefix;
     }
 
+    public boolean hasRexXPrefix() {
+        return rexXPrefix;
+    }
+
     public void setFileOffset(long offset) {
         this.fileOffset = offset;
     }
@@ -141,7 +177,6 @@ public class Context {
     public long getVirtualAddress() {
         return image.fileToMemAddress(getFileOffset());
     }
-
 
     public void reset() {
         opcodePrefix = new ArrayList<>(5);

@@ -38,7 +38,7 @@ public class Instruction implements DecodedEntity {
     }
 
     // the prefix has been read from seq already
-    public void decode(ByteSequence seq, Context ctx) {
+    public void decode(ByteSequence seq, X86Context ctx) {
         actualPrefix = ctx.getDecodedPrefix();
         OpcodeEntry entry = syntax.getOpcodeEntry();
         if(entry.modRM) {
@@ -53,7 +53,7 @@ public class Instruction implements DecodedEntity {
         }
     }
 
-    private Operand decodeOperand(OpcodeOperand op, ByteSequence seq, Context ctx) {
+    private Operand decodeOperand(OpcodeOperand op, ByteSequence seq, X86Context ctx) {
         if(op.indirect) {
             return null;
         }
@@ -95,6 +95,11 @@ public class Instruction implements DecodedEntity {
             return res;
         case MOD_RM_MMX:
         case MOD_RM_XMM:
+            // TODO: not sure about those two
+            if(modRM == null) {
+                modRM = new ModRM(seq, ctx);
+            }
+            return modRM.getMem(op);
         case DIRECT:
         case CONTROL:
         case DEBUG:
@@ -113,7 +118,7 @@ public class Instruction implements DecodedEntity {
         }
     }
 
-    private Operand decoreRelative(ByteSequence seq, OpcodeOperand op, Context ctx) {
+    private Operand decoreRelative(ByteSequence seq, OpcodeOperand op, X86Context ctx) {
         long relOffset;
         switch(op.operType) {
         case WORD_DWORD_S64:
@@ -129,7 +134,7 @@ public class Instruction implements DecodedEntity {
         return new RelativeOp(op.usageType, baseAddr, relOffset);
     }
 
-    private Operand decodeImmediate(ByteSequence seq, OpcodeOperand op, Context ctx) {
+    private Operand decodeImmediate(ByteSequence seq, OpcodeOperand op, X86Context ctx) {
         long immediate;
         if(op.operType == null) {
             if(op.hardcoded != null) {
@@ -167,7 +172,7 @@ public class Instruction implements DecodedEntity {
         return new ImmediateOp(op.usageType, immediate);
     }
 
-    private Operand decodeOffset(ByteSequence seq, OpcodeOperand op, Context ctx) {
+    private Operand decodeOffset(ByteSequence seq, OpcodeOperand op, X86Context ctx) {
         long offset;
         switch(op.operType) {
         case BYTE:
@@ -193,17 +198,17 @@ public class Instruction implements DecodedEntity {
         return res;
     }
 
-    private Operand decodeLeastReg(OpcodeOperand op, Context ctx) {
+    private Operand decodeLeastReg(OpcodeOperand op, X86Context ctx) {
         int idx = syntax.getEncodedRegisterPrefixIndex();
         short regId = (short) (ctx.getFromDecodedPrefix(idx) & 0x7);
-        Register reg = X86CPU.getGenericOperandRegister(op.operType, ctx, regId);
+        Register reg = X86CPU.getOperandRegister(op, ctx, regId);
         return new RegisterOp(op.usageType, reg);
     }
 
-    private Operand decodeGroup(OpcodeOperand op, Context ctx) {
+    private Operand decodeGroup(OpcodeOperand op, X86Context ctx) {
         switch(op.directGroup) {
         case GENERIC:
-            Register reg = X86CPU.getGenericOperandRegister(op.operType, ctx, (short) op.numForGroup);
+            Register reg = X86CPU.getOperandRegister(op, ctx, (short) op.numForGroup);
             return new RegisterOp(op.usageType, reg);
         case CONTROL:
         case DEBUG:
@@ -221,10 +226,12 @@ public class Instruction implements DecodedEntity {
 
     public String asString(OutputFormat options) {
         StringBuilder res = new StringBuilder();
-        for(Short b : actualPrefix) {
-            res.append(String.format("%02X", b));
+        if(options.isIncludePrefixBytes()) {
+            for(Short b : actualPrefix) {
+                res.append(String.format("%02X", b));
+            }
+            res.append("\t");
         }
-        res.append("\t");
         res.append(syntax.getMnemonic().toLowerCase());
         for(int i = 0; i < operands.size(); i++) {
             if(i == 0) {

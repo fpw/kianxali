@@ -41,11 +41,11 @@ public class Disassembler {
         System.out.println("done");
 
         Decoder decoder = new Decoder(decodeTree);
-        PEFile image = new PEFile("targets/swap.exe");
+        PEFile image = new PEFile("targets/client.exe");
         image.load();
         final OutputFormat format = new OutputFormat(image);
 
-        decoder.decode(image, new DecodeListener() {
+        decoder.decodeImage(image, new DecodeListener() {
             @Override
             public void onDecode(long address, int length, DecodedEntity entity) {
                 System.out.println(String.format("%08X: %s", address, entity.asString(format)));

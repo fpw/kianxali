@@ -11,62 +11,62 @@ public class PointerOp implements Operand {
     private UsageType usage;
     private OperandType opType;
     private Segment segment;
-    private final Context context;
+    private final X86Context context;
     private Register baseRegister, indexRegister;
     private Integer indexScale;
     private Long offset;
 
     // ptr [address]
-    public PointerOp(Context ctx, long offset) {
+    public PointerOp(X86Context ctx, long offset) {
         this.context = ctx;
         this.offset = offset;
     }
 
     // ptr [register]
-    public PointerOp(Context ctx, Register baseRegister) {
+    public PointerOp(X86Context ctx, Register baseRegister) {
         this.context = ctx;
         this.baseRegister = baseRegister;
     }
 
-    public PointerOp(Context ctx, Register baseRegister, long offset) {
+    public PointerOp(X86Context ctx, Register baseRegister, long offset) {
         this.context = ctx;
         this.baseRegister = baseRegister;
         this.offset = offset;
     }
 
     // ptr [scale * register]
-    public PointerOp(Context ctx, Register indexRegister, int scale) {
+    public PointerOp(X86Context ctx, Register indexRegister, int scale) {
         this.context = ctx;
         this.indexRegister = indexRegister;
-        if(scale > 1) {
+        if(scale > 1 && indexRegister != null) {
             this.indexScale = scale;
         }
     }
 
     // ptr [scale * register + offset]
-    public PointerOp(Context ctx, Register indexRegister, int scale, long offset) {
+    public PointerOp(X86Context ctx, Register indexRegister, int scale, long offset) {
         this.context = ctx;
         this.indexRegister = indexRegister;
-        if(scale > 1) {
+        if(scale > 1 && indexRegister != null) {
             this.indexScale = scale;
         }
         this.offset = offset;
     }
 
     // ptr [base + scale * index]
-    public PointerOp(Context ctx, Register baseRegister, int scale, Register indexRegister) {
+    public PointerOp(X86Context ctx, Register baseRegister, int scale, Register indexRegister) {
         this.context = ctx;
         this.baseRegister = baseRegister;
-        if(scale > 1) {
+        if(scale > 1 && indexRegister != null) {
             this.indexScale = scale;
         }
         this.indexRegister = indexRegister;
     }
 
     // ptr [scale * index + offset]
-    public PointerOp(Context ctx, int scale, Register indexRegister, long offset) {
+    public PointerOp(X86Context ctx, int scale, Register indexRegister, long offset) {
         this.context = ctx;
-        if(scale > 1) {
+        if(scale > 1 && indexRegister != null) {
             this.indexScale = scale;
         }
         this.indexRegister = indexRegister;
@@ -74,22 +74,22 @@ public class PointerOp implements Operand {
     }
 
     // ptr [base + scale * index + offset]
-    public PointerOp(Context ctx, Register baseRegister, int scale, Register indexRegister, long offset) {
+    public PointerOp(X86Context ctx, Register baseRegister, int scale, Register indexRegister, long offset) {
         this.context = ctx;
         this.baseRegister = baseRegister;
-        if(scale > 1) {
+        if(scale > 1 && indexRegister != null) {
             this.indexScale = scale;
         }
         this.indexRegister = indexRegister;
         this.offset = offset;
     }
 
-    public void addOffset(long add) {
-        if(offset == null) {
-            offset = add;
-        } else {
-            offset += add;
-        }
+    public boolean hasOffset() {
+        return offset != null;
+    }
+
+    public void setOffset(long offset) {
+        this.offset = offset;
     }
 
     public void setOpType(OperandType opType) {

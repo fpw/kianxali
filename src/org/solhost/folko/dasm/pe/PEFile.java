@@ -9,7 +9,7 @@ import java.util.List;
 import org.solhost.folko.dasm.ByteSequence;
 import org.solhost.folko.dasm.ImageFile;
 import org.solhost.folko.dasm.Section;
-import org.solhost.folko.dasm.cpu.x86.Context;
+import org.solhost.folko.dasm.cpu.x86.X86Context;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 
@@ -25,9 +25,9 @@ public class PEFile implements AddressConverter, ImageFile {
         image = ByteSequence.fromFile(path);
     }
 
-    public Context createContext() {
+    public X86Context createContext() {
         // TODO
-        return new Context(this, Model.CORE_I7, ExecutionMode.PROTECTED);
+        return new X86Context(this, Model.ANY, ExecutionMode.PROTECTED);
     }
 
     public void load() {

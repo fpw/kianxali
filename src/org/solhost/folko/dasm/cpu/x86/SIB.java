@@ -9,7 +9,7 @@ import org.solhost.folko.dasm.xml.OpcodeOperand.OperandType;
 public class SIB {
     private PointerOp sibOp;
 
-    public SIB(ByteSequence seq, OpcodeOperand op, short mode, Context ctx) {
+    public SIB(ByteSequence seq, OpcodeOperand op, short mode, X86Context ctx) {
         OperandType operType = op.operType;
         if(operType == null) {
             if(op.adrType == AddressType.MOD_RM_M_FORCE) {
@@ -45,7 +45,7 @@ public class SIB {
                 sibOp = new PointerOp(ctx, Register.EBP, scale, indexReg, disp);
             } break;
             default:
-                throw new RuntimeException("invalid base");
+                throw new RuntimeException("invalid base: " + mode);
             }
         } else {
             Register baseReg = X86CPU.getGenericAddressRegister(ctx, base);

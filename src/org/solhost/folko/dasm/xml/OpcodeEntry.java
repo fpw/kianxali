@@ -54,6 +54,8 @@ public class OpcodeEntry {
         case CORE_2:        supportedProcessors.add(Model.CORE_2);
         case CORE_I7:       supportedProcessors.add(Model.CORE_I7);
         case ITANIUM:       supportedProcessors.add(Model.ITANIUM);
+                            break;
+        default:            throw new UnsupportedOperationException("invalid model: " + p);
         }
     }
 
@@ -74,7 +76,8 @@ public class OpcodeEntry {
         case CORE_1:        supportedProcessors.remove(Model.CORE_2);
         case CORE_2:        supportedProcessors.remove(Model.CORE_I7);
         case CORE_I7:       supportedProcessors.remove(Model.ITANIUM);
-        case ITANIUM:
+        case ITANIUM:       break;
+        default:            throw new UnsupportedOperationException("invalid model: " + p);
         }
     }
 

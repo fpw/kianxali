@@ -21,6 +21,6 @@ public class RegisterOp implements Operand {
 
     @Override
     public String asString(OutputFormat options) {
-        return register.toString().toLowerCase();
+        return register.toString();
     }
 }
