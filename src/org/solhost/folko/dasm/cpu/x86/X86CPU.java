@@ -32,14 +32,14 @@ public class X86CPU {
 
         // generic 64 bit
         RAX, RBX, RCX, RDX, RSP, RBP, RSI, RDI,
-        R8, R9, R10, R11, R12, R13, R14,
+        R8, R9, R10, R11, R12, R13, R14, R15,
         // lower 8 bit
         SIL, DIL, BPL, SPL,
-        R8B, R9B, R10B, R11B, R12B, R13B, R14B,
+        R8B, R9B, R10B, R11B, R12B, R13B, R14B, R15B,
         // lower 16 bit
-        R8W, R9W, R10W, R11W, R12W, R13W, R14W,
+        R8W, R9W, R10W, R11W, R12W, R13W, R14W, R15W,
         // lower 32 bit
-        R8D, R9D, R10D, R11D, R12D, R13D, R14D,
+        R8D, R9D, R10D, R11D, R12D, R13D, R14D, R15D,
 
         // segment registers
         CS, DS, ES, FS, GS, SS,
@@ -114,15 +114,15 @@ public class X86CPU {
 
     public static OperandSize getOperandSize(X86Context ctx, OperandType opType) {
         switch(opType) {
-        case WORD_DWORD_64: return getDefaultOperandSize(ctx);
+        case BYTE:          return OperandSize.O8;
         case WORD:          return OperandSize.O16;
+        case WORD_DWORD_64: return getDefaultOperandSize(ctx);
         case WORD_DWORD:
             if(ctx.hasOpSizePrefix()) {
                 return OperandSize.O16;
             } else {
                 return OperandSize.O32;
             }
-        case BYTE:          return OperandSize.O8;
         default:
             throw new UnsupportedOperationException("invalid generic register type: " + opType);
         }
@@ -138,6 +138,14 @@ public class X86CPU {
         case 5: return Register.CH;
         case 6: return Register.DH;
         case 7: return Register.BH;
+        case 8: return Register.R8B;
+        case 9: return Register.R9B;
+        case 10:return Register.R10B;
+        case 11:return Register.R11B;
+        case 12:return Register.R12B;
+        case 13:return Register.R13B;
+        case 14:return Register.R14B;
+        case 15:return Register.R15B;
         default:
             throw new UnsupportedOperationException("invalid generic 8 bit register: " + id);
         }
@@ -153,6 +161,14 @@ public class X86CPU {
         case 5: return Register.BP;
         case 6: return Register.SI;
         case 7: return Register.DI;
+        case 8: return Register.R8W;
+        case 9: return Register.R9W;
+        case 10:return Register.R10W;
+        case 11:return Register.R11W;
+        case 12:return Register.R12W;
+        case 13:return Register.R13W;
+        case 14:return Register.R14W;
+        case 15:return Register.R15W;
         default:
             throw new UnsupportedOperationException("invalid generic 16 bit register: " + id);
         }
@@ -168,8 +184,52 @@ public class X86CPU {
         case 5: return Register.EBP;
         case 6: return Register.ESI;
         case 7: return Register.EDI;
+        case 8: return Register.R8D;
+        case 9: return Register.R9D;
+        case 10:return Register.R10D;
+        case 11:return Register.R11D;
+        case 12:return Register.R12D;
+        case 13:return Register.R13D;
+        case 14:return Register.R14D;
+        case 15:return Register.R15D;
         default:
             throw new UnsupportedOperationException("invalid generic 32 bit register: " + id);
+        }
+    }
+
+    private static Register getGenericRegister64(short id) {
+        switch(id) {
+        case 0: return Register.RAX;
+        case 1: return Register.RCX;
+        case 2: return Register.RDX;
+        case 3: return Register.RBX;
+        case 4: return Register.RSP;
+        case 5: return Register.RBP;
+        case 6: return Register.RSI;
+        case 7: return Register.RDI;
+        case 8: return Register.R8;
+        case 9: return Register.R9;
+        case 10:return Register.R10;
+        case 11:return Register.R11;
+        case 12:return Register.R12;
+        case 13:return Register.R13;
+        case 14:return Register.R14;
+        case 15:return Register.R15;
+        default:
+            throw new UnsupportedOperationException("invalid generic 64 bit register: " + id);
+        }
+    }
+
+    private static Register getSegmentRegister(short id) {
+        switch(id & 0x7) {
+        case 0: return Register.ES;
+        case 1: return Register.CS;
+        case 2: return Register.SS;
+        case 3: return Register.DS;
+        case 4: return Register.FS;
+        case 5: return Register.GS;
+        default:
+            throw new UnsupportedOperationException("invalid segment register: " + id);
         }
     }
 
@@ -203,22 +263,10 @@ public class X86CPU {
         }
     }
 
-    private static Register getGenericRegister64(short id) {
-        switch(id) {
-        case 0: return Register.RAX;
-        case 1: return Register.RCX;
-        case 2: return Register.RDX;
-        case 3: return Register.RBX;
-        case 4: return Register.RSP;
-        case 5: return Register.RBP;
-        case 6: return Register.RSI;
-        case 7: return Register.RDI;
-        default:
-            throw new UnsupportedOperationException("invalid generic 64 bit register: " + id);
-        }
-    }
-
     public static Register getGenericAddressRegister(X86Context ctx, short id) {
+        if(ctx.getExecMode() != ExecutionMode.LONG && id > 7) {
+            throw new UnsupportedOperationException("used 64 bit register id in 32 bit mode");
+        }
         AddressSize adrSize = getAddressSize(ctx);
         switch(adrSize) {
         case A16:   return getGenericRegister16(id);
@@ -229,6 +277,9 @@ public class X86CPU {
     }
 
     private static Register getOperandRegisterGeneral(OpcodeOperand op, X86Context ctx, short id) {
+        if(ctx.getExecMode() != ExecutionMode.LONG && id > 7) {
+            throw new UnsupportedOperationException("used 64 bit register id in 32 bit mode");
+        }
         OperandSize opSize = getOperandSize(ctx, op.operType);
         switch(opSize) {
         case O8:    return getGenericRegister8(id);
@@ -243,11 +294,14 @@ public class X86CPU {
         switch(op.adrType) {
         case MOD_RM_R:
         case MOD_RM_M:
+        case MOD_RM_M_FORCE:
         case LEAST_REG:     return getOperandRegisterGeneral(op, ctx, id);
+        case MOD_RM_R_SEG:  return getSegmentRegister(id);
         case MOD_RM_XMM:
         case MOD_RM_R_XMM:  return getXMMRegister(id);
         case MOD_RM_MMX:
         case MOD_RM_R_MMX:  return getMMXRegister(id);
+        case SEGMENT2:      return getSegmentRegister((short) ((id >> 3) & 0x3));
         case GROUP:
             switch(op.directGroup) {
             case GENERIC:   return getOperandRegisterGeneral(op, ctx, id);

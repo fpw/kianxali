@@ -84,6 +84,7 @@ public class Instruction implements DecodedEntity {
             }
             return modRM.getMem(op);
 
+        case DIRECT:
         case IMMEDIATE:             return decodeImmediate(seq, op, ctx);
         case RELATIVE:              return decoreRelative(seq, op, ctx);
         case ES_EDI_RDI:
@@ -100,7 +101,11 @@ public class Instruction implements DecodedEntity {
                 modRM = new ModRM(seq, ctx);
             }
             return modRM.getMem(op);
-        case DIRECT:
+        case SEGMENT2:
+            Register reg = X86CPU.getOperandRegister(op, ctx, syntax.getOpcodeEntry().opcode);
+            return new RegisterOp(op.usageType, reg);
+        case SEGMENT30:
+        case SEGMENT33:
         case CONTROL:
         case DEBUG:
         case DS_EAX_AL_RBX:
@@ -108,9 +113,6 @@ public class Instruction implements DecodedEntity {
         case DS_EDI_RDI:
         case DS_ESI_RSI:
         case FLAGS:
-        case SEGMENT2:
-        case SEGMENT30:
-        case SEGMENT33:
         case STACK:
         case TEST:
         default:
@@ -165,6 +167,13 @@ public class Instruction implements DecodedEntity {
             case WORD_DWORD_S64:
                 immediate = seq.readSDword();
                 break;
+            case POINTER:
+                switch(X86CPU.getAddressSize(ctx)) {
+                case A16: immediate = seq.readUWord(); break;
+                case A32: immediate = seq.readUDword(); break;
+                case A64: immediate = seq.readSQword(); break;
+                default: throw new UnsupportedOperationException("unsupported pointer size: " + X86CPU.getAddressSize(ctx));
+                } break;
             default:
                 throw new UnsupportedOperationException("unsupported immediate type: " + op.operType);
             }

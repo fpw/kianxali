@@ -117,7 +117,8 @@ public class DecoderTest {
         checkOpcode64(new short[] {0x88, 0x3A}, "mov byte ptr [rdx], bh");
 
         // with rex prefix
-        checkOpcode64(new short[] {0x45, 0x88, 0x3A}, "mov byte ptr [rdx], bh");
+        checkOpcode64(new short[] {0x45, 0x88, 0x3A}, "mov byte ptr [R10], R15B");
+        checkOpcode64(new short[] {0x67, 0x45, 0x88, 0x3A}, "mov byte ptr [R10D], R15B");
     }
 
     private void checkOpcode16(short opcode[], String expected) {

@@ -108,11 +108,11 @@ public class PointerOp implements Operand {
     public String asString(OutputFormat options) {
         StringBuilder str = new StringBuilder();
 
-        switch(opType) {
-        case BYTE: str.append("byte ptr "); break;
-        case WORD: str.append("word ptr "); break;
-        case WORD_DWORD:
-        case WORD_DWORD_64: str.append("dword ptr "); break;
+        switch(X86CPU.getOperandSize(context, opType)) {
+        case O8:    str.append("byte ptr "); break;
+        case O16:   str.append("word ptr "); break;
+        case O32:   str.append("dword ptr "); break;
+        case O64:   str.append("qword ptr "); break;
         default: throw new RuntimeException("invalid operand size: " + opType);
         }
 

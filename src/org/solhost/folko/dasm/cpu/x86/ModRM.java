@@ -19,17 +19,20 @@ public class ModRM {
         this.seq = seq;
         this.ctx = ctx;
         short code = seq.readUByte();
-        if(ctx.hasRexBPrefix()) {
-            codedMod = (short) ((code >> 6) | 4);
-        } else {
-            codedMod = (short) (code >> 6);
-        }
+
+        codedMod = (short) (code >> 6);
+
         if(ctx.hasRexRPrefix()) {
             codedReg = (short) (((code >> 3) & 0x07) | 8);
         } else {
             codedReg = (short) ((code >> 3) & 0x07);
         }
-        codedMem = (short) (code & 0x07);
+
+        if(ctx.hasRexBPrefix()) {
+            codedMem = (short) ((code & 0x07) | 8);
+        } else {
+            codedMem = (short) (code & 0x07);
+        }
     }
 
     public Operand getReg(OpcodeOperand op) {

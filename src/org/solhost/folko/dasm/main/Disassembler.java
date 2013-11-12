@@ -10,10 +10,11 @@ import org.solhost.folko.dasm.xml.OpcodeSyntax;
 import org.solhost.folko.dasm.xml.XMLParser;
 
 /*
- * Ideas:
+ * TODO:
  *  - create fuzzer by iterating syntaxes and operands
- *  - string prefixes
- *  - sib16
+ *  - string prefixes, wait prefix, lock prefix
+ *  - sib64
+ *  - verify SEGMENT2 encoding
  */
 
 public class Disassembler {
@@ -41,7 +42,7 @@ public class Disassembler {
         System.out.println("done");
 
         Decoder decoder = new Decoder(decodeTree);
-        PEFile image = new PEFile("targets/client.exe");
+        PEFile image = new PEFile("targets/swap.exe");
         image.load();
         final OutputFormat format = new OutputFormat(image);
 
