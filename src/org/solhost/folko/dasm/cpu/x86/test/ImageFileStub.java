@@ -1,4 +1,4 @@
-package org.solhost.folko.dasm.x86.test;
+package org.solhost.folko.dasm.cpu.x86.test;
 
 import java.util.ArrayList;
 import java.util.List;

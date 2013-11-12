@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.solhost.folko.dasm.cpu.x86.Mnemonic;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.InstructionSetExtension;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
@@ -181,7 +182,12 @@ public class XMLParser {
             public void characters(char[] ch, int start, int length) throws SAXException {
                 String val = new String(ch, start, length);
                 if(inMnem) {
-                    currentSyntax.setMnemonic(val);
+                    Mnemonic mnem = Mnemonic.valueOf(val.replace('.', '_'));
+                    if(mnem == null) {
+                        System.err.println("Unknown mnemonic: " + val);
+                    } else {
+                        currentSyntax.setMnemonic(mnem);
+                    }
                 } else if(inA) {
                     currentOpDesc.adrType = parseAddressType(val);
                 } else if(inT) {

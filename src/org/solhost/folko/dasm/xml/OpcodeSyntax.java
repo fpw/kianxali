@@ -5,13 +5,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.solhost.folko.dasm.cpu.x86.Mnemonic;
 import org.solhost.folko.dasm.xml.OpcodeOperand.AddressType;
 
 public class OpcodeSyntax {
     private final OpcodeEntry entry; // syntax belongs to this entry
     private final List<OpcodeOperand> operands;
     private Short extension;
-    private String mnemonic;
+    private Mnemonic mnemonic;
 
     {
         this.operands = new ArrayList<>(4);
@@ -42,11 +43,11 @@ public class OpcodeSyntax {
         operands.add(opDesc);
     }
 
-    void setMnemonic(String mnemonic) {
+    void setMnemonic(Mnemonic mnemonic) {
         this.mnemonic = mnemonic;
     }
 
-    public String getMnemonic() {
+    public Mnemonic getMnemonic() {
         return mnemonic;
     }
 

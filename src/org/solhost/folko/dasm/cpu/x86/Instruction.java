@@ -241,7 +241,7 @@ public class Instruction implements DecodedEntity {
             }
             res.append("\t");
         }
-        res.append(syntax.getMnemonic().toLowerCase());
+        res.append(syntax.getMnemonic().toString().toLowerCase());
         for(int i = 0; i < operands.size(); i++) {
             if(i == 0) {
                 res.append(" ");
