@@ -9,17 +9,16 @@ import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
 import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.Operand;
+import org.solhost.folko.dasm.decoder.UsageType;
 import org.solhost.folko.dasm.xml.OpcodeEntry;
 import org.solhost.folko.dasm.xml.OpcodeGroup;
-import org.solhost.folko.dasm.xml.OpcodeSyntax;
 import org.solhost.folko.dasm.xml.OpcodeOperand;
-import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
+import org.solhost.folko.dasm.xml.OpcodeSyntax;
 
 public class X86Instruction implements Instruction {
     private final long memAddr;
     private final OpcodeSyntax syntax;
     private final List<Operand> operands;
-    private ModRM modRM;
     private List<Short> actualPrefix;
     // the size is not known during while decoding operands, so this will cause a wanted NullPointerException
     private Integer size;
@@ -44,6 +43,7 @@ public class X86Instruction implements Instruction {
 
     // the prefix has been read from seq already
     public void decode(ByteSequence seq, X86Context ctx) {
+        ModRM modRM = null;
         actualPrefix = ctx.getDecodedPrefix();
         long operandPos = seq.getPosition();
 
@@ -52,7 +52,7 @@ public class X86Instruction implements Instruction {
             modRM = new ModRM(seq, ctx);
         }
         for(OpcodeOperand op : syntax.getOperands()) {
-            Operand decodedOp = decodeOperand(op, seq, ctx);
+            Operand decodedOp = decodeOperand(op, seq, ctx, modRM);
             if(decodedOp != null) {
                 operands.add(decodedOp);
             }
@@ -68,7 +68,7 @@ public class X86Instruction implements Instruction {
         }
     }
 
-    private Operand decodeOperand(OpcodeOperand op, ByteSequence seq, X86Context ctx) {
+    private Operand decodeOperand(OpcodeOperand op, ByteSequence seq, X86Context ctx, ModRM modRM) {
         if(op.indirect) {
             return null;
         }

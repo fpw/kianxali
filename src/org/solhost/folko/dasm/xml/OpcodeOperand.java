@@ -1,8 +1,8 @@
 package org.solhost.folko.dasm.xml;
 
-public class OpcodeOperand {
-    public enum UsageType {SOURCE, DEST};
+import org.solhost.folko.dasm.decoder.UsageType;
 
+public class OpcodeOperand {
     public enum AddressType {
         DIRECT,         // absolute address of adressType coded after opcode
         CONTROL,        // modRM.reg selects control register

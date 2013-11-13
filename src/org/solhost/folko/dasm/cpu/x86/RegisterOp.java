@@ -3,7 +3,7 @@ package org.solhost.folko.dasm.cpu.x86;
 import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.decoder.Operand;
-import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
+import org.solhost.folko.dasm.decoder.UsageType;
 
 public class RegisterOp implements Operand {
     private final UsageType usage;

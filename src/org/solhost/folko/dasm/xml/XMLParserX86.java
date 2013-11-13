@@ -11,10 +11,10 @@ import org.solhost.folko.dasm.cpu.x86.Mnemonic;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.InstructionSetExtension;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
+import org.solhost.folko.dasm.decoder.UsageType;
 import org.solhost.folko.dasm.xml.OpcodeOperand.AddressType;
 import org.solhost.folko.dasm.xml.OpcodeOperand.DirectGroup;
 import org.solhost.folko.dasm.xml.OpcodeOperand.OperandType;
-import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -23,7 +23,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-public class XMLParser {
+public class XMLParserX86 {
     private final List<OpcodeSyntax> syntaxes;
 
     // parsing stuff
@@ -37,7 +37,7 @@ public class XMLParser {
     private boolean inSrc, inDst, inA, inT, inOpcdExt, inGroup, inInstrExt;
     private boolean inProcStart, inProcEnd, in2ndOpcode, inPref;
 
-    public XMLParser() {
+    public XMLParserX86() {
         syntaxes = new LinkedList<>();
     }
 

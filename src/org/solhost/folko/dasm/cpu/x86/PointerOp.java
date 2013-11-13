@@ -4,8 +4,8 @@ import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
 import org.solhost.folko.dasm.decoder.Operand;
+import org.solhost.folko.dasm.decoder.UsageType;
 import org.solhost.folko.dasm.xml.OpcodeOperand.OperandType;
-import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
 
 public class PointerOp implements Operand {
     private UsageType usage;

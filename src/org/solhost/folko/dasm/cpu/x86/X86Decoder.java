@@ -10,7 +10,7 @@ import org.solhost.folko.dasm.decoder.DecodeTree;
 import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.InstructionDecoder;
 import org.solhost.folko.dasm.xml.OpcodeSyntax;
-import org.solhost.folko.dasm.xml.XMLParser;
+import org.solhost.folko.dasm.xml.XMLParserX86;
 import org.xml.sax.SAXException;
 
 public class X86Decoder implements InstructionDecoder {
@@ -29,7 +29,7 @@ public class X86Decoder implements InstructionDecoder {
     }
 
     private static DecodeTree<OpcodeSyntax> createDecodeTree(String xmlPath, String dtdPath) throws SAXException, IOException {
-        XMLParser parser = new XMLParser();
+        XMLParserX86 parser = new XMLParserX86();
         DecodeTree<OpcodeSyntax> tree = new DecodeTree<>();
 
         parser.loadXML(xmlPath, dtdPath);
