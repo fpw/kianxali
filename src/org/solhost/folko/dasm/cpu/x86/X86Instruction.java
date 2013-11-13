@@ -209,7 +209,6 @@ public class X86Instruction implements Instruction {
                 switch(X86CPU.getOperandSize(ctx, op.operType)) {
                 case O16: immediate = seq.readSWord(); break;
                 case O32: immediate = seq.readSDword(); break;
-                case O64: immediate = seq.readSQword(); break;
                 default: throw new UnsupportedOperationException("invalid size: " + X86CPU.getOperandSize(ctx, op.operType));
                 }
                 break;

@@ -27,9 +27,9 @@ public class PEFile implements AddressConverter, ImageFile {
 
     public X86Context createContext() {
         if(optionalHeader.isPE64()) {
-            return new X86Context(Model.ANY, ExecutionMode.PROTECTED);
-        } else {
             return new X86Context(Model.ANY, ExecutionMode.LONG);
+        } else {
+            return new X86Context(Model.ANY, ExecutionMode.PROTECTED);
         }
     }
 

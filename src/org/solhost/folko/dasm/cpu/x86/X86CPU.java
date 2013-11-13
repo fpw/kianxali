@@ -128,9 +128,9 @@ public final class X86CPU {
         case WORD_FPU:
         case WORD:
             return OperandSize.O16;
-        case WORD_DWORD_S64:
-        case WORD_DWORD_64:
+        case WORD_DWORD_64: // TODO: check
             return getDefaultOperandSize(ctx);
+        case WORD_DWORD_S64:
         case WORD_DWORD:
             if(ctx.getPrefix().opSizePrefix) {
                 return OperandSize.O16;
@@ -149,6 +149,16 @@ public final class X86CPU {
         case DOUBLE_FPU:
         case QWORD_FPU:
             return OperandSize.O64;
+        case DWORD:
+            return OperandSize.O32;
+        case QWORD:
+            return OperandSize.O64;
+        case QWORD_WORD:
+            if(ctx.getPrefix().opSizePrefix) {
+                return OperandSize.O64;
+            } else {
+                return OperandSize.O16;
+            }
         case DQWORD:
             return OperandSize.O128;
         default:

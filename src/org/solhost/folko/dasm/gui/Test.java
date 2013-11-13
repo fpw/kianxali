@@ -8,8 +8,7 @@ import org.solhost.folko.dasm.images.pe.PEFile;
 /*
  * TODO:
  *  - create fuzzer by iterating syntaxes and operands
- *  - sib64
- *  - verify SEGMENT2 encoding
+ *  - verify all encodings in 16, 32 and 64 bit mode
  * Document:
  *  - trie / tree approach to decoding with principle of longest match
  *
@@ -22,7 +21,7 @@ public final class Test {
     }
 
     public static void main(String[] args) throws Exception {
-        PEFile image = new PEFile("targets/hasher.exe");
+        PEFile image = new PEFile("targets/swap.exe");
         image.load();
 
         Disassembler dasm = new Disassembler(image);

@@ -21,7 +21,13 @@ public class SIB {
         short sib = seq.readUByte();
         int scale = 1 << (sib >> 6);
         short index = (short) ((sib >> 3) & 0x07);
+        if(ctx.getPrefix().rexXPrefix) {
+            index |= 8;
+        }
         short base = (short) (sib & 0x07);
+        if(ctx.getPrefix().rexBPrefix) {
+            base |= 8;
+        }
 
         Register indexReg;
         if(index == 4) {
@@ -31,7 +37,7 @@ public class SIB {
         }
 
         long disp;
-        if(base == 5) {
+        if(base == 5 || base == 13) {
             switch(mode) {
             case 0:
                 disp = seq.readSDword();
