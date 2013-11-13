@@ -122,10 +122,15 @@ public final class X86CPU {
 
     public static OperandSize getOperandSize(X86Context ctx, OperandType opType) {
         switch(opType) {
-        case BYTE:          return OperandSize.O8;
+        case BYTE:
+            return OperandSize.O8;
         case WORD_OPS:      // TODO: check
-        case WORD:          return OperandSize.O16;
-        case WORD_DWORD_64: return getDefaultOperandSize(ctx);
+        case WORD_FPU:
+        case WORD:
+            return OperandSize.O16;
+        case WORD_DWORD_S64:
+        case WORD_DWORD_64:
+            return getDefaultOperandSize(ctx);
         case WORD_DWORD:
             if(ctx.getPrefix().opSizePrefix) {
                 return OperandSize.O16;
@@ -133,8 +138,11 @@ public final class X86CPU {
                 return OperandSize.O32;
             }
         case DWORD_INT_FPU:
-        case REAL_SINGLE_FPU:   return OperandSize.O32;
-        case QWORD_FPU:         return OperandSize.O64;
+        case REAL_SINGLE_FPU:
+            return OperandSize.O32;
+        case DOUBLE_FPU:
+        case QWORD_FPU:
+            return OperandSize.O64;
         default:
             throw new UnsupportedOperationException("invalid generic register type: " + opType);
         }
@@ -324,6 +332,7 @@ public final class X86CPU {
         case MOD_RM_M_FORCE:
         case LEAST_REG:     return getOperandRegisterGeneral(op, ctx, id);
         case MOD_RM_R_SEG:  return getSegmentRegister(id);
+        case MOD_RM_M_FPU:
         case MOD_RM_R_FPU:  return getFPURegister(id);
         case MOD_RM_MMX:
         case MOD_RM_R_MMX:  return getMMXRegister(id);

@@ -22,7 +22,7 @@ public final class Test {
     }
 
     public static void main(String[] args) throws Exception {
-        PEFile image = new PEFile("targets/client.exe");
+        PEFile image = new PEFile("targets/putty.exe");
         image.load();
 
         Disassembler dasm = new Disassembler(image);

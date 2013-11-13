@@ -74,6 +74,7 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0x88, 0x84, 0x08, 0x01, 0x00, 0x00, 0x00}, "mov byte ptr [eax + ecx + 1h], al");
         checkOpcode32(new short[] {0x88, 0x44, 0x55, 0x01}, "mov byte ptr [ebp + 2 * edx + 1h], al");
         checkOpcode32(new short[] {0x89, 0x94, 0x88, 0x00, 0x20, 0x40, 0x00}, "mov dword ptr [eax + 4 * ecx + 402000h], edx");
+        checkOpcode32(new short[] {0x66, 0x81, 0x8e, 0x0E, 0x06, 0x00, 0x00, 0xFF, 0xFF}, "or word ptr [esi + 60Eh], -1h");
 
         // check that REX prefix is ignored / encoded as normal op
         checkOpcode32(new short[] {0x45}, "inc ebp");

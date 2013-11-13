@@ -60,7 +60,13 @@ public class Disassembler {
             }
 
             ctx.setInstructionPointer(memAddr);
-            Instruction inst = decoder.decodeOpcode(ctx, image.getByteSequence(memAddr));
+            Instruction inst = null;
+            try {
+                inst = decoder.decodeOpcode(ctx, image.getByteSequence(memAddr));
+            } catch(Exception e) {
+                System.err.println(String.format("Disassemble error at %08X: %s", memAddr, inst));
+                throw e;
+            }
             if(inst != null) {
                 decodedLocations.put(memAddr, inst);
                 checkNewTraces(inst);

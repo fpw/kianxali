@@ -198,10 +198,20 @@ public class X86Instruction implements Instruction {
                 immediate = seq.readSDword();
                 break;
             case WORD_DWORD_64:
-                immediate = seq.readUDword();
+                switch(X86CPU.getOperandSize(ctx, op.operType)) {
+                case O16: immediate = seq.readUWord(); break;
+                case O32: immediate = seq.readUDword(); break;
+                case O64: immediate = seq.readSQword(); break;
+                default: throw new UnsupportedOperationException("invalid size: " + X86CPU.getOperandSize(ctx, op.operType));
+                }
                 break;
             case WORD_DWORD_S64:
-                immediate = seq.readSDword();
+                switch(X86CPU.getOperandSize(ctx, op.operType)) {
+                case O16: immediate = seq.readSWord(); break;
+                case O32: immediate = seq.readSDword(); break;
+                case O64: immediate = seq.readSQword(); break;
+                default: throw new UnsupportedOperationException("invalid size: " + X86CPU.getOperandSize(ctx, op.operType));
+                }
                 break;
             case POINTER:
                 switch(X86CPU.getAddressSize(ctx)) {
@@ -209,7 +219,8 @@ public class X86Instruction implements Instruction {
                 case A32: immediate = seq.readUDword(); break;
                 case A64: immediate = seq.readSQword(); break;
                 default: throw new UnsupportedOperationException("unsupported pointer size: " + X86CPU.getAddressSize(ctx));
-                } break;
+                }
+                break;
             default:
                 throw new UnsupportedOperationException("unsupported immediate type: " + op.operType);
             }
