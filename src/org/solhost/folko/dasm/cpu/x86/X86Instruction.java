@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.solhost.folko.dasm.ByteSequence;
 import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
 import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.Operand;
 import org.solhost.folko.dasm.decoder.UsageType;
+import org.solhost.folko.dasm.images.ByteSequence;
 import org.solhost.folko.dasm.xml.OpcodeEntry;
 import org.solhost.folko.dasm.xml.OpcodeGroup;
 import org.solhost.folko.dasm.xml.OpcodeOperand;

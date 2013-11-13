@@ -1,6 +1,6 @@
-package org.solhost.folko.dasm.pe;
+package org.solhost.folko.dasm.images.pe;
 
-import org.solhost.folko.dasm.ByteSequence;
+import org.solhost.folko.dasm.images.ByteSequence;
 
 public class DOSStub {
     public static final int DOS_MAGIC = 0x5A4D;

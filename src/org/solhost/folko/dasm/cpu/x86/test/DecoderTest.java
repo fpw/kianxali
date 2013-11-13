@@ -4,13 +4,13 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.solhost.folko.dasm.ByteSequence;
 import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86Context;
 import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.InstructionDecoder;
+import org.solhost.folko.dasm.images.ByteSequence;
 
 public class DecoderTest {
     private OutputFormatter format;

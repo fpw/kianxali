@@ -1,4 +1,4 @@
-package org.solhost.folko.dasm.pe;
+package org.solhost.folko.dasm.images.pe;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.solhost.folko.dasm.ByteSequence;
+import org.solhost.folko.dasm.images.ByteSequence;
 
 public class Imports {
     private List<Import> imports;

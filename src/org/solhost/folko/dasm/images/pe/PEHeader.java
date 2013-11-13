@@ -1,8 +1,8 @@
-package org.solhost.folko.dasm.pe;
+package org.solhost.folko.dasm.images.pe;
 
 import java.sql.Date;
 
-import org.solhost.folko.dasm.ByteSequence;
+import org.solhost.folko.dasm.images.ByteSequence;
 
 public class PEHeader {
     public static final long PE_SIGNATURE = 0x4550;

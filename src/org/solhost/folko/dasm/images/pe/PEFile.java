@@ -1,4 +1,4 @@
-package org.solhost.folko.dasm.pe;
+package org.solhost.folko.dasm.images.pe;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.solhost.folko.dasm.ByteSequence;
-import org.solhost.folko.dasm.ImageFile;
-import org.solhost.folko.dasm.Section;
 import org.solhost.folko.dasm.cpu.x86.X86Context;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
+import org.solhost.folko.dasm.images.ByteSequence;
+import org.solhost.folko.dasm.images.ImageFile;
+import org.solhost.folko.dasm.images.Section;
 
 public class PEFile implements AddressConverter, ImageFile {
     private final ByteSequence image;

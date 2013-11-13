@@ -1,7 +1,7 @@
 package org.solhost.folko.dasm.cpu.x86;
 
-import org.solhost.folko.dasm.ByteSequence;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
+import org.solhost.folko.dasm.images.ByteSequence;
 import org.solhost.folko.dasm.xml.OpcodeOperand;
 import org.solhost.folko.dasm.xml.OpcodeOperand.AddressType;
 import org.solhost.folko.dasm.xml.OpcodeOperand.OperandType;

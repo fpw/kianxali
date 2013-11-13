@@ -1,4 +1,4 @@
-package org.solhost.folko.dasm;
+package org.solhost.folko.dasm.images;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
-package org.solhost.folko.dasm.pe;
+package org.solhost.folko.dasm.images.pe;
 
-import org.solhost.folko.dasm.ByteSequence;
+import org.solhost.folko.dasm.images.ByteSequence;
 
 public class OptionalHeader {
     public static final int HEADER_MAGIC = 0x010b;

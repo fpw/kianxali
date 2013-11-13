@@ -1,4 +1,4 @@
-package org.solhost.folko.dasm;
+package org.solhost.folko.dasm.images;
 
 import java.io.FileInputStream;
 import java.io.IOException;

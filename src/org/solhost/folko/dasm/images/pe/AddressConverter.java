@@ -1,4 +1,4 @@
-package org.solhost.folko.dasm.pe;
+package org.solhost.folko.dasm.images.pe;
 
 public interface AddressConverter {
     public long rvaToMemory(long rva);

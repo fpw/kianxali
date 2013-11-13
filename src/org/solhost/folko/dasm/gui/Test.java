@@ -4,7 +4,7 @@ import org.solhost.folko.dasm.Disassembler;
 import org.solhost.folko.dasm.DisassemblingListener;
 import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.decoder.Instruction;
-import org.solhost.folko.dasm.pe.PEFile;
+import org.solhost.folko.dasm.images.pe.PEFile;
 
 /*
  * TODO:
@@ -16,7 +16,7 @@ import org.solhost.folko.dasm.pe.PEFile;
 
 public class Test {
     public static void main(String[] args) throws Exception {
-        PEFile image = new PEFile("targets/swap.exe");
+        PEFile image = new PEFile("targets/test.exe");
         image.load();
 
         final OutputFormatter format = new OutputFormatter();

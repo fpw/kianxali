@@ -9,6 +9,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.solhost.folko.dasm.decoder.Context;
 import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.InstructionDecoder;
+import org.solhost.folko.dasm.images.ImageFile;
 
 public class Disassembler {
     private final ImageFile image;

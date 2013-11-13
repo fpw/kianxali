@@ -1,7 +1,7 @@
-package org.solhost.folko.dasm.pe;
+package org.solhost.folko.dasm.images.pe;
 
-import org.solhost.folko.dasm.ByteSequence;
-import org.solhost.folko.dasm.Section;
+import org.solhost.folko.dasm.images.ByteSequence;
+import org.solhost.folko.dasm.images.Section;
 
 public class PESection implements Section {
     private final String name;
