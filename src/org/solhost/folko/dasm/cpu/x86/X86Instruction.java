@@ -335,6 +335,11 @@ public class X86Instruction implements Instruction {
     @Override
     public Long getBranchAddress() {
         if(syntax.getOpcodeEntry().belongsTo(OpcodeGroup.GENERAL_BRANCH)) {
+            X86Mnemonic mnem = syntax.getMnemonic();
+            if(mnem == X86Mnemonic.RETF || mnem == X86Mnemonic.RETN) {
+                // these are considered branches, but their "address" is not an actual address
+                return null;
+            }
             for(Operand op : operands) {
                 if(op instanceof ImmediateOp) {
                     return ((ImmediateOp) op).getImmediate();

@@ -1,9 +1,8 @@
 package org.solhost.folko.dasm.gui;
 
 import org.solhost.folko.dasm.Disassembler;
-import org.solhost.folko.dasm.DisassemblingListener;
 import org.solhost.folko.dasm.OutputFormatter;
-import org.solhost.folko.dasm.decoder.Instruction;
+import org.solhost.folko.dasm.decoder.DecodedEntity;
 import org.solhost.folko.dasm.images.pe.PEFile;
 
 /*
@@ -23,17 +22,21 @@ public final class Test {
     }
 
     public static void main(String[] args) throws Exception {
-        PEFile image = new PEFile("targets/swap.exe");
+        PEFile image = new PEFile("targets/client.exe");
         image.load();
 
-        final OutputFormatter format = new OutputFormatter();
         Disassembler dasm = new Disassembler(image);
-        dasm.addDisassemblingListener(new DisassemblingListener() {
-            @Override
-            public void onInstructionDecode(Instruction inst) {
-                System.out.println(String.format("%08X: %s", inst.getMemAddress(), inst.asString(format)));
-            }
-        });
         dasm.disassemble();
+
+        OutputFormatter format = new OutputFormatter();
+        for(DecodedEntity entity : dasm.getEntities().values()) {
+            try {
+                System.out.println(String.format("%08X: %s", entity.getMemAddress(), entity.asString(format)));
+            } catch(Exception e) {
+                System.out.println(String.format("%08X: ERROR %s", entity.getMemAddress(), entity.toString()));
+                e.printStackTrace();
+                break;
+            }
+        }
     }
 }

@@ -49,7 +49,10 @@ public final class X86CPU {
         // segment registers
         CS, DS, ES, FS, GS, SS,
 
-        // MMX registers
+        // FPU registers
+        ST0, ST1, ST2, ST3, ST4, ST5, ST6, ST7,
+
+        // MMX registers (are actually aliases for FPU registers)
         MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7,
 
         // SSE registers
@@ -129,6 +132,9 @@ public final class X86CPU {
             } else {
                 return OperandSize.O32;
             }
+        case DWORD_INT_FPU:
+        case REAL_SINGLE_FPU:   return OperandSize.O32;
+        case QWORD_FPU:         return OperandSize.O64;
         default:
             throw new UnsupportedOperationException("invalid generic register type: " + opType);
         }
@@ -239,18 +245,18 @@ public final class X86CPU {
         }
     }
 
-    private static Register getXMMRegister(short id) {
+    private static Register getFPURegister(short id) {
         switch(id) {
-        case 0: return Register.XMM0;
-        case 1: return Register.XMM1;
-        case 2: return Register.XMM2;
-        case 3: return Register.XMM3;
-        case 4: return Register.XMM4;
-        case 5: return Register.XMM5;
-        case 6: return Register.XMM6;
-        case 7: return Register.XMM7;
+        case 0: return Register.ST0;
+        case 1: return Register.ST1;
+        case 2: return Register.ST2;
+        case 3: return Register.ST3;
+        case 4: return Register.ST4;
+        case 5: return Register.ST5;
+        case 6: return Register.ST6;
+        case 7: return Register.ST7;
         default:
-            throw new UnsupportedOperationException("invalid XMM register: " + id);
+            throw new UnsupportedOperationException("invalid FPU register: " + id);
         }
     }
 
@@ -264,6 +270,21 @@ public final class X86CPU {
         case 5: return Register.MM5;
         case 6: return Register.MM6;
         case 7: return Register.MM7;
+        default:
+            throw new UnsupportedOperationException("invalid XMM register: " + id);
+        }
+    }
+
+    private static Register getXMMRegister(short id) {
+        switch(id) {
+        case 0: return Register.XMM0;
+        case 1: return Register.XMM1;
+        case 2: return Register.XMM2;
+        case 3: return Register.XMM3;
+        case 4: return Register.XMM4;
+        case 5: return Register.XMM5;
+        case 6: return Register.XMM6;
+        case 7: return Register.XMM7;
         default:
             throw new UnsupportedOperationException("invalid XMM register: " + id);
         }
@@ -303,10 +324,11 @@ public final class X86CPU {
         case MOD_RM_M_FORCE:
         case LEAST_REG:     return getOperandRegisterGeneral(op, ctx, id);
         case MOD_RM_R_SEG:  return getSegmentRegister(id);
-        case MOD_RM_XMM:
-        case MOD_RM_R_XMM:  return getXMMRegister(id);
+        case MOD_RM_R_FPU:  return getFPURegister(id);
         case MOD_RM_MMX:
         case MOD_RM_R_MMX:  return getMMXRegister(id);
+        case MOD_RM_XMM:
+        case MOD_RM_R_XMM:  return getXMMRegister(id);
         case SEGMENT2:      return getSegmentRegister((short) ((id >> 3) & 0x3));
         case GROUP:
             switch(op.directGroup) {

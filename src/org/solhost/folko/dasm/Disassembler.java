@@ -1,12 +1,15 @@
 package org.solhost.folko.dasm;
 
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.solhost.folko.dasm.decoder.Context;
+import org.solhost.folko.dasm.decoder.DecodedEntity;
 import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.Decoder;
 import org.solhost.folko.dasm.images.ImageFile;
@@ -14,11 +17,11 @@ import org.solhost.folko.dasm.images.ImageFile;
 public class Disassembler {
     private final ImageFile image;
     private final Set<DisassemblingListener> listeners;
-    private final Set<Long> visitedAddresses;
+    private final Map<Long, DecodedEntity> decodedLocations;
     private final Queue<Long> pendingInstructionAddresses;
 
     public Disassembler(ImageFile image) {
-        this.visitedAddresses = new HashSet<>();
+        this.decodedLocations = new TreeMap<>();
         this.pendingInstructionAddresses = new PriorityQueue<>();
         this.listeners = new CopyOnWriteArraySet<>();
         this.image = image;
@@ -42,40 +45,52 @@ public class Disassembler {
         }
     }
 
+    public DecodedEntity getEntity(long memAddr) {
+        return decodedLocations.get(memAddr);
+    }
+
+    public Map<Long, DecodedEntity> getEntities() {
+        return Collections.unmodifiableMap(decodedLocations);
+    }
+
     private void disassembleTrace(long memAddr, Context ctx, Decoder decoder) {
         while(true) {
-            if(visitedAddresses.contains(memAddr)) {
+            if(decodedLocations.containsKey(memAddr) || !isValidAddress(memAddr)) {
                 break;
-            } else {
-                visitedAddresses.add(memAddr);
             }
+
             ctx.setInstructionPointer(memAddr);
             Instruction inst = decoder.decodeOpcode(ctx, image.getByteSequence(memAddr));
             if(inst != null) {
-                for(DisassemblingListener listener : listeners) {
-                    try {
-                        listener.onInstructionDecode(inst);
-                    } catch(Exception e) {
-                        System.err.println("Error processing: " + inst.toString());
-                        throw e;
-                    }
+                decodedLocations.put(memAddr, inst);
+                checkNewTraces(inst);
+                memAddr += inst.getSize();
+            }
+
+            for(DisassemblingListener listener : listeners) {
+                try {
+                    listener.onEntityChange(memAddr);
+                } catch(Exception e) {
+                    System.err.println("Error processing: " + inst.toString());
+                    throw e;
                 }
             }
 
             if(inst == null || inst.stopsTrace()) {
                 break;
             }
-            memAddr += inst.getSize();
-
-            checkNewTraces(inst);
         }
     }
 
     // checks whether the instruction's operands could start a new trace
     private void checkNewTraces(Instruction inst) {
         Long addr = inst.getBranchAddress();
-        if(addr != null && !visitedAddresses.contains(addr)) {
+        if(addr != null && !decodedLocations.containsKey(addr)) {
             pendingInstructionAddresses.add(addr);
         }
+    }
+
+    private boolean isValidAddress(long memAddr) {
+        return image.getSectionForMemAddress(memAddr) != null;
     }
 }
