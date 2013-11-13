@@ -9,14 +9,13 @@ import org.solhost.folko.dasm.images.pe.PEFile;
 /*
  * TODO:
  *  - create fuzzer by iterating syntaxes and operands
- *  - string prefixes, wait prefix, lock prefix
  *  - sib64
  *  - verify SEGMENT2 encoding
  */
 
 public class Test {
     public static void main(String[] args) throws Exception {
-        PEFile image = new PEFile("targets/test.exe");
+        PEFile image = new PEFile("targets/swap.exe");
         image.load();
 
         final OutputFormatter format = new OutputFormatter();

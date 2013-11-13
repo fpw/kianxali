@@ -7,13 +7,13 @@ import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.decoder.Context;
 import org.solhost.folko.dasm.decoder.DecodeTree;
 import org.solhost.folko.dasm.decoder.Instruction;
-import org.solhost.folko.dasm.decoder.InstructionDecoder;
+import org.solhost.folko.dasm.decoder.Decoder;
 import org.solhost.folko.dasm.images.ByteSequence;
 import org.solhost.folko.dasm.xml.OpcodeSyntax;
 import org.solhost.folko.dasm.xml.XMLParserX86;
 import org.xml.sax.SAXException;
 
-public class X86Decoder implements InstructionDecoder {
+public class X86Decoder implements Decoder {
     private static DecodeTree<OpcodeSyntax> xmlTree;
     private final DecodeTree<OpcodeSyntax> decodeTree;
 

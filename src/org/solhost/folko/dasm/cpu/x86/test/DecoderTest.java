@@ -9,7 +9,7 @@ import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86Context;
 import org.solhost.folko.dasm.decoder.Instruction;
-import org.solhost.folko.dasm.decoder.InstructionDecoder;
+import org.solhost.folko.dasm.decoder.Decoder;
 import org.solhost.folko.dasm.images.ByteSequence;
 
 public class DecoderTest {
@@ -109,7 +109,7 @@ public class DecoderTest {
         }
 
         ByteSequence seq = ByteSequence.fromBytes(in);
-        InstructionDecoder decoder = ct.createInstructionDecoder();
+        Decoder decoder = ct.createInstructionDecoder();
         Instruction inst = decoder.decodeOpcode(ct, seq);
         assertEquals(expected.toLowerCase(), inst.asString(format).toLowerCase());
         assertEquals(opcode.length, inst.getSize());

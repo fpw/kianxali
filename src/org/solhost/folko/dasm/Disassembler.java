@@ -8,7 +8,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.solhost.folko.dasm.decoder.Context;
 import org.solhost.folko.dasm.decoder.Instruction;
-import org.solhost.folko.dasm.decoder.InstructionDecoder;
+import org.solhost.folko.dasm.decoder.Decoder;
 import org.solhost.folko.dasm.images.ImageFile;
 
 public class Disassembler {
@@ -34,7 +34,7 @@ public class Disassembler {
 
     public void disassemble() throws Exception {
         Context ctx = image.createContext();
-        InstructionDecoder decoder = ctx.createInstructionDecoder();
+        Decoder decoder = ctx.createInstructionDecoder();
         pendingInstructionAddresses.add(image.getCodeEntryPointMem());
         while(pendingInstructionAddresses.size() > 0) {
             long memAddr = pendingInstructionAddresses.poll();
@@ -42,7 +42,7 @@ public class Disassembler {
         }
     }
 
-    private void disassembleTrace(long memAddr, Context ctx, InstructionDecoder decoder) {
+    private void disassembleTrace(long memAddr, Context ctx, Decoder decoder) {
         while(true) {
             if(visitedAddresses.contains(memAddr)) {
                 break;

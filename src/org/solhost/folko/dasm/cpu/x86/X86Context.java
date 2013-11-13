@@ -5,7 +5,7 @@ import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
 import org.solhost.folko.dasm.decoder.Context;
-import org.solhost.folko.dasm.decoder.InstructionDecoder;
+import org.solhost.folko.dasm.decoder.Decoder;
 import org.solhost.folko.dasm.xml.OpcodeEntry;
 import org.solhost.folko.dasm.xml.OpcodeGroup;
 import org.solhost.folko.dasm.xml.OpcodeSyntax;
@@ -119,7 +119,7 @@ public class X86Context implements Context {
     }
 
     @Override
-    public InstructionDecoder createInstructionDecoder() {
+    public Decoder createInstructionDecoder() {
         try {
             return X86Decoder.fromXML("x86reference.xml", "x86reference.dtd");
         } catch (SAXException | IOException e) {
