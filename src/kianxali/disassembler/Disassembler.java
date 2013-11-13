@@ -5,8 +5,9 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
 
 import kianxali.decoder.Context;
 import kianxali.decoder.Data;
@@ -16,6 +17,8 @@ import kianxali.decoder.Instruction;
 import kianxali.image.ImageFile;
 
 public class Disassembler {
+    private static final Logger LOG = Logger.getLogger("kianxali.disassembler");
+
     private final Set<DisassemblingListener> listeners;
     private Map<Long, DecodedEntity> decodedLocations;
     private Queue<Long> pendingInstructionAddresses;
@@ -26,7 +29,7 @@ public class Disassembler {
     }
 
     public void reset() {
-        this.decodedLocations = new TreeMap<>();
+        this.decodedLocations = new ConcurrentSkipListMap<>();
         this.pendingInstructionAddresses = new PriorityQueue<>();
     }
 
@@ -43,22 +46,32 @@ public class Disassembler {
         reset();
 
         // 1st pass: decode instructions
+        LOG.fine("Disassembling: 1st pass...");
         Context ctx = image.createContext();
         Decoder decoder = ctx.createInstructionDecoder();
         pendingInstructionAddresses.add(image.getCodeEntryPointMem());
-        while(pendingInstructionAddresses.size() > 0) {
+        while(pendingInstructionAddresses.size() > 0 && !Thread.currentThread().isInterrupted()) {
             long memAddr = pendingInstructionAddresses.poll();
             disassembleTrace(memAddr, ctx, decoder);
         }
 
+        if(Thread.currentThread().isInterrupted()) {
+            return;
+        }
+
         // 2nd pass: decode data
+        LOG.fine("Disassembling: 2nd pass...");
         for(DecodedEntity entity : decodedLocations.values()) {
+            if(Thread.currentThread().isInterrupted()) {
+                return;
+            }
             if(!(entity instanceof Data)) {
                 continue;
             }
             Data data = (Data) entity;
             data.analyze(image.getByteSequence(data.getMemAddress()));
         }
+        LOG.fine("Disassembling: done");
     }
 
     public DecodedEntity getEntity(long memAddr) {
@@ -70,7 +83,7 @@ public class Disassembler {
     }
 
     private void disassembleTrace(long memAddr, Context ctx, Decoder decoder) {
-        while(true) {
+        while(!Thread.currentThread().isInterrupted()) {
             if(decodedLocations.containsKey(memAddr) || !isValidAddress(memAddr)) {
                 break;
             }
@@ -98,7 +111,7 @@ public class Disassembler {
     private void tellEntityChange(long memAddr) {
         for(DisassemblingListener listener : listeners) {
             try {
-                listener.onEntityChange(memAddr);
+                listener.onDisassembledAddress(memAddr);
             } catch(Exception e) {
                 System.err.println("Error processing: " + decodedLocations.get(memAddr));
                 throw e;

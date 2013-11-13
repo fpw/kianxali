@@ -1,5 +1,6 @@
 package kianxali.image.pe;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -21,8 +22,8 @@ public class PEFile implements AddressConverter, ImageFile {
     private List<PESection> sections;
     private Imports imports;
 
-    public PEFile(String path) throws IOException {
-        image = ByteSequence.fromFile(path);
+    public PEFile(File file) throws IOException {
+        image = ByteSequence.fromFile(file);
         loadHeaders();
         loadImports();
     }

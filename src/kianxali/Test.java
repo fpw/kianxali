@@ -1,5 +1,7 @@
 package kianxali;
 
+import java.io.File;
+
 import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Instruction;
 import kianxali.disassembler.Disassembler;
@@ -13,7 +15,7 @@ public final class Test {
     }
 
     public static void main(String[] args) throws Exception {
-        PEFile image = new PEFile("targets/swap.exe");
+        PEFile image = new PEFile(new File("targets/swap.exe"));
 
         Disassembler dasm = new Disassembler();
         dasm.disassemble(image);

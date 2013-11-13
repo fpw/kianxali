@@ -1,5 +1,7 @@
 package kianxali.disassembler;
 
 public interface DisassemblingListener {
-    void onEntityChange(long memAddr);
+    void onDisassemblyStart();
+    void onDisassembledAddress(long memAddr);
+    void onDisassemblyFinish();
 }

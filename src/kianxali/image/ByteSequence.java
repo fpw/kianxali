@@ -1,5 +1,6 @@
 package kianxali.image;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -18,8 +19,8 @@ public final class ByteSequence {
         this.lock = new ReentrantLock();
     }
 
-    public static ByteSequence fromFile(String path) throws IOException {
-        FileInputStream fileStream = new FileInputStream(path);
+    public static ByteSequence fromFile(File file) throws IOException {
+        FileInputStream fileStream = new FileInputStream(file);
         FileChannel chan = fileStream.getChannel();
         ByteBuffer imageBuffer = chan.map(MapMode.READ_ONLY, 0, fileStream.available());
         chan.close();
