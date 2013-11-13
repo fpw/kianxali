@@ -92,6 +92,10 @@ public class PointerOp implements Operand {
         this.offset = offset;
     }
 
+    public Long getOffset() {
+        return offset;
+    }
+
     public void setOpType(OperandType opType) {
         this.opType = opType;
     }
@@ -105,7 +109,7 @@ public class PointerOp implements Operand {
     }
 
     @Override
-    public String asString(OutputFormatter options) {
+    public String asString(OutputFormatter formatter) {
         StringBuilder str = new StringBuilder();
 
         switch(X86CPU.getOperandSize(context, opType)) {
@@ -125,7 +129,7 @@ public class PointerOp implements Operand {
         str.append("[");
         boolean needsPlus = false;
         if(baseRegister != null) {
-            str.append(baseRegister);
+            str.append(formatter.formatRegister(baseRegister.toString()));
             needsPlus = true;
         }
         if(indexScale != null) {
@@ -139,14 +143,14 @@ public class PointerOp implements Operand {
             if(needsPlus) {
                 str.append(" + ");
             }
-            str.append(indexRegister);
+            str.append(formatter.formatRegister(indexRegister.toString()));
             needsPlus = true;
         }
         if(offset != null) {
             if(needsPlus) {
                 str.append(offset < 0 ? " - " : " + ");
             }
-            str.append(options.formatAddress(offset));
+            str.append(formatter.formatAddress(offset));
         }
         str.append("]");
 

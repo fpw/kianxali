@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.solhost.folko.dasm.cpu.x86.Mnemonic;
+import org.solhost.folko.dasm.cpu.x86.X86Mnemonic;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.InstructionSetExtension;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
@@ -182,7 +182,7 @@ public class XMLParserX86 {
             public void characters(char[] ch, int start, int length) throws SAXException {
                 String val = new String(ch, start, length);
                 if(inMnem) {
-                    Mnemonic mnem = Mnemonic.valueOf(val.replace('.', '_'));
+                    X86Mnemonic mnem = X86Mnemonic.valueOf(val.replace('.', '_'));
                     if(mnem == null) {
                         System.err.println("Unknown mnemonic: " + val);
                     } else {

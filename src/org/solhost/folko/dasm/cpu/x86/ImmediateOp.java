@@ -13,6 +13,10 @@ public class ImmediateOp implements Operand {
         this.immediate = immediate;
     }
 
+    public long getImmediate() {
+        return immediate;
+    }
+
     @Override
     public UsageType getUsage() {
         return usage;

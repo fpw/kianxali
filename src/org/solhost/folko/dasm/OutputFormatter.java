@@ -10,8 +10,12 @@ public class OutputFormatter {
         this.includePrefixBytes = includePrefixBytes;
     }
 
-    public boolean isIncludePrefixBytes() {
+    public boolean shouldIncludePrefixBytes() {
         return includePrefixBytes;
+    }
+
+    public String formatRegister(String name) {
+        return name.toLowerCase();
     }
 
     public String formatImmediate(long immediate) {

@@ -1,6 +1,6 @@
 // automatically generated, do not edit
 package org.solhost.folko.dasm.cpu.x86;
-public enum Mnemonic {
+public enum X86Mnemonic {
 AAA,
 AAD,
 AAM,

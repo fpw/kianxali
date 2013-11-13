@@ -115,6 +115,7 @@ public class X86CPU {
     public static OperandSize getOperandSize(X86Context ctx, OperandType opType) {
         switch(opType) {
         case BYTE:          return OperandSize.O8;
+        case WORD_OPS:      // TODO: check
         case WORD:          return OperandSize.O16;
         case WORD_DWORD_64: return getDefaultOperandSize(ctx);
         case WORD_DWORD:

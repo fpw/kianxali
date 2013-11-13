@@ -1,6 +1,7 @@
 package org.solhost.folko.dasm.cpu.x86;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
@@ -102,13 +103,34 @@ public class X86Instruction implements Instruction {
         case DIRECT:
         case IMMEDIATE:             return decodeImmediate(seq, op, ctx);
         case RELATIVE:              return decodeRelative(seq, op);
-        case ES_EDI_RDI:
-            // TODO: RDI
-            PointerOp res = new PointerOp(ctx, Register.EDI);
+        case ES_EDI_RDI: {
+            // TODO: check
+            PointerOp res;
+            switch(X86CPU.getAddressSize(ctx)) {
+            case A16:   res = new PointerOp(ctx, Register.DI); break;
+            case A32:   res = new PointerOp(ctx, Register.EDI); break;
+            case A64:   res = new PointerOp(ctx, Register.RDI); break;
+            default: throw new UnsupportedOperationException("unsupported address size: " + X86CPU.getAddressSize(ctx));
+            }
             res.setSegment(Segment.ES);
             res.setOpType(op.operType);
             res.setUsage(op.usageType);
             return res;
+        }
+        case DS_ESI_RSI: {
+            // TODO: check
+            PointerOp res;
+            switch(X86CPU.getAddressSize(ctx)) {
+            case A16:   res = new PointerOp(ctx, Register.SI); break;
+            case A32:   res = new PointerOp(ctx, Register.ESI); break;
+            case A64:   res = new PointerOp(ctx, Register.RSI); break;
+            default: throw new UnsupportedOperationException("unsupported address size: " + X86CPU.getAddressSize(ctx));
+            }
+            res.setSegment(Segment.DS);
+            res.setOpType(op.operType);
+            res.setUsage(op.usageType);
+            return res;
+        }
         case MOD_RM_MMX:
         case MOD_RM_XMM:
             // TODO: not sure about those two
@@ -126,7 +148,6 @@ public class X86Instruction implements Instruction {
         case DS_EAX_AL_RBX:
         case DS_EAX_RAX:
         case DS_EDI_RDI:
-        case DS_ESI_RSI:
         case FLAGS:
         case STACK:
         case TEST:
@@ -266,7 +287,7 @@ public class X86Instruction implements Instruction {
     @Override
     public String asString(OutputFormatter options) {
         StringBuilder res = new StringBuilder();
-        if(options.isIncludePrefixBytes()) {
+        if(options.shouldIncludePrefixBytes()) {
             for(Short b : actualPrefix) {
                 res.append(String.format("%02X", b));
             }
@@ -286,6 +307,16 @@ public class X86Instruction implements Instruction {
     }
 
     @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        res.append(syntax.getMnemonic().toString().toLowerCase() + ":\t");
+        for(Short b : actualPrefix) {
+            res.append(String.format("%02X", b));
+        }
+        return res.toString();
+    }
+
+    @Override
     public long getMemAddress() {
         return memAddr;
     }
@@ -293,6 +324,25 @@ public class X86Instruction implements Instruction {
     @Override
     public int getSize() {
         return size;
+    }
+
+    @Override
+    public List<Operand> getOperands() {
+        return Collections.unmodifiableList(operands);
+    }
+
+    @Override
+    public Long getBranchAddress() {
+        if(syntax.getOpcodeEntry().belongsTo(OpcodeGroup.GENERAL_BRANCH)) {
+            for(Operand op : operands) {
+                if(op instanceof ImmediateOp) {
+                    return ((ImmediateOp) op).getImmediate();
+                } else if(op instanceof PointerOp) {
+                    // TODO: think about this. Probably not return because it's [addr] and therefore data and not inst
+                }
+            }
+        }
+        return null;
     }
 }
 

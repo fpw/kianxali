@@ -20,7 +20,7 @@ public class RegisterOp implements Operand {
     }
 
     @Override
-    public String asString(OutputFormatter options) {
-        return register.toString();
+    public String asString(OutputFormatter formatter) {
+        return formatter.formatRegister(register.toString());
     }
 }
