@@ -15,7 +15,7 @@ public class OpcodeOperand {
         MOD_RM_R_SEG,   // modRM.reg as segment register
         MOD_RM_R_FORCE, // to be checked: modRM.reg regardless of mode TODO
         MOD_RM_M_FORCE, // to be checked: modRM.mem regardless of mode TODO
-        MOD_RM_R_FORCE2,// to be checked: modRM.reg regardless of mdoe TODO
+        MOD_RM_R_FORCE2, // to be checked: modRM.reg regardless of mdoe TODO
         MOD_RM_XMM,     // modRM as XMM
         MOD_RM_R_XMM,   // modRM.reg as XMM
         MOD_RM_M_XMM,   // modRM.mem as XMM
@@ -63,12 +63,12 @@ public class OpcodeOperand {
         DWORD_ADR,      // dword according to address size TODO
         DWORD_INT_FPU,  // dword integer for FPU
         DWORD_QWORD,    // dword or qword depending on REX.W
-        DWORD_QWORD_ADR,// dword or qword depending on address size
+        DWORD_QWORD_ADR, // dword or qword depending on address size
         DQWORD,         // double quadword (128 bits), regardless of operand size
         DOUBLE_FPU,     // double real for FPU
         FPU_ENV,        // FPU environment
         REAL_EXT_FPU,   // extended real for FPU
-        REAL_SINGLE_FPU,// single precision real for FPU
+        REAL_SINGLE_FPU, // single precision real for FPU
         POINTER,        // 32 or 48 bit address, depending on operand size
         QWORD_MMX,      // MMX qword
         QWORD,          // qword, regardless of operand size

@@ -31,7 +31,7 @@ public class OutputFormatter {
     public String formatAddress(long offset) {
          if(offset < 0) {
             return String.format("%Xh", -offset);
-        } else if(offset > 0){
+        } else if(offset > 0) {
             return String.format("%Xh", offset);
         } else {
             return "0";

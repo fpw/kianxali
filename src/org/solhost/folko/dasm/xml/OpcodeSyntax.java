@@ -76,7 +76,7 @@ public class OpcodeSyntax {
     }
 
     public short[] getPrefix() {
-        short res[] = new short[4];
+        short[] res = new short[4];
         int i = 0;
         if(entry.prefix != null) {
             res[i++] = entry.prefix;
@@ -92,7 +92,7 @@ public class OpcodeSyntax {
     }
 
     public String getPrefixAsHexString() {
-        short prefix[] = getPrefix();
+        short[] prefix = getPrefix();
         StringBuilder res = new StringBuilder();
         for(short b : prefix) {
             res.append(String.format("%02X", b));

@@ -21,7 +21,7 @@ public class DecodeTree<LeafType> {
         node = new Node();
     }
 
-    public void addEntry(short sequence[], LeafType leaf) {
+    public void addEntry(short[] sequence, LeafType leaf) {
         addEntry(sequence, 0, leaf);
     }
 
@@ -37,7 +37,7 @@ public class DecodeTree<LeafType> {
         return node.leaves.get(s);
     }
 
-    private void addEntry(short sequence[], int index, LeafType leaf) {
+    private void addEntry(short[] sequence, int index, LeafType leaf) {
         short s = sequence[index];
         if(index < sequence.length - 1) {
             // non-leaf child

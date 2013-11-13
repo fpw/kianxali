@@ -30,20 +30,21 @@ public class SIB {
             indexReg =  X86CPU.getGenericAddressRegister(ctx, index);
         }
 
+        long disp;
         if(base == 5) {
             switch(mode) {
-            case 0: {
-                long disp = seq.readSDword();
+            case 0:
+                disp = seq.readSDword();
                 sibOp = new PointerOp(ctx, scale, indexReg, disp);
-            } break;
-            case 1: {
-                long disp = seq.readSByte();
+                break;
+            case 1:
+                disp = seq.readSByte();
                 sibOp = new PointerOp(ctx, Register.EBP, scale, indexReg, disp);
-            } break;
-            case 2: {
-                long disp = seq.readSDword();
+                break;
+            case 2:
+                disp = seq.readSDword();
                 sibOp = new PointerOp(ctx, Register.EBP, scale, indexReg, disp);
-            } break;
+                break;
             default:
                 throw new RuntimeException("invalid base: " + mode);
             }

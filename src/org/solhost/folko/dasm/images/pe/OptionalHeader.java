@@ -4,7 +4,7 @@ import org.solhost.folko.dasm.images.ByteSequence;
 
 public class OptionalHeader {
     public static final int HEADER_MAGIC = 0x010b;
-    public enum SubSystem {CONSOLE, GUI};
+    public enum SubSystem { CONSOLE, GUI };
     public static final int DATA_DIRECTORY_EXPORT = 0;
     public static final int DATA_DIRECTORY_IMPORT = 1;
     public static final int DATA_DIRECTORY_RESOURCES = 2;

@@ -48,11 +48,13 @@ public class X86Context implements Context {
         case LONG:
             if(execMode != ExecutionMode.LONG) {
                 return false;
-            } break;
+            }
+            break;
         case PROTECTED:
             if(execMode == ExecutionMode.REAL) {
                 return false;
-            } break;
+            }
+            break;
         case REAL:
         case SMM:
             break;

@@ -30,10 +30,17 @@ public class Prefix {
     @Override
     public String toString() {
         StringBuilder res = new StringBuilder();
-        if(lockPrefix)      res.append("lock ");
-        if(waitPrefix)      res.append("wait ");
-        if(repZPrefix)      res.append("repz ");
-        if(repNZPrefix)     res.append("repnz ");
+        if(lockPrefix) {
+            res.append("lock ");
+        } else if(waitPrefix) {
+            res.append("wait ");
+        }
+
+        if(repZPrefix) {
+            res.append("repz ");
+        } else if(repNZPrefix) {
+            res.append("repnz ");
+        }
         return res.toString();
     }
 }

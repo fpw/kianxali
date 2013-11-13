@@ -1,10 +1,10 @@
 package org.solhost.folko.dasm.images.pe;
 
 public interface AddressConverter {
-    public long rvaToMemory(long rva);
-    public long rvaToFile(long rva);
-    public long fileToRVA(long offset);
-    public long fileToMemory(long offset);
-    public long memoryToRVA(long mem);
-    public long memoryToFile(long mem);
+    long rvaToMemory(long rva);
+    long rvaToFile(long rva);
+    long fileToRVA(long offset);
+    long fileToMemory(long offset);
+    long memoryToRVA(long mem);
+    long memoryToFile(long mem);
 }

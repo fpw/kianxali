@@ -8,7 +8,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ByteSequence {
+public final class ByteSequence {
     private final ByteBuffer bytes;
     private final ReentrantLock lock;
 
@@ -27,7 +27,7 @@ public class ByteSequence {
         return new ByteSequence(imageBuffer);
     }
 
-    public static ByteSequence fromBytes(byte bytes[]) {
+    public static ByteSequence fromBytes(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
         buffer.put(bytes);
         buffer.rewind();

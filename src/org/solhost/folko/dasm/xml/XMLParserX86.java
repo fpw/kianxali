@@ -61,247 +61,260 @@ public class XMLParserX86 {
             public void endDocument() throws SAXException { }
 
             public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-                switch(localName) {
-                case "x86reference":
-                    break;
-                case "one-byte":
-                    inOneByte = true;
-                    inTwoByte = false;
-                    break;
-                case "two-byte":
-                    inOneByte = false;
-                    inTwoByte = true;
-                    break;
-                case "pri_opcd":
-                    currentOpcode = Short.parseShort(atts.getValue("value"), 16);
-                    break;
-                case "entry":
-                    currentEntry = new OpcodeEntry();
-                    currentEntry.opcode = currentOpcode;
-                    if(!inOneByte && inTwoByte) {
-                        currentEntry.twoByte = inTwoByte;
-                    }
-                    fillEntry(currentEntry, atts);
-                    break;
-                case "opcd_ext":
-                    inOpcdExt = true;
-                    break;
-                case "syntax":
-                    // TODO: attribute mod: mem|nomem
-                    if(opcdExt != null) {
-                        currentSyntax = new OpcodeSyntax(currentEntry, opcdExt);
-                    } else {
-                        currentSyntax = new OpcodeSyntax(currentEntry);
-                    }
-                    inSyntax = true;
-                    break;
-                case "mnem":
-                    // TODO: attribute sug: yes iff mnem is only suggested and no official
-                    if(inSyntax) {
-                        inMnem = true;
-                    }
-                    break;
-                case "src":
-                    if(inSyntax) {
-                        currentOpDesc = new OpcodeOperand();
-                        currentOpDesc.usageType = UsageType.SOURCE;
-                        parseOperandAtts(currentOpDesc, atts);
-                        inSrc = true;
-                    }
-                    break;
-                case "dst":
-                    if(inSyntax) {
-                        currentOpDesc = new OpcodeOperand();
-                        currentOpDesc.usageType = UsageType.DEST;
-                        parseOperandAtts(currentOpDesc, atts);
-                        inDst = true;
-                    }
-                    break;
-                case "a":
-                    if(inSrc || inDst) {
-                        // addressing mode
-                        inA = true;
-                    }
-                    break;
-                case "t":
-                    if(inSrc || inDst) {
-                        // operand type
-                        inT = true;
-                    }
-                    break;
-                case "sup": // superscript in <brief>, e.g. for x^2
-                case "sub": // subscript in <brief>, e.g. for log_x
-                    break;
-                case "grp1":
-                case "grp2":
-                case "grp3":
-                    inGroup = true;
-                    break;
-                case "instr_ext":
-                    inInstrExt = true;
-                    break;
-                case "proc_start":
-                    // TODO atts post, lat_step: unknown purpose
-                    inProcStart = true;
-                    break;
-                case "proc_end":
-                    inProcEnd = true;
-                    break;
-                case "sec_opcd":
-                    // attribute escape: yes can be ignored because we already know if opcode is 2bytes
-                    in2ndOpcode = true;
-                    break;
-                case "pref":
-                    inPref = true;
-                    break;
-                case "def_f":
-                case "f_vals":
-                case "test_f":
-                case "modif_f":
-                case "undef_f":
-                case "def_f_fpu":
-                case "f_vals_fpu":
-                case "modif_f_fpu":
-                case "undef_f_fpu":
-                    // TODO: flag support
-                    break;
-                case "note":
-                case "det":
-                case "brief":
-                case "gen_note":
-                case "gen_notes":
-                case "ring_note":
-                case "ring_notes":
-                    // TODO: documentation
-                    break;
-                default:
-                    System.err.println("Unhandled tag: " + localName);
-                }
+                onElementStart(localName, atts);
             }
 
             public void characters(char[] ch, int start, int length) throws SAXException {
-                String val = new String(ch, start, length);
-                if(inMnem) {
-                    X86Mnemonic mnem = X86Mnemonic.valueOf(val.replace('.', '_'));
-                    if(mnem == null) {
-                        System.err.println("Unknown mnemonic: " + val);
-                    } else {
-                        currentSyntax.setMnemonic(mnem);
-                    }
-                } else if(inA) {
-                    currentOpDesc.adrType = parseAddressType(val);
-                } else if(inT) {
-                    currentOpDesc.operType = parseOperandType(val);
-                } else if(inSrc) {
-                    if(!currentOpDesc.indirect && val.trim().length() > 0) {
-                        currentOpDesc.hardcoded = val.trim();
-                    }
-                } else if(inDst) {
-                    if(!currentOpDesc.indirect && val.trim().length() > 0) {
-                        currentOpDesc.hardcoded = val.trim();
-                    }
-                } else if(inProcStart) {
-                    Model proc = parseProcessor(val);
-                    if(currentEntry != null) {
-                        currentEntry.setStartProcessor(proc);
-                    } else {
-                        inheritProcStart = proc;
-                    }
-                } else if(inProcEnd) {
-                    if(currentEntry.supportedProcessors.size() == 0) {
-                        // there was no proc_start -> default is 8086
-                        currentEntry.setStartProcessor(Model.I8086);
-                    }
-                    currentEntry.setEndProcessor(parseProcessor(val));
-                } else if(inOpcdExt) {
-                    opcdExt = Short.parseShort(val);
-                } else if(inGroup) {
-                    currentEntry.addOpcodeGroup(parseOpcodeGroup(currentEntry.instrExt, currentEntry.groups, val));
-                } else if(inInstrExt) {
-                    currentEntry.instrExt = parseInstrExt(val);
-                } else if(in2ndOpcode) {
-                    currentEntry.secondOpcode = Short.parseShort(val, 16);
-                } else if(inPref) {
-                    currentEntry.prefix = Short.parseShort(val, 16);
-                }
+                onElementText(new String(ch, start, length));
             }
 
             public void endElement(String uri, String localName, String qName) throws SAXException {
-                switch(localName) {
-                case "one-byte":
-                    inTwoByte = false;
-                    break;
-                case "two-byte":
-                    inOneByte = false;
-                    break;
-                case "pri_opcd":
-                    inheritProcStart = null;
-                    currentOpcode = null;
-                    break;
-                case "syntax":
-                    currentEntry.addSyntax(currentSyntax);
-                    syntaxes.add(currentSyntax);
-                    currentSyntax = null;
-                    inSyntax = false;
-                    break;
-                case "proc_start":
-                    inProcStart = false;
-                    break;
-                case "proc_end":
-                    inProcEnd = false;
-                    break;
-                case "opcd_ext":
-                    inOpcdExt = false;
-                    break;
-                case "entry":
-                    if(currentEntry.supportedProcessors.size() == 0) {
-                        if(inheritProcStart != null) {
-                            currentEntry.setStartProcessor(inheritProcStart);
-                        } else {
-                            currentEntry.setStartProcessor(Model.I8086);
-                        }
-                    }
-                    currentEntry = null;
-                    opcdExt = null;
-                    break;
-                case "sec_opcd":
-                    in2ndOpcode = false;
-                    break;
-                case "pref":
-                    inPref = false;
-                    break;
-                case "mnem":
-                    inMnem = false;
-                    break;
-                case "src":
-                    currentSyntax.addOperand(currentOpDesc);
-                    currentOpDesc = null;
-                    inSrc = false;
-                    break;
-                case "dst":
-                    currentSyntax.addOperand(currentOpDesc);
-                    currentOpDesc = null;
-                    inDst = false;
-                    break;
-                case "a":
-                    inA = false;
-                    break;
-                case "t":
-                    inT = false;
-                    break;
-                case "grp1":
-                case "grp2":
-                case "grp3":
-                    inGroup = false;
-                    break;
-                case "instr_ext":
-                    inInstrExt = false;
-                    break;
-                }
+                onElementEnd(localName);
             }
         });
         xmlReader.parse(source);
         reader.close();
+    }
+
+    private void onElementStart(String name, Attributes atts)  {
+        switch(name) {
+        case "x86reference":
+            break;
+        case "one-byte":
+            inOneByte = true;
+            inTwoByte = false;
+            break;
+        case "two-byte":
+            inOneByte = false;
+            inTwoByte = true;
+            break;
+        case "pri_opcd":
+            currentOpcode = Short.parseShort(atts.getValue("value"), 16);
+            break;
+        case "entry":
+            currentEntry = new OpcodeEntry();
+            currentEntry.opcode = currentOpcode;
+            if(!inOneByte && inTwoByte) {
+                currentEntry.twoByte = inTwoByte;
+            }
+            fillEntry(currentEntry, atts);
+            break;
+        case "opcd_ext":
+            inOpcdExt = true;
+            break;
+        case "syntax":
+            // TODO: attribute mod: mem|nomem
+            if(opcdExt != null) {
+                currentSyntax = new OpcodeSyntax(currentEntry, opcdExt);
+            } else {
+                currentSyntax = new OpcodeSyntax(currentEntry);
+            }
+            inSyntax = true;
+            break;
+        case "mnem":
+            // TODO: attribute sug: yes iff mnem is only suggested and no official
+            if(inSyntax) {
+                inMnem = true;
+            }
+            break;
+        case "src":
+            if(inSyntax) {
+                currentOpDesc = new OpcodeOperand();
+                currentOpDesc.usageType = UsageType.SOURCE;
+                parseOperandAtts(currentOpDesc, atts);
+                inSrc = true;
+            }
+            break;
+        case "dst":
+            if(inSyntax) {
+                currentOpDesc = new OpcodeOperand();
+                currentOpDesc.usageType = UsageType.DEST;
+                parseOperandAtts(currentOpDesc, atts);
+                inDst = true;
+            }
+            break;
+        case "a":
+            if(inSrc || inDst) {
+                // addressing mode
+                inA = true;
+            }
+            break;
+        case "t":
+            if(inSrc || inDst) {
+                // operand type
+                inT = true;
+            }
+            break;
+        case "sup": // superscript in <brief>, e.g. for x^2
+        case "sub": // subscript in <brief>, e.g. for log_x
+            break;
+        case "grp1":
+        case "grp2":
+        case "grp3":
+            inGroup = true;
+            break;
+        case "instr_ext":
+            inInstrExt = true;
+            break;
+        case "proc_start":
+            // TODO atts post, lat_step: unknown purpose
+            inProcStart = true;
+            break;
+        case "proc_end":
+            inProcEnd = true;
+            break;
+        case "sec_opcd":
+            // attribute escape: yes can be ignored because we already know if opcode is 2bytes
+            in2ndOpcode = true;
+            break;
+        case "pref":
+            inPref = true;
+            break;
+        case "def_f":
+        case "f_vals":
+        case "test_f":
+        case "modif_f":
+        case "undef_f":
+        case "def_f_fpu":
+        case "f_vals_fpu":
+        case "modif_f_fpu":
+        case "undef_f_fpu":
+            // TODO: flag support
+            break;
+        case "note":
+        case "det":
+        case "brief":
+        case "gen_note":
+        case "gen_notes":
+        case "ring_note":
+        case "ring_notes":
+            // TODO: documentation
+            break;
+        default:
+            System.err.println("Unhandled tag: " + name);
+        }
+    }
+
+    private void onElementText(String val) throws SAXException {
+        if(inMnem) {
+            X86Mnemonic mnem = X86Mnemonic.valueOf(val.replace('.', '_'));
+            if(mnem == null) {
+                System.err.println("Unknown mnemonic: " + val);
+            } else {
+                currentSyntax.setMnemonic(mnem);
+            }
+        } else if(inA) {
+            currentOpDesc.adrType = parseAddressType(val);
+        } else if(inT) {
+            currentOpDesc.operType = parseOperandType(val);
+        } else if(inSrc) {
+            if(!currentOpDesc.indirect && val.trim().length() > 0) {
+                currentOpDesc.hardcoded = val.trim();
+            }
+        } else if(inDst) {
+            if(!currentOpDesc.indirect && val.trim().length() > 0) {
+                currentOpDesc.hardcoded = val.trim();
+            }
+        } else if(inProcStart) {
+            Model proc = parseProcessor(val);
+            if(currentEntry != null) {
+                currentEntry.setStartProcessor(proc);
+            } else {
+                inheritProcStart = proc;
+            }
+        } else if(inProcEnd) {
+            if(currentEntry.supportedProcessors.size() == 0) {
+                // there was no proc_start -> default is 8086
+                currentEntry.setStartProcessor(Model.I8086);
+            }
+            currentEntry.setEndProcessor(parseProcessor(val));
+        } else if(inOpcdExt) {
+            opcdExt = Short.parseShort(val);
+        } else if(inGroup) {
+            currentEntry.addOpcodeGroup(parseOpcodeGroup(currentEntry.instrExt, currentEntry.groups, val));
+        } else if(inInstrExt) {
+            currentEntry.instrExt = parseInstrExt(val);
+        } else if(in2ndOpcode) {
+            currentEntry.secondOpcode = Short.parseShort(val, 16);
+        } else if(inPref) {
+            currentEntry.prefix = Short.parseShort(val, 16);
+        }
+    }
+
+    private void onElementEnd(String name) throws SAXException {
+        switch(name) {
+        case "one-byte":
+            inTwoByte = false;
+            break;
+        case "two-byte":
+            inOneByte = false;
+            break;
+        case "pri_opcd":
+            inheritProcStart = null;
+            currentOpcode = null;
+            break;
+        case "syntax":
+            currentEntry.addSyntax(currentSyntax);
+            syntaxes.add(currentSyntax);
+            currentSyntax = null;
+            inSyntax = false;
+            break;
+        case "proc_start":
+            inProcStart = false;
+            break;
+        case "proc_end":
+            inProcEnd = false;
+            break;
+        case "opcd_ext":
+            inOpcdExt = false;
+            break;
+        case "entry":
+            if(currentEntry.supportedProcessors.size() == 0) {
+                if(inheritProcStart != null) {
+                    currentEntry.setStartProcessor(inheritProcStart);
+                } else {
+                    currentEntry.setStartProcessor(Model.I8086);
+                }
+            }
+            currentEntry = null;
+            opcdExt = null;
+            break;
+        case "sec_opcd":
+            in2ndOpcode = false;
+            break;
+        case "pref":
+            inPref = false;
+            break;
+        case "mnem":
+            inMnem = false;
+            break;
+        case "src":
+            currentSyntax.addOperand(currentOpDesc);
+            currentOpDesc = null;
+            inSrc = false;
+            break;
+        case "dst":
+            currentSyntax.addOperand(currentOpDesc);
+            currentOpDesc = null;
+            inDst = false;
+            break;
+        case "a":
+            inA = false;
+            break;
+        case "t":
+            inT = false;
+            break;
+        case "grp1":
+        case "grp2":
+        case "grp3":
+            inGroup = false;
+            break;
+        case "instr_ext":
+            inInstrExt = false;
+            break;
+        default:
+            break;
+        }
     }
 
     private void fillEntry(OpcodeEntry currentModeOpts, Attributes atts) {
@@ -498,6 +511,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.GENERAL_SEGREGMANIPULATION;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "arith":
             if(groups.contains(OpcodeGroup.GENERAL)) {
@@ -520,6 +534,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.MMX_ARITHMETIC;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "simdint":
             if(ext == InstructionSetExtension.SSE_1) {
@@ -534,6 +549,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.SSE42_INT;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "shift":
             if(groups.contains(OpcodeGroup.SSE2_INT128)) {
@@ -545,6 +561,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.SSE2_INT128_SHIFT;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "cachect":
             if(ext == InstructionSetExtension.SSE_1) {
@@ -557,6 +574,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.SSE41_CACHE;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "logical":
             if(groups.contains(OpcodeGroup.GENERAL)) {
@@ -571,6 +589,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.MMX_LOGICAL;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "conver":
             if(groups.contains(OpcodeGroup.GENERAL)) {
@@ -591,12 +610,14 @@ public class XMLParserX86 {
                 return OpcodeGroup.SSE41_FLOAT_CONVERSION;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "pcksclr":
             if(ext == InstructionSetExtension.SSE_2) {
                 return OpcodeGroup.SSE2_DOUBLE;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "datamov":
             if(groups.contains(OpcodeGroup.GENERAL)) {
@@ -619,12 +640,14 @@ public class XMLParserX86 {
                 return OpcodeGroup.MMX_DATAMOV;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "binary":
             if(groups.contains(OpcodeGroup.GENERAL_ARITHMETIC)) {
                 return OpcodeGroup.GENERAL_ARITHMETIC_BINARY;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "gen":
             return OpcodeGroup.GENERAL;
@@ -637,6 +660,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.SSE2_INT128_SHUFFLEUNPACK;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "simdfp":
             if(ext == InstructionSetExtension.SSE_1) {
@@ -647,6 +671,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.SSE41_FLOAT;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "compar":
             if(groups.contains(OpcodeGroup.FPU)) {
@@ -665,12 +690,14 @@ public class XMLParserX86 {
                 return OpcodeGroup.MMX_COMPARISON;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "bit":
             if(groups.contains(OpcodeGroup.GENERAL)) {
                 return OpcodeGroup.GENERAL_BITMANIPULATION;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "system":
             return OpcodeGroup.SYSTEM;
@@ -683,6 +710,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.SYSTEM_BRANCH;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "control":
             if(groups.contains(OpcodeGroup.PREFIX_FPU)) {
@@ -695,12 +723,14 @@ public class XMLParserX86 {
                 return OpcodeGroup.FPU_CONTROL;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "stack":
             if(groups.contains(OpcodeGroup.GENERAL)) {
                 return OpcodeGroup.GENERAL_STACK;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "order":
             if(ext == InstructionSetExtension.SSE_1) {
@@ -709,6 +739,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.SSE2_INSTRUCTIONORDER;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "sm":
             return OpcodeGroup.FPUSIMDSTATE;
@@ -717,12 +748,14 @@ public class XMLParserX86 {
                 return OpcodeGroup.SSE1_MXCSR;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "shftrot":
             if(groups.contains(OpcodeGroup.GENERAL)) {
                 return OpcodeGroup.GENERAL_SHIFTROT;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "cond":
             if(groups.contains(OpcodeGroup.GENERAL_BRANCH)) {
@@ -731,12 +764,14 @@ public class XMLParserX86 {
                 return OpcodeGroup.PREFIX_BRANCH_CONDITIONAL;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "unpack":
             if(ext == InstructionSetExtension.MMX) {
                 return OpcodeGroup.MMX_UNPACK;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "x87fpu":
             if(groups.contains(OpcodeGroup.PREFIX)) {
@@ -749,18 +784,21 @@ public class XMLParserX86 {
                 return OpcodeGroup.SSE42_STRINGTEXT;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "pcksp":
             if(ext == InstructionSetExtension.SSE_2) {
                 return OpcodeGroup.SSE2_SINGLE;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "fetch":
             if(ext == InstructionSetExtension.SSE_1) {
                 return OpcodeGroup.SSE1_PREFETCH;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "trans":
             if(groups.contains(OpcodeGroup.SYSTEM_BRANCH)) {
@@ -769,18 +807,21 @@ public class XMLParserX86 {
                 return OpcodeGroup.FPU_TRANSCENDENTAL;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "flgctrl":
             if(groups.contains(OpcodeGroup.GENERAL)) {
                 return OpcodeGroup.GENERAL_FLAGCONTROL;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "sync":
             if(ext == InstructionSetExtension.SSE_3) {
                 return OpcodeGroup.SSE3_CACHE;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "string":
             if(groups.contains(OpcodeGroup.GENERAL)) {
@@ -789,24 +830,28 @@ public class XMLParserX86 {
                 return OpcodeGroup.PREFIX_STRING;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "inout":
             if(groups.contains(OpcodeGroup.GENERAL)) {
                 return OpcodeGroup.GENERAL_IO;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "break":
             if(groups.contains(OpcodeGroup.GENERAL)) {
                 return OpcodeGroup.GENERAL_BREAK;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "decimal":
             if(groups.contains(OpcodeGroup.GENERAL_ARITHMETIC)) {
                 return OpcodeGroup.GENERAL_ARITHMETIC_DECIMAL;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         case "obsol":
             return OpcodeGroup.OBSOLETE;
@@ -815,6 +860,7 @@ public class XMLParserX86 {
                 return OpcodeGroup.FPU_LOADCONST;
             } else {
                 System.err.println("invalid top group: " + group);
+                return null;
             }
         default:
             System.err.println("Unknown opcode group: " + group);
@@ -822,7 +868,7 @@ public class XMLParserX86 {
         }
     }
 
-    private void parseOperandAtts(OpcodeOperand currentOpDesc, Attributes atts) {
+    private void parseOperandAtts(OpcodeOperand opDesc, Attributes atts) {
         boolean hasGroup = false;
         for(int i = 0; i < atts.getLength(); i++) {
             String key = atts.getLocalName(i);
@@ -831,48 +877,48 @@ public class XMLParserX86 {
             case "group":
                 hasGroup = true;
                 switch(val) {
-                case "gen":     currentOpDesc.directGroup = DirectGroup.GENERIC; break;
-                case "seg":     currentOpDesc.directGroup = DirectGroup.SEGMENT; break;
-                case "x87fpu":  currentOpDesc.directGroup = DirectGroup.X87FPU; break;
-                case "mmx":     currentOpDesc.directGroup = DirectGroup.MMX; break;
-                case "xmm":     currentOpDesc.directGroup = DirectGroup.XMM; break;
-                case "msr":     currentOpDesc.directGroup = DirectGroup.MSR; break;
-                case "systabp": currentOpDesc.directGroup = DirectGroup.SYSTABP; break;
-                case "ctrl":    currentOpDesc.directGroup = DirectGroup.CONTROL; break;
-                case "debug":   currentOpDesc.directGroup = DirectGroup.DEBUG; break;
-                case "xcr":     currentOpDesc.directGroup = DirectGroup.XCR; break;
+                case "gen":     opDesc.directGroup = DirectGroup.GENERIC; break;
+                case "seg":     opDesc.directGroup = DirectGroup.SEGMENT; break;
+                case "x87fpu":  opDesc.directGroup = DirectGroup.X87FPU; break;
+                case "mmx":     opDesc.directGroup = DirectGroup.MMX; break;
+                case "xmm":     opDesc.directGroup = DirectGroup.XMM; break;
+                case "msr":     opDesc.directGroup = DirectGroup.MSR; break;
+                case "systabp": opDesc.directGroup = DirectGroup.SYSTABP; break;
+                case "ctrl":    opDesc.directGroup = DirectGroup.CONTROL; break;
+                case "debug":   opDesc.directGroup = DirectGroup.DEBUG; break;
+                case "xcr":     opDesc.directGroup = DirectGroup.XCR; break;
                 default:
                     System.err.println("unknown group: " + val);
                 }
                 break;
             case "type":
-                currentOpDesc.operType = parseOperandType(val);
+                opDesc.operType = parseOperandType(val);
                 break;
             case "displayed":
                 if(val.equals("no")) {
-                    currentOpDesc.indirect = true;
+                    opDesc.indirect = true;
                 }
                 break;
             case "nr":
-                currentOpDesc.numForGroup = Long.parseLong(val, 16);
+                opDesc.numForGroup = Long.parseLong(val, 16);
                 break;
             case "address":
-                currentOpDesc.adrType = parseAddressType(val);
+                opDesc.adrType = parseAddressType(val);
                 break;
             case "depend":
                 if(val.equals("no")) {
-                    currentOpDesc.depends = false;
+                    opDesc.depends = false;
                 } else {
                     // yes is default if not given
-                    currentOpDesc.depends = true;
+                    opDesc.depends = true;
                 }
                 break;
             default:
                 System.err.println("Unknown key: " + key);
             }
         }
-        if(currentOpDesc.adrType == null && hasGroup) {
-            currentOpDesc.adrType = AddressType.GROUP;
+        if(opDesc.adrType == null && hasGroup) {
+            opDesc.adrType = AddressType.GROUP;
         }
     }
 }

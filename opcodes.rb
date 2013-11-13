@@ -35,5 +35,4 @@ puts "// automatically generated, do not edit"
 puts "package org.solhost.folko.dasm.cpu.x86;"
 puts "public enum X86Mnemonic {"
 puts tags.join(",\n")
-puts ";"
 puts "}"

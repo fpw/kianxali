@@ -89,7 +89,7 @@ public class PEFile implements AddressConverter, ImageFile {
         optionalHeader = new OptionalHeader(image);
 
         sections = new ArrayList<>(peHeader.getNumSections());
-        for(int i = 0; i< peHeader.getNumSections(); i++) {
+        for(int i = 0; i < peHeader.getNumSections(); i++) {
             sections.add(i, new PESection(image, this));
         }
         image.unlock();

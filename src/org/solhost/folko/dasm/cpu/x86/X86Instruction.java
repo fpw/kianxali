@@ -340,6 +340,7 @@ public class X86Instruction implements Instruction {
                     return ((ImmediateOp) op).getImmediate();
                 } else if(op instanceof PointerOp) {
                     // TODO: think about this. Probably not return because it's [addr] and therefore data and not inst
+                    continue;
                 }
             }
         }

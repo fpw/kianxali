@@ -1,7 +1,6 @@
-package org.solhost.folko.dasm.cpu.x86.test;
+package org.solhost.folko.dasm.test;
 
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.solhost.folko.dasm.OutputFormatter;
@@ -12,7 +11,7 @@ import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.Decoder;
 import org.solhost.folko.dasm.images.ByteSequence;
 
-public class DecoderTest {
+public class X86DecoderTest {
     private OutputFormatter format;
     private X86Context ctx16, ctx32, ctx64;
 
@@ -90,20 +89,20 @@ public class DecoderTest {
         checkOpcode64(new short[] {0x67, 0x45, 0x88, 0x3A}, "mov byte ptr [R10D], R15B");
     }
 
-    private void checkOpcode16(short opcode[], String expected) {
+    private void checkOpcode16(short[] opcode, String expected) {
         checkOpcode(ctx16, opcode, expected);
     }
 
-    private void checkOpcode32(short opcode[], String expected) {
+    private void checkOpcode32(short[] opcode, String expected) {
         checkOpcode(ctx32, opcode, expected);
     }
 
-    private void checkOpcode64(short opcode[], String expected) {
+    private void checkOpcode64(short[] opcode, String expected) {
         checkOpcode(ctx64, opcode, expected);
     }
 
-    private void checkOpcode(X86Context ct, short opcode[], String expected) {
-        byte in[] = new byte[opcode.length];
+    private void checkOpcode(X86Context ct, short[] opcode, String expected) {
+        byte[] in = new byte[opcode.length];
         for(int i = 0; i < opcode.length; i++) {
             in[i] = (byte) opcode[i];
         }

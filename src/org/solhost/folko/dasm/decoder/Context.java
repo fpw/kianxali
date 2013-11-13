@@ -1,7 +1,7 @@
 package org.solhost.folko.dasm.decoder;
 
 public interface Context {
-    public Decoder createInstructionDecoder();
-    public void setInstructionPointer(long pointer);
-    public long getInstructionPointer();
+    Decoder createInstructionDecoder();
+    void setInstructionPointer(long pointer);
+    long getInstructionPointer();
 }

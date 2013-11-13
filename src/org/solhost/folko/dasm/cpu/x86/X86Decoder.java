@@ -13,7 +13,7 @@ import org.solhost.folko.dasm.xml.OpcodeSyntax;
 import org.solhost.folko.dasm.xml.XMLParserX86;
 import org.xml.sax.SAXException;
 
-public class X86Decoder implements Decoder {
+public final class X86Decoder implements Decoder {
     private static DecodeTree<OpcodeSyntax> xmlTree;
     private final DecodeTree<OpcodeSyntax> decodeTree;
 

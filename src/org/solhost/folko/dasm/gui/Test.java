@@ -11,9 +11,17 @@ import org.solhost.folko.dasm.images.pe.PEFile;
  *  - create fuzzer by iterating syntaxes and operands
  *  - sib64
  *  - verify SEGMENT2 encoding
+ * Document:
+ *  - trie / tree approach to decoding with principle of longest match
+ *
  */
 
-public class Test {
+public final class Test {
+    // Utility class, no constructor
+    private Test() {
+
+    }
+
     public static void main(String[] args) throws Exception {
         PEFile image = new PEFile("targets/swap.exe");
         image.load();

@@ -3,13 +3,18 @@ package org.solhost.folko.dasm.cpu.x86;
 import org.solhost.folko.dasm.xml.OpcodeOperand;
 import org.solhost.folko.dasm.xml.OpcodeOperand.OperandType;
 
-public class X86CPU {
+public final class X86CPU {
     public enum Model {
         I8086, I80186, I80286, I80386, I80486,
         PENTIUM, PENTIUM_MMX, PENTIUM_PRO, PENTIUM_II, PENTIUM_III, PENTIUM_IV,
         CORE_1, CORE_2, CORE_I7,
         ITANIUM,
         ANY
+    }
+
+    // Utility class, no constructor
+    private X86CPU() {
+
     }
 
     public enum OperandSize {
