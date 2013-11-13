@@ -18,7 +18,7 @@ public final class X86CPU {
     }
 
     public enum OperandSize {
-        O8, O16, O32, O64
+        O8, O16, O32, O64, O128
     }
 
     public enum AddressSize {
@@ -137,12 +137,20 @@ public final class X86CPU {
             } else {
                 return OperandSize.O32;
             }
+        case DWORD_QWORD:
+            if(ctx.getPrefix().opSizePrefix) {
+                return OperandSize.O32;
+            } else {
+                return OperandSize.O64;
+            }
         case DWORD_INT_FPU:
         case REAL_SINGLE_FPU:
             return OperandSize.O32;
         case DOUBLE_FPU:
         case QWORD_FPU:
             return OperandSize.O64;
+        case DQWORD:
+            return OperandSize.O128;
         default:
             throw new UnsupportedOperationException("invalid generic register type: " + opType);
         }

@@ -3,7 +3,8 @@ package org.solhost.folko.dasm.images.pe;
 import org.solhost.folko.dasm.images.ByteSequence;
 
 public class OptionalHeader {
-    public static final int HEADER_MAGIC = 0x010b;
+    public static final int HEADER_MAGIC_32 = 0x010B;
+    public static final int HEADER_MAGIC_64 = 0x020B;
     public enum SubSystem { CONSOLE, GUI };
     public static final int DATA_DIRECTORY_EXPORT = 0;
     public static final int DATA_DIRECTORY_IMPORT = 1;
@@ -17,6 +18,7 @@ public class OptionalHeader {
     private final long requiredMemory;
     private SubSystem subSystem;
     private final DataDirectory[] dataDirectories;
+    private boolean pe64;
 
     private class DataDirectory {
         long offset, size;
@@ -24,8 +26,12 @@ public class OptionalHeader {
 
     public OptionalHeader(ByteSequence image) {
         int magic = image.readUWord();
-        if(magic != HEADER_MAGIC) {
-            throw new RuntimeException("invalid optional header magic");
+        if(magic == HEADER_MAGIC_32) {
+            pe64 = false;
+        } else if(magic == HEADER_MAGIC_64) {
+            pe64 = true;
+        } else {
+            throw new RuntimeException("invalid optional header magic: " + magic);
         }
 
         // ignore linker version
@@ -40,9 +46,13 @@ public class OptionalHeader {
 
         // ignore uninteresting offsets
         image.readUDword();
-        image.readUDword();
 
-        imageBase = image.readUDword();
+        if(pe64) {
+            imageBase = image.readSQword();
+        } else {
+            image.readUDword();
+            imageBase = image.readUDword();
+        }
         sectionAlignment = image.readUDword();
         fileAlignment = image.readUDword();
 
@@ -75,17 +85,24 @@ public class OptionalHeader {
         case 2: subSystem = SubSystem.GUI; break;
         case 3: subSystem = SubSystem.CONSOLE; break;
         default:
-            throw new RuntimeException("invalid subsystem in optional header");
+            throw new RuntimeException("invalid subsystem in optional header: " + subSys);
         }
 
         // ignore unused DLL stuff
         image.readUWord();
 
         // ignore stack sizes
-        image.readUDword();
-        image.readUDword();
-        image.readUDword();
-        image.readUDword();
+        if(pe64) {
+            image.readSQword();
+            image.readSQword();
+            image.readSQword();
+            image.readSQword();
+        } else {
+            image.readUDword();
+            image.readUDword();
+            image.readUDword();
+            image.readUDword();
+        }
 
         // ignore loader flags
         image.readUDword();
@@ -97,6 +114,10 @@ public class OptionalHeader {
             dataDirectories[i].offset = image.readUDword();
             dataDirectories[i].size = image.readUDword();
         }
+    }
+
+    public boolean isPE64() {
+        return pe64;
     }
 
     public long getEntryPointRVA() {

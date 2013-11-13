@@ -6,7 +6,7 @@ import org.solhost.folko.dasm.images.ByteSequence;
 
 public class PEHeader {
     public static final long PE_SIGNATURE = 0x4550;
-    public enum Machine { I386 };
+    public enum Machine { X86_32, X86_64 };
 
     private Machine machine;
     private final int numSections;
@@ -20,9 +20,10 @@ public class PEHeader {
 
         int machineCode = image.readUWord();
         switch(machineCode) {
-        case 0x14C: machine = Machine.I386; break;
+        case 0x14C:     machine = Machine.X86_32; break;
+        case 0x8664:    machine = Machine.X86_64; break;
         default:
-            throw new RuntimeException("unknown machine in PE header");
+            throw new RuntimeException("unknown machine in PE header: " + machineCode);
         }
 
         numSections = image.readUWord();
