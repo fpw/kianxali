@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.solhost.folko.dasm.decoder.Context;
+import org.solhost.folko.dasm.decoder.Data;
 import org.solhost.folko.dasm.decoder.DecodedEntity;
 import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.Decoder;
@@ -36,12 +37,22 @@ public class Disassembler {
     }
 
     public void disassemble() throws Exception {
+        // 1st pass: decode instructions
         Context ctx = image.createContext();
         Decoder decoder = ctx.createInstructionDecoder();
         pendingInstructionAddresses.add(image.getCodeEntryPointMem());
         while(pendingInstructionAddresses.size() > 0) {
             long memAddr = pendingInstructionAddresses.poll();
             disassembleTrace(memAddr, ctx, decoder);
+        }
+
+        // 2nd pass: decode data
+        for(DecodedEntity entity : decodedLocations.values()) {
+            if(!(entity instanceof Data)) {
+                continue;
+            }
+            Data data = (Data) entity;
+            data.analyze(image.getByteSequence(data.getMemAddress()));
         }
     }
 
@@ -63,24 +74,15 @@ public class Disassembler {
             Instruction inst = null;
             try {
                 inst = decoder.decodeOpcode(ctx, image.getByteSequence(memAddr));
+                decodedLocations.put(memAddr, inst);
+                examineInstruction(inst);
+                memAddr += inst.getSize();
             } catch(Exception e) {
                 System.err.println(String.format("Disassemble error at %08X: %s", memAddr, inst));
                 throw e;
             }
-            if(inst != null) {
-                decodedLocations.put(memAddr, inst);
-                checkNewTraces(inst);
-                memAddr += inst.getSize();
-            }
 
-            for(DisassemblingListener listener : listeners) {
-                try {
-                    listener.onEntityChange(memAddr);
-                } catch(Exception e) {
-                    System.err.println("Error processing: " + inst.toString());
-                    throw e;
-                }
-            }
+            tellEntityChange(memAddr);
 
             if(inst == null || inst.stopsTrace()) {
                 break;
@@ -88,11 +90,36 @@ public class Disassembler {
         }
     }
 
-    // checks whether the instruction's operands could start a new trace
-    private void checkNewTraces(Instruction inst) {
-        Long addr = inst.getBranchAddress();
-        if(addr != null && !decodedLocations.containsKey(addr)) {
-            pendingInstructionAddresses.add(addr);
+    private void tellEntityChange(long memAddr) {
+        for(DisassemblingListener listener : listeners) {
+            try {
+                listener.onEntityChange(memAddr);
+            } catch(Exception e) {
+                System.err.println("Error processing: " + decodedLocations.get(memAddr));
+                throw e;
+            }
+        }
+
+    }
+
+    // checks whether the instruction's operands could start a new trace or data
+    private void examineInstruction(Instruction inst) {
+        for(long addr : inst.getBranchAddresses()) {
+            if(!decodedLocations.containsKey(addr)) {
+                pendingInstructionAddresses.add(addr);
+            }
+        }
+
+        for(Data data : inst.getAssociatedData()) {
+            long addr = data.getMemAddress();
+            if(decodedLocations.containsKey(addr)) {
+                // TODO: do something smart. for now, just take first
+                continue;
+            }
+            if(isValidAddress(addr)) {
+                decodedLocations.put(addr, data);
+                tellEntityChange(addr);
+            }
         }
     }
 

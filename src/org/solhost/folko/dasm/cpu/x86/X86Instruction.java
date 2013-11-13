@@ -7,6 +7,7 @@ import java.util.List;
 import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
+import org.solhost.folko.dasm.decoder.Data;
 import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.Operand;
 import org.solhost.folko.dasm.decoder.UsageType;
@@ -343,23 +344,43 @@ public class X86Instruction implements Instruction {
     }
 
     @Override
-    public Long getBranchAddress() {
-        if(syntax.getOpcodeEntry().belongsTo(OpcodeGroup.GENERAL_BRANCH)) {
-            X86Mnemonic mnem = syntax.getMnemonic();
-            if(mnem == X86Mnemonic.RETF || mnem == X86Mnemonic.RETN) {
-                // these are considered branches, but their "address" is not an actual address
-                return null;
+    public List<Long> getBranchAddresses() {
+        List<Long> res = new ArrayList<>(3);
+
+        // we only want call, jmp, jnz etc.
+        if(!syntax.getOpcodeEntry().belongsTo(OpcodeGroup.GENERAL_BRANCH)) {
+            return res;
+        }
+
+        X86Mnemonic mnem = syntax.getMnemonic();
+        if(mnem == X86Mnemonic.RETF || mnem == X86Mnemonic.RETN) {
+            // these are considered branches, but we can't know their address
+            return res;
+        }
+
+        for(Operand op : operands) {
+            if(op instanceof ImmediateOp) {
+                res.add(((ImmediateOp) op).getImmediate());
+            } else if(op instanceof PointerOp) {
+                // TODO: think about this. Probably not return because it's [addr] and therefore data and not inst
+                continue;
             }
-            for(Operand op : operands) {
-                if(op instanceof ImmediateOp) {
-                    return ((ImmediateOp) op).getImmediate();
-                } else if(op instanceof PointerOp) {
-                    // TODO: think about this. Probably not return because it's [addr] and therefore data and not inst
-                    continue;
+        }
+        return res;
+    }
+
+    @Override
+    public List<Data> getAssociatedData() {
+        List<Data> res = new ArrayList<Data>(3);
+        for(Operand op : operands) {
+            if(op instanceof PointerOp) {
+                Data data = ((PointerOp) op).getProbableData();
+                if(data != null) {
+                    res.add(data);
                 }
             }
         }
-        return null;
+        return res;
     }
 }
 

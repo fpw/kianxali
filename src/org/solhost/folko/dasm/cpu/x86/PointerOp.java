@@ -3,8 +3,10 @@ package org.solhost.folko.dasm.cpu.x86;
 import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
+import org.solhost.folko.dasm.decoder.Data;
 import org.solhost.folko.dasm.decoder.Operand;
 import org.solhost.folko.dasm.decoder.UsageType;
+import org.solhost.folko.dasm.decoder.Data.DataType;
 import org.solhost.folko.dasm.xml.OpcodeOperand.OperandType;
 
 public class PointerOp implements Operand {
@@ -106,6 +108,30 @@ public class PointerOp implements Operand {
 
     public void setSegment(Segment segment) {
         this.segment = segment;
+    }
+
+    public Data getProbableData() {
+        DataType type;
+        if(offset == null) {
+            // only register-based indexing, can't know address
+            return null;
+        }
+
+        if(baseRegister == null && indexRegister == null) {
+            // only addressed by constant -> great because we know the size then
+            // TODO: work on opType directly for more information
+            switch(X86CPU.getOperandSize(context, opType)) {
+            case O8:    type = DataType.BYTE; break;
+            case O16:   type = DataType.WORD; break;
+            case O32:   type = DataType.DWORD; break;
+            case O64:   type = DataType.QWORD; break;
+            case O128:  type = DataType.DQWORD; break;
+            default:    type = DataType.UNKNOWN;
+            }
+        } else {
+            type = DataType.UNKNOWN;
+        }
+        return new Data(offset, type);
     }
 
     @Override

@@ -86,6 +86,14 @@ public final class ByteSequence {
         return bytes.getLong();
     }
 
+    public float readFloat() {
+        return bytes.getFloat();
+    }
+
+    public double readDouble() {
+        return bytes.getDouble();
+    }
+
     public String readString() {
         StringBuilder res = new StringBuilder();
         do {
