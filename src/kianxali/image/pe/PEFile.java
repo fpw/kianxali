@@ -23,6 +23,8 @@ public class PEFile implements AddressConverter, ImageFile {
 
     public PEFile(String path) throws IOException {
         image = ByteSequence.fromFile(path);
+        loadHeaders();
+        loadImports();
     }
 
     public X86Context createContext() {
@@ -31,11 +33,6 @@ public class PEFile implements AddressConverter, ImageFile {
         } else {
             return new X86Context(Model.ANY, ExecutionMode.PROTECTED);
         }
-    }
-
-    public void load() {
-        loadHeaders();
-        loadImports();
     }
 
     @Override

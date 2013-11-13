@@ -16,16 +16,18 @@ import kianxali.decoder.Instruction;
 import kianxali.image.ImageFile;
 
 public class Disassembler {
-    private final ImageFile image;
     private final Set<DisassemblingListener> listeners;
-    private final Map<Long, DecodedEntity> decodedLocations;
-    private final Queue<Long> pendingInstructionAddresses;
+    private Map<Long, DecodedEntity> decodedLocations;
+    private Queue<Long> pendingInstructionAddresses;
+    private ImageFile image;
 
-    public Disassembler(ImageFile image) {
+    public Disassembler() {
+        this.listeners = new CopyOnWriteArraySet<>();
+    }
+
+    public void reset() {
         this.decodedLocations = new TreeMap<>();
         this.pendingInstructionAddresses = new PriorityQueue<>();
-        this.listeners = new CopyOnWriteArraySet<>();
-        this.image = image;
     }
 
     public void addDisassemblingListener(DisassemblingListener listener) {
@@ -36,7 +38,10 @@ public class Disassembler {
         listeners.remove(listener);
     }
 
-    public void disassemble() throws Exception {
+    public void disassemble(ImageFile imageFile) throws Exception {
+        this.image = imageFile;
+        reset();
+
         // 1st pass: decode instructions
         Context ctx = image.createContext();
         Decoder decoder = ctx.createInstructionDecoder();
@@ -99,7 +104,6 @@ public class Disassembler {
                 throw e;
             }
         }
-
     }
 
     // checks whether the instruction's operands could start a new trace or data

@@ -1,4 +1,4 @@
-package kianxali.test;
+package kianxali;
 
 import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Instruction;
@@ -14,10 +14,9 @@ public final class Test {
 
     public static void main(String[] args) throws Exception {
         PEFile image = new PEFile("targets/swap.exe");
-        image.load();
 
-        Disassembler dasm = new Disassembler(image);
-        dasm.disassemble();
+        Disassembler dasm = new Disassembler();
+        dasm.disassemble(image);
 
         OutputFormatter format = new OutputFormatter();
         for(DecodedEntity entity : dasm.getEntities().values()) {
