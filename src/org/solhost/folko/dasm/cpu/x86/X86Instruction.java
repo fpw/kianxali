@@ -4,23 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
-import org.solhost.folko.dasm.OutputFormat;
+import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Register;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
-import org.solhost.folko.dasm.decoder.DecodedEntity;
+import org.solhost.folko.dasm.decoder.Instruction;
 import org.solhost.folko.dasm.decoder.Operand;
 import org.solhost.folko.dasm.xml.OpcodeEntry;
 import org.solhost.folko.dasm.xml.OpcodeGroup;
 import org.solhost.folko.dasm.xml.OpcodeSyntax;
 import org.solhost.folko.dasm.xml.OpcodeOperand;
+import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
 
-public class Instruction implements DecodedEntity {
+public class X86Instruction implements Instruction {
+    private final long memAddr;
     private final OpcodeSyntax syntax;
     private final List<Operand> operands;
     private ModRM modRM;
     private List<Short> actualPrefix;
+    // the size is not known during while decoding operands, so this will cause a wanted NullPointerException
+    private Integer size;
 
-    public Instruction(OpcodeSyntax syntax) {
+    public X86Instruction(long memAddr, OpcodeSyntax syntax) {
+        this.memAddr = memAddr;
         this.syntax = syntax;
         this.operands = new ArrayList<>(5);
     }
@@ -40,15 +45,25 @@ public class Instruction implements DecodedEntity {
     // the prefix has been read from seq already
     public void decode(ByteSequence seq, X86Context ctx) {
         actualPrefix = ctx.getDecodedPrefix();
+        long operandPos = seq.getPosition();
+
         OpcodeEntry entry = syntax.getOpcodeEntry();
         if(entry.modRM) {
-            // TODO: parse mod r/m
             modRM = new ModRM(seq, ctx);
         }
         for(OpcodeOperand op : syntax.getOperands()) {
             Operand decodedOp = decodeOperand(op, seq, ctx);
             if(decodedOp != null) {
                 operands.add(decodedOp);
+            }
+        }
+        size = (int) (actualPrefix.size() + seq.getPosition() - operandPos);
+
+        // now that the size is known, convert RelativeOps to ImmediateOps
+        for(int i = 0; i < operands.size(); i++) {
+            Operand op = operands.get(i);
+            if(op instanceof RelativeOp) {
+                operands.set(i, ((RelativeOp) op).toImmediateOp(size));
             }
         }
     }
@@ -86,7 +101,7 @@ public class Instruction implements DecodedEntity {
 
         case DIRECT:
         case IMMEDIATE:             return decodeImmediate(seq, op, ctx);
-        case RELATIVE:              return decoreRelative(seq, op, ctx);
+        case RELATIVE:              return decodeRelative(seq, op);
         case ES_EDI_RDI:
             // TODO: RDI
             PointerOp res = new PointerOp(ctx, Register.EDI);
@@ -120,7 +135,7 @@ public class Instruction implements DecodedEntity {
         }
     }
 
-    private Operand decoreRelative(ByteSequence seq, OpcodeOperand op, X86Context ctx) {
+    private Operand decodeRelative(ByteSequence seq, OpcodeOperand op) {
         long relOffset;
         switch(op.operType) {
         case WORD_DWORD_S64:
@@ -132,8 +147,8 @@ public class Instruction implements DecodedEntity {
         default:
             throw new UnsupportedOperationException("unsupported relative type: " + op.operType);
         }
-        long baseAddr = seq.getPosition() - ctx.getFileOffset() + ctx.getVirtualAddress();
-        return new RelativeOp(op.usageType, baseAddr, relOffset);
+
+        return new RelativeOp(op.usageType, memAddr, relOffset);
     }
 
     private Operand decodeImmediate(ByteSequence seq, OpcodeOperand op, X86Context ctx) {
@@ -234,6 +249,7 @@ public class Instruction implements DecodedEntity {
     }
 
     // whether this instruction stops an execution trace
+    @Override
     public boolean stopsTrace() {
         switch(syntax.getMnemonic()) {
         case JMP:
@@ -247,7 +263,8 @@ public class Instruction implements DecodedEntity {
         }
     }
 
-    public String asString(OutputFormat options) {
+    @Override
+    public String asString(OutputFormatter options) {
         StringBuilder res = new StringBuilder();
         if(options.isIncludePrefixBytes()) {
             for(Short b : actualPrefix) {
@@ -267,4 +284,41 @@ public class Instruction implements DecodedEntity {
 
         return res.toString();
     }
+
+    @Override
+    public long getMemAddress() {
+        return memAddr;
+    }
+
+    @Override
+    public int getSize() {
+        return size;
+    }
 }
+
+// lives only temporarily, will be converted to ImmediateOp
+class RelativeOp implements Operand {
+    private final UsageType usage;
+    private final long relOffset, baseAddr;
+
+    public RelativeOp(UsageType usage, long baseAddr, long relOffset) {
+        this.usage = usage;
+        this.baseAddr = baseAddr;
+        this.relOffset = relOffset;
+    }
+
+    public ImmediateOp toImmediateOp(int instSize) {
+        return new ImmediateOp(usage, baseAddr + instSize + relOffset);
+    }
+
+    @Override
+    public UsageType getUsage() {
+        return usage;
+    }
+
+    @Override
+    public String asString(OutputFormatter options) {
+        return null;
+    }
+}
+

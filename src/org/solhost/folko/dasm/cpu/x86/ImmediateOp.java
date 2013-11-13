@@ -1,6 +1,6 @@
 package org.solhost.folko.dasm.cpu.x86;
 
-import org.solhost.folko.dasm.OutputFormat;
+import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.decoder.Operand;
 import org.solhost.folko.dasm.xml.OpcodeOperand.UsageType;
 
@@ -19,7 +19,7 @@ public class ImmediateOp implements Operand {
     }
 
     @Override
-    public String asString(OutputFormat options) {
+    public String asString(OutputFormatter options) {
         return options.formatImmediate(immediate);
     }
 }

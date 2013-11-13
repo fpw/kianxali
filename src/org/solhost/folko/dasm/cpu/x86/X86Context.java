@@ -1,24 +1,24 @@
 package org.solhost.folko.dasm.cpu.x86;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.solhost.folko.dasm.Context;
-import org.solhost.folko.dasm.ImageFile;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
+import org.solhost.folko.dasm.decoder.Context;
+import org.solhost.folko.dasm.decoder.InstructionDecoder;
 import org.solhost.folko.dasm.xml.OpcodeEntry;
 import org.solhost.folko.dasm.xml.OpcodeGroup;
 import org.solhost.folko.dasm.xml.OpcodeSyntax;
+import org.xml.sax.SAXException;
 
 public class X86Context implements Context {
     private final Model model;
     private final ExecutionMode execMode;
-    private final ImageFile image;
     private List<Short> opcodePrefix;
-
-    private long fileOffset;
+    private long instructionPointer;
 
     // prefixes
     private Segment overrideSegment;
@@ -26,11 +26,20 @@ public class X86Context implements Context {
     private boolean repZPrefix, repNZPrefix, opSizePrefix, adrSizePrefix;
     private boolean rexWPrefix, rexRPrefix, rexBPrefix, rexXPrefix;
 
-    public X86Context(ImageFile image, Model model, ExecutionMode execMode) {
+    public X86Context(Model model, ExecutionMode execMode) {
         this.model = model;
         this.execMode = execMode;
-        this.image = image;
         reset();
+    }
+
+    @Override
+    public void setInstructionPointer(long instructionPointer) {
+        this.instructionPointer = instructionPointer;
+    }
+
+    @Override
+    public long getInstructionPointer() {
+        return instructionPointer;
     }
 
     public boolean acceptsOpcode(OpcodeSyntax syntax) {
@@ -58,7 +67,7 @@ public class X86Context implements Context {
         return true;
     }
 
-    public void applyPrefix(Instruction inst) {
+    public void applyPrefix(X86Instruction inst) {
         OpcodeEntry opcode = inst.getOpcode();
         if(!opcode.belongsTo(OpcodeGroup.PREFIX)) {
             throw new UnsupportedOperationException("not a prefix");
@@ -173,18 +182,6 @@ public class X86Context implements Context {
         return rexXPrefix;
     }
 
-    public void setFileOffset(long offset) {
-        this.fileOffset = offset;
-    }
-
-    public long getFileOffset() {
-        return fileOffset;
-    }
-
-    public long getVirtualAddress() {
-        return image.fileToMemAddress(getFileOffset());
-    }
-
     public void reset() {
         opcodePrefix = new ArrayList<>(5);
         overrideSegment = null;
@@ -194,5 +191,16 @@ public class X86Context implements Context {
         repNZPrefix = false;
         opSizePrefix = false;
         adrSizePrefix = false;
+    }
+
+    @Override
+    public InstructionDecoder createInstructionDecoder() {
+        try {
+            return X86Decoder.fromXML("x86reference.xml", "x86reference.dtd");
+        } catch (SAXException | IOException e) {
+            System.err.println("Couldn't create X86 decoder: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 }

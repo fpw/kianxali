@@ -1,67 +1,73 @@
 package org.solhost.folko.dasm.cpu.x86;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.solhost.folko.dasm.ByteSequence;
-import org.solhost.folko.dasm.ImageFile;
-import org.solhost.folko.dasm.OutputFormat;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
-import org.solhost.folko.dasm.decoder.DecodeListener;
+import org.solhost.folko.dasm.decoder.Context;
 import org.solhost.folko.dasm.decoder.DecodeTree;
-import org.solhost.folko.dasm.decoder.DecodedEntity;
+import org.solhost.folko.dasm.decoder.Instruction;
+import org.solhost.folko.dasm.decoder.InstructionDecoder;
 import org.solhost.folko.dasm.xml.OpcodeSyntax;
+import org.solhost.folko.dasm.xml.XMLParser;
+import org.xml.sax.SAXException;
 
-public class Decoder {
+public class X86Decoder implements InstructionDecoder {
+    private static DecodeTree<OpcodeSyntax> xmlTree;
     private final DecodeTree<OpcodeSyntax> decodeTree;
 
-    public Decoder(DecodeTree<OpcodeSyntax> decodeTree) {
-        this.decodeTree = decodeTree;
+    private X86Decoder(DecodeTree<OpcodeSyntax> tree) {
+        this.decodeTree = tree;
     }
 
-    public void decodeImage(ImageFile image, DecodeListener listener) {
-        final ByteSequence seq = image.getByteSequence(image.getCodeEntryPointMem());
-        X86Context ctx = (X86Context) image.createContext();
+    public static synchronized X86Decoder fromXML(String xmlPath, String dtdPath) throws SAXException, IOException {
+        if(xmlTree == null) {
+            xmlTree = createDecodeTree(xmlPath, dtdPath);
+        }
+        return new X86Decoder(xmlTree);
+    }
 
-        boolean goOn = true;
-        while(goOn) {
-            ctx.setFileOffset(seq.getPosition());
-            Instruction inst = decodeNext(seq, ctx, decodeTree);
-            if(inst != null) {
-                inst.decode(seq, ctx);
-                long size = seq.getPosition() - ctx.getFileOffset();
-                listener.onDecode(ctx.getVirtualAddress(), (int) size, inst);
-                ctx.reset();
-                if(inst.stopsTrace()) {
-                    goOn = false;
+    private static DecodeTree<OpcodeSyntax> createDecodeTree(String xmlPath, String dtdPath) throws SAXException, IOException {
+        XMLParser parser = new XMLParser();
+        DecodeTree<OpcodeSyntax> tree = new DecodeTree<>();
+
+        parser.loadXML(xmlPath, dtdPath);
+
+        // build decode tree
+        for(final OpcodeSyntax entry : parser.getSyntaxEntries()) {
+            short[] prefix = entry.getPrefix();
+            if(entry.hasEncodedRegister()) {
+                int regIndex = entry.getEncodedRegisterPrefixIndex();
+                for(int i = 0; i < 8; i++) {
+                    tree.addEntry(prefix, entry);
+                    prefix[regIndex]++;
                 }
             } else {
-                listener.onDecode(ctx.getFileOffset(), 1, new DecodedEntity() {
-                    public String asString(OutputFormat options) {
-                        return String.format("Unknown opcode: %02X", seq.readUByte());
-                    }
-                });
-                goOn = false;
+                tree.addEntry(prefix, entry);
             }
         }
+        return tree;
     }
 
-    // used mainly for testing
-    public Instruction decodeOpcode(X86Context ctx, ByteSequence seq) {
-        Instruction inst = decodeNext(seq, ctx, decodeTree);
+    @Override
+    public Instruction decodeOpcode(Context context, ByteSequence seq) {
+        X86Context ctx = (X86Context) context;
+        ctx.reset();
+        X86Instruction inst = decodeNext(seq, ctx, decodeTree);
         if(inst != null) {
             inst.decode(seq, ctx);
         }
-        ctx.reset();
         return inst;
     }
 
-    private Instruction decodeNext(ByteSequence sequence, X86Context ctx, DecodeTree<OpcodeSyntax> tree) {
+    private X86Instruction decodeNext(ByteSequence sequence, X86Context ctx, DecodeTree<OpcodeSyntax> tree) {
         short s = sequence.readUByte();
         ctx.addDecodedPrefix(s);
 
         DecodeTree<OpcodeSyntax> subTree = tree.getSubTree(s);
         if(subTree != null) {
-            Instruction res = decodeNext(sequence, ctx, subTree);
+            X86Instruction res = decodeNext(sequence, ctx, subTree);
             if(res != null) {
                 return res;
             }
@@ -93,7 +99,7 @@ public class Decoder {
             return null;
         }
 
-        Instruction inst = new Instruction(res);
+        X86Instruction inst = new X86Instruction(ctx.getInstructionPointer(), res);
         if(inst.isPrefix()) {
             ctx.applyPrefix(inst);
             return decodeNext(sequence, ctx, decodeTree);

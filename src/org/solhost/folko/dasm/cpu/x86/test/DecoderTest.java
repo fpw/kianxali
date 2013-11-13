@@ -2,57 +2,26 @@ package org.solhost.folko.dasm.cpu.x86.test;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.solhost.folko.dasm.ByteSequence;
-import org.solhost.folko.dasm.ImageFile;
-import org.solhost.folko.dasm.OutputFormat;
-import org.solhost.folko.dasm.cpu.x86.Decoder;
-import org.solhost.folko.dasm.cpu.x86.Instruction;
+import org.solhost.folko.dasm.OutputFormatter;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86Context;
-import org.solhost.folko.dasm.decoder.DecodeTree;
-import org.solhost.folko.dasm.xml.OpcodeSyntax;
-import org.solhost.folko.dasm.xml.XMLParser;
-import org.xml.sax.SAXException;
+import org.solhost.folko.dasm.decoder.Instruction;
+import org.solhost.folko.dasm.decoder.InstructionDecoder;
 
 public class DecoderTest {
-    private static Decoder decoder;
-    private OutputFormat format;
+    private OutputFormatter format;
     private X86Context ctx16, ctx32, ctx64;
-
-    @BeforeClass
-    public static void loadXML() throws SAXException, IOException {
-        XMLParser parser = new XMLParser();
-        DecodeTree<OpcodeSyntax> decodeTree = new DecodeTree<>();
-
-        parser.loadXML("x86reference.xml", "x86reference.dtd");
-        for(final OpcodeSyntax entry : parser.getSyntaxEntries()) {
-            short[] prefix = entry.getPrefix();
-            if(entry.hasEncodedRegister()) {
-                int regIndex = entry.getEncodedRegisterPrefixIndex();
-                for(int i = 0; i < 8; i++) {
-                    decodeTree.addEntry(prefix, entry);
-                    prefix[regIndex]++;
-                }
-            } else {
-                decodeTree.addEntry(prefix, entry);
-            }
-        }
-        decoder = new Decoder(decodeTree);
-    }
 
     @Before
     public void createContext() {
-        ImageFile image = new ImageFileStub();
-        ctx16 = new X86Context(image, Model.ANY, ExecutionMode.REAL);
-        ctx32 = new X86Context(image, Model.ANY, ExecutionMode.PROTECTED);
-        ctx64 = new X86Context(image, Model.ANY, ExecutionMode.LONG);
-        format = new OutputFormat(image);
+        ctx16 = new X86Context(Model.ANY, ExecutionMode.REAL);
+        ctx32 = new X86Context(Model.ANY, ExecutionMode.PROTECTED);
+        ctx64 = new X86Context(Model.ANY, ExecutionMode.LONG);
+        format = new OutputFormatter();
     }
 
     @Test
@@ -108,7 +77,7 @@ public class DecoderTest {
         checkOpcode32(new short[] {0x89, 0x94, 0x88, 0x00, 0x20, 0x40, 0x00}, "mov dword ptr [eax + 4 * ecx + 402000h], edx");
 
         // check that REX prefix is ignored / encoded as normal op
-        checkOpcode32(new short[] {0x45, 0x88, 0x3A}, "inc ebp");
+        checkOpcode32(new short[] {0x45}, "inc ebp");
     }
 
     @Test
@@ -140,7 +109,9 @@ public class DecoderTest {
         }
 
         ByteSequence seq = ByteSequence.fromBytes(in);
+        InstructionDecoder decoder = ct.createInstructionDecoder();
         Instruction inst = decoder.decodeOpcode(ct, seq);
         assertEquals(expected.toLowerCase(), inst.asString(format).toLowerCase());
+        assertEquals(opcode.length, inst.getSize());
     }
 }

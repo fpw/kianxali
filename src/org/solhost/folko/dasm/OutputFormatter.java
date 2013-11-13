@@ -1,11 +1,9 @@
 package org.solhost.folko.dasm;
 
-public class OutputFormat {
-    private final AliasResolver aliases;
+public class OutputFormatter {
     private boolean includePrefixBytes;
 
-    public OutputFormat(AliasResolver resolver) {
-        this.aliases = resolver;
+    public OutputFormatter() {
     }
 
     public void setIncludePrefixBytes(boolean includePrefixBytes) {
@@ -17,12 +15,7 @@ public class OutputFormat {
     }
 
     public String formatImmediate(long immediate) {
-        String alias = aliases.getAddressAlias(immediate);
-        if(alias != null) {
-            return alias;
-        }
-
-        if(immediate < 0) {
+         if(immediate < 0) {
             return String.format("-%Xh", -immediate);
         } else if(immediate > 0) {
             return String.format("%Xh", immediate);
@@ -32,12 +25,7 @@ public class OutputFormat {
     }
 
     public String formatAddress(long offset) {
-        String alias = aliases.getAddressAlias(offset);
-        if(alias != null) {
-            return alias;
-        }
-
-        if(offset < 0) {
+         if(offset < 0) {
             return String.format("%Xh", -offset);
         } else if(offset > 0){
             return String.format("%Xh", offset);

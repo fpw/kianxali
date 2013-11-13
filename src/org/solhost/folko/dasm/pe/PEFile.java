@@ -27,7 +27,7 @@ public class PEFile implements AddressConverter, ImageFile {
 
     public X86Context createContext() {
         // TODO
-        return new X86Context(this, Model.ANY, ExecutionMode.PROTECTED);
+        return new X86Context(Model.ANY, ExecutionMode.PROTECTED);
     }
 
     public void load() {
@@ -105,6 +105,7 @@ public class PEFile implements AddressConverter, ImageFile {
         } else {
             // no imports
             imports = new Imports();
+            imports.getDLLName(0); // XXX: remove
         }
     }
 
@@ -156,11 +157,5 @@ public class PEFile implements AddressConverter, ImageFile {
     public ByteSequence getByteSequence(long memAddress) {
         image.seek(memToFileAddress(memAddress));
         return image;
-    }
-
-    @Override
-    public String getAddressAlias(long memAddress) {
-        String impName = imports.getFunctionName(memAddress);
-        return impName;
     }
 }
