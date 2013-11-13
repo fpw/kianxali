@@ -122,8 +122,8 @@ public class PointerOp implements Operand {
 
         if(segment != null) {
             str.append(segment + ":");
-        } else if(context.getOverrideSegment() != null) {
-            str.append(context.getOverrideSegment() + ":");
+        } else if(context.getPrefix().overrideSegment != null) {
+            str.append(context.getPrefix().overrideSegment + ":");
         }
 
         str.append("[");

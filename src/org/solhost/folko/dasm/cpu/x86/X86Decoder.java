@@ -63,7 +63,7 @@ public class X86Decoder implements InstructionDecoder {
 
     private X86Instruction decodeNext(ByteSequence sequence, X86Context ctx, DecodeTree<OpcodeSyntax> tree) {
         short s = sequence.readUByte();
-        ctx.addDecodedPrefix(s);
+        ctx.getPrefix().pushPrefixByte(s);
 
         DecodeTree<OpcodeSyntax> subTree = tree.getSubTree(s);
         if(subTree != null) {
@@ -77,7 +77,7 @@ public class X86Decoder implements InstructionDecoder {
         List<OpcodeSyntax> leaves = tree.getLeaves(s);
         if(leaves == null) {
             sequence.skip(-1);
-            ctx.removeDecodedPrefixTop();
+            ctx.getPrefix().popPrefixByte();
             return null;
         }
 
@@ -95,7 +95,7 @@ public class X86Decoder implements InstructionDecoder {
 
         if(res == null) {
             sequence.skip(-1);
-            ctx.removeDecodedPrefixTop();
+            ctx.getPrefix().popPrefixByte();
             return null;
         }
 

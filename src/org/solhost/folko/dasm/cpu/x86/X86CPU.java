@@ -69,13 +69,13 @@ public class X86CPU {
         case SMM:
             // TODO: not sure if fall-through to long mode is correct here
         case LONG:
-            if(ctx.hasAdrSizePrefix()) {
+            if(ctx.getPrefix().adrSizePrefix) {
                 return AddressSize.A32;
             } else {
                 return AddressSize.A64;
             }
         case PROTECTED:
-            if(ctx.hasAdrSizePrefix()) {
+            if(ctx.getPrefix().adrSizePrefix) {
                 return AddressSize.A16;
             } else {
                 return AddressSize.A32;
@@ -92,15 +92,15 @@ public class X86CPU {
         case SMM:
             // TODO: not sure if fall-through to long mode is correct here
         case LONG:
-            if(ctx.hasRexWPrefix()) {
+            if(ctx.getPrefix().rexWPrefix) {
                 return OperandSize.O64;
-            } else if(ctx.hasOpSizePrefix()) {
+            } else if(ctx.getPrefix().opSizePrefix) {
                 return OperandSize.O16;
             } else {
                 return OperandSize.O32;
             }
         case PROTECTED:
-            if(ctx.hasOpSizePrefix()) {
+            if(ctx.getPrefix().opSizePrefix) {
                 return OperandSize.O16;
             } else {
                 return OperandSize.O32;
@@ -119,7 +119,7 @@ public class X86CPU {
         case WORD:          return OperandSize.O16;
         case WORD_DWORD_64: return getDefaultOperandSize(ctx);
         case WORD_DWORD:
-            if(ctx.hasOpSizePrefix()) {
+            if(ctx.getPrefix().opSizePrefix) {
                 return OperandSize.O16;
             } else {
                 return OperandSize.O32;

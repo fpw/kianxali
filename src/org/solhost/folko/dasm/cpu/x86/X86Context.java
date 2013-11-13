@@ -1,9 +1,6 @@
 package org.solhost.folko.dasm.cpu.x86;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.solhost.folko.dasm.cpu.x86.X86CPU.ExecutionMode;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Model;
 import org.solhost.folko.dasm.cpu.x86.X86CPU.Segment;
@@ -17,14 +14,8 @@ import org.xml.sax.SAXException;
 public class X86Context implements Context {
     private final Model model;
     private final ExecutionMode execMode;
-    private List<Short> opcodePrefix;
     private long instructionPointer;
-
-    // prefixes
-    private Segment overrideSegment;
-    private boolean lockPrefix, waitPrefix;
-    private boolean repZPrefix, repNZPrefix, opSizePrefix, adrSizePrefix;
-    private boolean rexWPrefix, rexRPrefix, rexBPrefix, rexXPrefix;
+    private Prefix prefix;
 
     public X86Context(Model model, ExecutionMode execMode) {
         this.model = model;
@@ -40,6 +31,10 @@ public class X86Context implements Context {
     @Override
     public long getInstructionPointer() {
         return instructionPointer;
+    }
+
+    public Prefix getPrefix() {
+        return prefix;
     }
 
     public boolean acceptsOpcode(OpcodeSyntax syntax) {
@@ -74,12 +69,12 @@ public class X86Context implements Context {
         }
 
         switch(opcode.opcode) {
-        case 0xF0: lockPrefix = true; break;
-        case 0xF2: repNZPrefix = true; break;
-        case 0xF3: repZPrefix = true; break;
-        case 0x2E: overrideSegment = Segment.CS; break;
-        case 0x36: overrideSegment = Segment.SS; break;
-        case 0x3E: overrideSegment = Segment.DS; break;
+        case 0xF0: prefix.lockPrefix = true; break;
+        case 0xF2: prefix.repNZPrefix = true; break;
+        case 0xF3: prefix.repZPrefix = true; break;
+        case 0x2E: prefix.overrideSegment = Segment.CS; break;
+        case 0x36: prefix.overrideSegment = Segment.SS; break;
+        case 0x3E: prefix.overrideSegment = Segment.DS; break;
         case 0x40:
         case 0x41:
         case 0x42:
@@ -95,39 +90,20 @@ public class X86Context implements Context {
         case 0x4D:
         case 0x4E:
         case 0x4F:
-                rexWPrefix = (opcode.opcode & 8) != 0;
-                rexRPrefix = (opcode.opcode & 4) != 0;
-                rexXPrefix = (opcode.opcode & 2) != 0;
-                rexBPrefix = (opcode.opcode & 1) != 0;
+                prefix.rexWPrefix = (opcode.opcode & 8) != 0;
+                prefix.rexRPrefix = (opcode.opcode & 4) != 0;
+                prefix.rexXPrefix = (opcode.opcode & 2) != 0;
+                prefix.rexBPrefix = (opcode.opcode & 1) != 0;
                 break;
-        case 0x26: overrideSegment = Segment.ES; break;
-        case 0x64: overrideSegment = Segment.FS; break;
-        case 0x65: overrideSegment = Segment.GS; break;
-        case 0x66: opSizePrefix = true; break;
-        case 0x67: adrSizePrefix = true; break;
-        case 0x9B: waitPrefix = true; break;
+        case 0x26: prefix.overrideSegment = Segment.ES; break;
+        case 0x64: prefix.overrideSegment = Segment.FS; break;
+        case 0x65: prefix.overrideSegment = Segment.GS; break;
+        case 0x66: prefix.opSizePrefix = true; break;
+        case 0x67: prefix.adrSizePrefix = true; break;
+        case 0x9B: prefix.waitPrefix = true; break;
         default:
             throw new UnsupportedOperationException("unknown prefix: " + opcode);
         }
-    }
-
-    public void addDecodedPrefix(short b) {
-        opcodePrefix.add(b);
-    }
-
-    public List<Short> getDecodedPrefix() {
-        return new ArrayList<Short>(opcodePrefix);
-    }
-
-    public void removeDecodedPrefixTop() {
-        int size = opcodePrefix.size();
-        if(size > 0) {
-            opcodePrefix.remove(size - 1);
-        }
-    }
-
-    public short getFromDecodedPrefix(int idx) {
-        return opcodePrefix.get(idx);
     }
 
     public Model getModel() {
@@ -138,59 +114,8 @@ public class X86Context implements Context {
         return execMode;
     }
 
-    public Segment getOverrideSegment() {
-        return overrideSegment;
-    }
-
-    public boolean hasLockPrefix() {
-        return lockPrefix;
-    }
-
-    public boolean hasWaitPrefix() {
-        return waitPrefix;
-    }
-
-    public boolean hasRepZPrefix() {
-        return repZPrefix;
-    }
-
-    public boolean hasRepNZPrefix() {
-        return repNZPrefix;
-    }
-
-    public boolean hasOpSizePrefix() {
-        return opSizePrefix;
-    }
-
-    public boolean hasAdrSizePrefix() {
-        return adrSizePrefix;
-    }
-
-    public boolean hasRexWPrefix() {
-        return rexWPrefix;
-    }
-
-    public boolean hasRexBPrefix() {
-        return rexBPrefix;
-    }
-
-    public boolean hasRexRPrefix() {
-        return rexRPrefix;
-    }
-
-    public boolean hasRexXPrefix() {
-        return rexXPrefix;
-    }
-
     public void reset() {
-        opcodePrefix = new ArrayList<>(5);
-        overrideSegment = null;
-        lockPrefix = false;
-        waitPrefix = false;
-        repZPrefix = false;
-        repNZPrefix = false;
-        opSizePrefix = false;
-        adrSizePrefix = false;
+        prefix = new Prefix();
     }
 
     @Override

@@ -20,8 +20,8 @@ public class X86Instruction implements Instruction {
     private final long memAddr;
     private final OpcodeSyntax syntax;
     private final List<Operand> operands;
-    private List<Short> actualPrefix;
-    // the size is not known during while decoding operands, so this will cause a wanted NullPointerException
+    private Prefix prefix;
+    // the size is not known during while decoding operands, so this will cause a (desired) NullPointerException
     private Integer size;
 
     public X86Instruction(long memAddr, OpcodeSyntax syntax) {
@@ -44,8 +44,8 @@ public class X86Instruction implements Instruction {
 
     // the prefix has been read from seq already
     public void decode(ByteSequence seq, X86Context ctx) {
+        this.prefix = ctx.getPrefix();
         ModRM modRM = null;
-        actualPrefix = ctx.getDecodedPrefix();
         long operandPos = seq.getPosition();
 
         OpcodeEntry entry = syntax.getOpcodeEntry();
@@ -58,7 +58,7 @@ public class X86Instruction implements Instruction {
                 operands.add(decodedOp);
             }
         }
-        size = (int) (actualPrefix.size() + seq.getPosition() - operandPos);
+        size = (int) (prefix.prefixBytes.size() + seq.getPosition() - operandPos);
 
         // now that the size is known, convert RelativeOps to ImmediateOps
         for(int i = 0; i < operands.size(); i++) {
@@ -224,10 +224,10 @@ public class X86Instruction implements Instruction {
             offset = seq.readUDword();
             break;
         case WORD_DWORD_64:
-            if(ctx.hasRexWPrefix()) {
+            if(prefix.rexWPrefix) {
                 offset = seq.readSQword();
             } else {
-                if(ctx.hasOpSizePrefix()) {
+                if(prefix.opSizePrefix) {
                     offset = seq.readUDword();
                 } else {
                     offset = seq.readUDword();
@@ -245,7 +245,7 @@ public class X86Instruction implements Instruction {
 
     private Operand decodeLeastReg(OpcodeOperand op, X86Context ctx) {
         int idx = syntax.getEncodedRegisterPrefixIndex();
-        short regId = (short) (ctx.getFromDecodedPrefix(idx) & 0x7);
+        short regId = (short) (prefix.prefixBytes.get(idx) & 0x7);
         Register reg = X86CPU.getOperandRegister(op, ctx, regId);
         return new RegisterOp(op.usageType, reg);
     }
@@ -288,11 +288,12 @@ public class X86Instruction implements Instruction {
     public String asString(OutputFormatter options) {
         StringBuilder res = new StringBuilder();
         if(options.shouldIncludePrefixBytes()) {
-            for(Short b : actualPrefix) {
+            for(Short b : prefix.prefixBytes) {
                 res.append(String.format("%02X", b));
             }
             res.append("\t");
         }
+        res.append(prefix.toString());
         res.append(syntax.getMnemonic().toString().toLowerCase());
         for(int i = 0; i < operands.size(); i++) {
             if(i == 0) {
@@ -310,7 +311,7 @@ public class X86Instruction implements Instruction {
     public String toString() {
         StringBuilder res = new StringBuilder();
         res.append(syntax.getMnemonic().toString().toLowerCase() + ":\t");
-        for(Short b : actualPrefix) {
+        for(Short b : prefix.prefixBytes) {
             res.append(String.format("%02X", b));
         }
         return res.toString();

@@ -22,13 +22,13 @@ public class ModRM {
 
         codedMod = (short) (code >> 6);
 
-        if(ctx.hasRexRPrefix()) {
+        if(ctx.getPrefix().rexRPrefix) {
             codedReg = (short) (((code >> 3) & 0x07) | 8);
         } else {
             codedReg = (short) ((code >> 3) & 0x07);
         }
 
-        if(ctx.hasRexBPrefix()) {
+        if(ctx.getPrefix().rexBPrefix) {
             codedMem = (short) ((code & 0x07) | 8);
         } else {
             codedMem = (short) (code & 0x07);
