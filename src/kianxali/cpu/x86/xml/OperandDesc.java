@@ -2,7 +2,7 @@ package kianxali.cpu.x86.xml;
 
 import kianxali.decoder.UsageType;
 
-public class OpcodeOperand {
+public class OperandDesc {
     public enum AddressType {
         DIRECT,             // absolute address of adressType coded after opcode
         CONTROL,            // modRM.reg selects control register
@@ -14,7 +14,7 @@ public class OpcodeOperand {
         MOD_RM_R,           // modRM.reg
         MOD_RM_R_SEG,       // modRM.reg as segment register
         MOD_RM_M_FORCE_GEN, // to be checked: modRM.mem regardless of mode TODO
-        MOD_RM_MUST_M,     // to be checked: modRM.mem regardless of mode TODO
+        MOD_RM_MUST_M,      // to be checked: modRM.mem regardless of mode TODO
         MOD_RM_R_FORCE2,    // to be checked: modRM.reg regardless of mdoe TODO
         MOD_RM_XMM,         // modRM as XMM
         MOD_RM_R_XMM,       // modRM.reg as XMM

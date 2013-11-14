@@ -8,7 +8,7 @@ import kianxali.cpu.x86.X86CPU.Register;
 import kianxali.cpu.x86.X86CPU.Segment;
 import kianxali.cpu.x86.xml.OpcodeEntry;
 import kianxali.cpu.x86.xml.OpcodeGroup;
-import kianxali.cpu.x86.xml.OpcodeOperand;
+import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.cpu.x86.xml.OpcodeSyntax;
 import kianxali.decoder.Data;
 import kianxali.decoder.Instruction;
@@ -70,7 +70,7 @@ public class X86Instruction implements Instruction {
         if(entry.modRM) {
             modRM = new ModRM(seq, ctx);
         }
-        for(OpcodeOperand op : syntax.getOperands()) {
+        for(OperandDesc op : syntax.getOperands()) {
             if(op.indirect) {
                 continue;
             }
@@ -106,7 +106,7 @@ public class X86Instruction implements Instruction {
         return syntax.getOpcodeEntry();
     }
 
-    private Operand decodeOperand(OpcodeOperand op, ByteSequence seq, X86Context ctx, ModRM modRM) {
+    private Operand decodeOperand(OperandDesc op, ByteSequence seq, X86Context ctx, ModRM modRM) {
         switch(op.adrType) {
         case GROUP:                 return decodeGroup(op, ctx);
         case OFFSET:                return decodeOffset(seq, op, ctx);
@@ -196,7 +196,7 @@ public class X86Instruction implements Instruction {
         }
     }
 
-    private Operand decodeRelative(ByteSequence seq, OpcodeOperand op) {
+    private Operand decodeRelative(ByteSequence seq, OperandDesc op) {
         long relOffset;
         switch(op.operType) {
         case WORD_DWORD_S64:
@@ -212,7 +212,7 @@ public class X86Instruction implements Instruction {
         return new RelativeOp(op.usageType, memAddr, relOffset);
     }
 
-    private Operand decodeImmediate(ByteSequence seq, OpcodeOperand op, X86Context ctx) {
+    private Operand decodeImmediate(ByteSequence seq, OperandDesc op, X86Context ctx) {
         long immediate;
         if(op.operType == null) {
             if(op.hardcoded != null) {
@@ -267,7 +267,7 @@ public class X86Instruction implements Instruction {
         return new ImmediateOp(op.usageType, immediate);
     }
 
-    private Operand decodeOffset(ByteSequence seq, OpcodeOperand op, X86Context ctx) {
+    private Operand decodeOffset(ByteSequence seq, OperandDesc op, X86Context ctx) {
         long offset;
         switch(op.operType) {
         case BYTE:
@@ -289,18 +289,17 @@ public class X86Instruction implements Instruction {
         }
         PointerOp res = new PointerOp(ctx, offset);
         res.setOpType(op.operType);
-        res.setUsage(op.usageType);
         return res;
     }
 
-    private Operand decodeLeastReg(OpcodeOperand op, X86Context ctx) {
+    private Operand decodeLeastReg(OperandDesc op, X86Context ctx) {
         int idx = syntax.getEncodedRegisterPrefixIndex();
         short regId = (short) (prefix.prefixBytes.get(idx) & 0x7);
         Register reg = X86CPU.getOperandRegister(op, ctx, regId);
         return new RegisterOp(op.usageType, reg);
     }
 
-    private Operand decodeGroup(OpcodeOperand op, X86Context ctx) {
+    private Operand decodeGroup(OperandDesc op, X86Context ctx) {
         Register reg = X86CPU.getOperandRegister(op, ctx, (short) op.numForGroup);
         return new RegisterOp(op.usageType, reg);
     }

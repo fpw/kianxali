@@ -2,7 +2,7 @@ package kianxali.cpu.x86;
 
 import kianxali.cpu.x86.X86CPU.Register;
 import kianxali.cpu.x86.X86CPU.Segment;
-import kianxali.cpu.x86.xml.OpcodeOperand.OperandType;
+import kianxali.cpu.x86.xml.OperandDesc.OperandType;
 import kianxali.decoder.Data;
 import kianxali.decoder.Operand;
 import kianxali.decoder.UsageType;

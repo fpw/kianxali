@@ -6,11 +6,11 @@ import java.util.Collections;
 import java.util.List;
 
 import kianxali.cpu.x86.X86Mnemonic;
-import kianxali.cpu.x86.xml.OpcodeOperand.AddressType;
+import kianxali.cpu.x86.xml.OperandDesc.AddressType;
 
 public class OpcodeSyntax {
     private final OpcodeEntry entry; // syntax belongs to this entry
-    private final List<OpcodeOperand> operands;
+    private final List<OperandDesc> operands;
     private Short extension;
     private X86Mnemonic mnemonic;
 
@@ -39,7 +39,7 @@ public class OpcodeSyntax {
         return extension;
     }
 
-    void addOperand(OpcodeOperand opDesc) {
+    void addOperand(OperandDesc opDesc) {
         operands.add(opDesc);
     }
 
@@ -52,7 +52,7 @@ public class OpcodeSyntax {
     }
 
     public boolean hasEncodedRegister() {
-        for(OpcodeOperand o : operands) {
+        for(OperandDesc o : operands) {
             if(o.adrType == AddressType.LEAST_REG) {
                 return true;
             }
@@ -60,7 +60,7 @@ public class OpcodeSyntax {
         return false;
     }
 
-    public List<OpcodeOperand> getOperands() {
+    public List<OperandDesc> getOperands() {
         return Collections.unmodifiableList(operands);
     }
 

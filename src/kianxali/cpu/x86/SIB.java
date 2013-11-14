@@ -1,15 +1,15 @@
 package kianxali.cpu.x86;
 
 import kianxali.cpu.x86.X86CPU.Register;
-import kianxali.cpu.x86.xml.OpcodeOperand;
-import kianxali.cpu.x86.xml.OpcodeOperand.AddressType;
-import kianxali.cpu.x86.xml.OpcodeOperand.OperandType;
+import kianxali.cpu.x86.xml.OperandDesc;
+import kianxali.cpu.x86.xml.OperandDesc.AddressType;
+import kianxali.cpu.x86.xml.OperandDesc.OperandType;
 import kianxali.image.ByteSequence;
 
 public class SIB {
     private PointerOp sibOp;
 
-    public SIB(ByteSequence seq, OpcodeOperand op, short mode, X86Context ctx) {
+    public SIB(ByteSequence seq, OperandDesc op, short mode, X86Context ctx) {
         OperandType operType = op.operType;
         if(operType == null) {
             if(op.adrType == AddressType.MOD_RM_MUST_M) {
@@ -58,7 +58,7 @@ public class SIB {
             Register baseReg = X86CPU.getGenericAddressRegister(ctx, base);
             sibOp = new PointerOp(ctx, baseReg, scale, indexReg);
         }
-        sibOp.setOpType(operType);
+        sibOp.setOpType(op.operType);
         sibOp.setUsage(op.usageType);
     }
 

@@ -5,7 +5,7 @@ import kianxali.image.ByteSequence;
 public class OptionalHeader {
     public static final int HEADER_MAGIC_32 = 0x010B;
     public static final int HEADER_MAGIC_64 = 0x020B;
-    public enum SubSystem { CONSOLE, GUI };
+    public enum SubSystem { DLL, CONSOLE, GUI };
     public static final int DATA_DIRECTORY_EXPORT = 0;
     public static final int DATA_DIRECTORY_IMPORT = 1;
     public static final int DATA_DIRECTORY_RESOURCES = 2;
@@ -82,6 +82,7 @@ public class OptionalHeader {
         // ignore subsystem
         int subSys = image.readUWord();
         switch (subSys) {
+        case 0: subSystem = SubSystem.DLL; break;
         case 2: subSystem = SubSystem.GUI; break;
         case 3: subSystem = SubSystem.CONSOLE; break;
         default:

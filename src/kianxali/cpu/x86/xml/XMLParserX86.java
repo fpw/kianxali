@@ -6,14 +6,15 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import kianxali.cpu.x86.X86Mnemonic;
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
 import kianxali.cpu.x86.X86CPU.InstructionSetExtension;
 import kianxali.cpu.x86.X86CPU.Model;
-import kianxali.cpu.x86.xml.OpcodeOperand.AddressType;
-import kianxali.cpu.x86.xml.OpcodeOperand.DirectGroup;
-import kianxali.cpu.x86.xml.OpcodeOperand.OperandType;
+import kianxali.cpu.x86.xml.OperandDesc.AddressType;
+import kianxali.cpu.x86.xml.OperandDesc.DirectGroup;
+import kianxali.cpu.x86.xml.OperandDesc.OperandType;
 import kianxali.decoder.UsageType;
 
 import org.xml.sax.Attributes;
@@ -25,13 +26,14 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 public class XMLParserX86 {
+    private static final Logger LOG = Logger.getLogger("kianxali.x86.xml");
     private final List<OpcodeSyntax> syntaxes;
 
     // parsing stuff
     private Short currentOpcode;
     private OpcodeEntry currentEntry;
     private OpcodeSyntax currentSyntax;
-    private OpcodeOperand currentOpDesc;
+    private OperandDesc currentOpDesc;
     private Short opcdExt;
     private Model inheritProcStart;
     private boolean inOneByte, inTwoByte, inSyntax, inMnem;
@@ -120,7 +122,7 @@ public class XMLParserX86 {
             break;
         case "src":
             if(inSyntax) {
-                currentOpDesc = new OpcodeOperand();
+                currentOpDesc = new OperandDesc();
                 currentOpDesc.usageType = UsageType.SOURCE;
                 parseOperandAtts(currentOpDesc, atts);
                 inSrc = true;
@@ -128,7 +130,7 @@ public class XMLParserX86 {
             break;
         case "dst":
             if(inSyntax) {
-                currentOpDesc = new OpcodeOperand();
+                currentOpDesc = new OperandDesc();
                 currentOpDesc.usageType = UsageType.DEST;
                 parseOperandAtts(currentOpDesc, atts);
                 inDst = true;
@@ -284,12 +286,16 @@ public class XMLParserX86 {
             inMnem = false;
             break;
         case "src":
-            currentSyntax.addOperand(currentOpDesc);
-            currentOpDesc = null;
             inSrc = false;
-            break;
+            // fall-through
         case "dst":
             currentSyntax.addOperand(currentOpDesc);
+            if(currentOpDesc.operType == null && !currentOpDesc.indirect) {
+                currentOpDesc.operType = chooseOpType();
+                if(currentOpDesc.operType == null) {
+                    LOG.warning("No opType for " + currentSyntax);
+                }
+            }
             currentOpDesc = null;
             inDst = false;
             break;
@@ -863,7 +869,7 @@ public class XMLParserX86 {
         }
     }
 
-    private void parseOperandAtts(OpcodeOperand opDesc, Attributes atts) {
+    private void parseOperandAtts(OperandDesc opDesc, Attributes atts) {
         boolean hasGroup = false;
         for(int i = 0; i < atts.getLength(); i++) {
             String key = atts.getLocalName(i);
@@ -914,6 +920,21 @@ public class XMLParserX86 {
         }
         if(opDesc.adrType == null && hasGroup) {
             opDesc.adrType = AddressType.GROUP;
+        }
+    }
+
+    private OperandType chooseOpType() {
+        // TODO: not sure if this is correct at all...
+        if(currentOpDesc.directGroup == DirectGroup.X87FPU) {
+            return OperandType.REAL_EXT_FPU;
+        }
+        switch(currentOpDesc.adrType) {
+        case IMMEDIATE:
+        case MOD_RM_M:
+        case MOD_RM_R:
+        case MOD_RM_MUST_M:     return OperandType.WORD_DWORD_64;
+        case MOD_RM_M_FPU_REG:  return OperandType.REAL_EXT_FPU;
+        default:                return null;
         }
     }
 }

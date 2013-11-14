@@ -1,7 +1,7 @@
 package kianxali.cpu.x86;
 
-import kianxali.cpu.x86.xml.OpcodeOperand;
-import kianxali.cpu.x86.xml.OpcodeOperand.OperandType;
+import kianxali.cpu.x86.xml.OperandDesc;
+import kianxali.cpu.x86.xml.OperandDesc.OperandType;
 
 public final class X86CPU {
     public enum Model {
@@ -332,7 +332,7 @@ public final class X86CPU {
         }
     }
 
-    private static Register getOperandRegisterGeneral(OpcodeOperand op, X86Context ctx, short id) {
+    private static Register getOperandRegisterGeneral(OperandDesc op, X86Context ctx, short id) {
         if(ctx.getExecMode() != ExecutionMode.LONG && id > 7) {
             throw new UnsupportedOperationException("used 64 bit register id in 32 bit mode");
         }
@@ -346,7 +346,7 @@ public final class X86CPU {
         }
     }
 
-    public static Register getOperandRegister(OpcodeOperand op, X86Context ctx, short id) {
+    public static Register getOperandRegister(OperandDesc op, X86Context ctx, short id) {
         switch(op.adrType) {
         case MOD_RM_R:
         case MOD_RM_M:

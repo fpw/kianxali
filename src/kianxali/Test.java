@@ -11,7 +11,7 @@ import org.xml.sax.SAXException;
 import kianxali.cpu.x86.X86Decoder;
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
 import kianxali.cpu.x86.X86CPU.Model;
-import kianxali.cpu.x86.xml.OpcodeOperand;
+import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.cpu.x86.xml.OpcodeSyntax;
 
 public final class Test {
@@ -35,7 +35,7 @@ public final class Test {
 
     private void checkSyntaxes() {
         for(OpcodeSyntax syntax : decoder.getAllSyntaxes()) {
-            for(OpcodeOperand op : syntax.getOperands()) {
+            for(OperandDesc op : syntax.getOperands()) {
                 if(!op.indirect && op.operType == null) {
                     LOG.finest("Missing operType in " + syntax);
                     continue; // only report each syntax once

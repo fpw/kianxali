@@ -2,7 +2,7 @@ package kianxali.cpu.x86;
 
 import kianxali.cpu.x86.X86CPU.AddressSize;
 import kianxali.cpu.x86.X86CPU.Register;
-import kianxali.cpu.x86.xml.OpcodeOperand;
+import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.decoder.Operand;
 import kianxali.image.ByteSequence;
 
@@ -12,8 +12,6 @@ public class ModRM {
     private final short codedMem;
     private final X86Context ctx;
     private final ByteSequence seq;
-
-    // TODO: op.operType can be null.. derive it from the other operands somehow
 
     public ModRM(ByteSequence seq, X86Context ctx) {
         this.seq = seq;
@@ -35,12 +33,12 @@ public class ModRM {
         }
     }
 
-    public Operand getReg(OpcodeOperand op) {
+    public Operand getReg(OperandDesc op) {
         Register reg = X86CPU.getOperandRegister(op, ctx, codedReg);
         return new RegisterOp(op.usageType, reg);
     }
 
-    public Operand getMem(OpcodeOperand op, boolean allowRegister, boolean enforceRegister) {
+    public Operand getMem(OperandDesc op, boolean allowRegister, boolean enforceRegister) {
         AddressSize addrSize = X86CPU.getAddressSize(ctx);
         switch(addrSize) {
         case A16:   return getMem16(op, allowRegister, enforceRegister);
@@ -50,7 +48,7 @@ public class ModRM {
         }
     }
 
-    public Operand getMem16(OpcodeOperand op, boolean allowRegister, boolean enforceRegister) {
+    public Operand getMem16(OperandDesc op, boolean allowRegister, boolean enforceRegister) {
         if(!allowRegister && codedMod != 3) {
             return null;
         }
@@ -105,7 +103,7 @@ public class ModRM {
         }
     }
 
-    public Operand getMem32(OpcodeOperand op, boolean allowRegister, boolean enforceRegister) {
+    public Operand getMem32(OperandDesc op, boolean allowRegister, boolean enforceRegister) {
         if(codedMod == 3 || enforceRegister) {
             // encoding specifies register (or user forced so)
             if(!allowRegister) {
