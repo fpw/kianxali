@@ -103,7 +103,7 @@ public class OpcodeSyntax {
     @Override
     public String toString() {
         StringBuilder res = new StringBuilder();
-        res.append(String.format("<syntax opcode=%s mnemonic=%s", getPrefixAsHexString(), mnemonic));
+        res.append(String.format("<syntax mode=%s opcode=%s mnemonic=%s", entry.mode, getPrefixAsHexString(), mnemonic));
         for(int i = 0; i < operands.size(); i++) {
             res.append(String.format(" op%d=%s", i + 1, operands.get(i).toString()));
         }

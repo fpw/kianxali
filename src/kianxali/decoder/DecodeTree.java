@@ -1,9 +1,11 @@
 package kianxali.decoder;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DecodeTree<LeafType> {
     private class Node {
@@ -33,8 +35,16 @@ public class DecodeTree<LeafType> {
         return node.subTrees.get(s);
     }
 
+    public Collection<DecodeTree<LeafType>> getSubTrees() {
+        return node.subTrees.values();
+    }
+
     public List<LeafType> getLeaves(short s) {
         return node.leaves.get(s);
+    }
+
+    public Set<Short> getLeaveCodes() {
+        return node.leaves.keySet();
     }
 
     private void addEntry(short[] sequence, int index, LeafType leaf) {

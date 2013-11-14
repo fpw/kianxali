@@ -19,16 +19,79 @@ import kianxali.util.OutputFormatter;
 
 public class X86Instruction implements Instruction {
     private final long memAddr;
-    private final OpcodeSyntax syntax;
+    private final List<OpcodeSyntax> syntaxes;
+    private OpcodeSyntax syntax;
     private final List<Operand> operands;
     private Prefix prefix;
+    private Short parsedExtension;
     // the size is not known during while decoding operands, so this will cause a (desired) NullPointerException
     private Integer size;
 
-    public X86Instruction(long memAddr, OpcodeSyntax syntax) {
+    public X86Instruction(long memAddr, List<OpcodeSyntax> leaves) {
         this.memAddr = memAddr;
-        this.syntax = syntax;
+        this.syntaxes = leaves;
         this.operands = new ArrayList<>(5);
+    }
+
+    public boolean decode(ByteSequence seq, X86Context ctx) {
+        for(OpcodeSyntax syn : syntaxes) {
+            this.syntax = syn;
+            if(tryDecode(seq, ctx)) {
+                this.syntax = syn;
+                return true;
+            }
+        }
+        this.syntax = null;
+        return false;
+    }
+
+    // the prefix has been read from seq already
+    public boolean tryDecode(ByteSequence seq, X86Context ctx) {
+        prefix = ctx.getPrefix();
+        if(syntax.isExtended()) {
+            if(parsedExtension == null) {
+                if(syntax.getOpcodeEntry().secondOpcode != null) {
+                    // TODO: verify that this is always correct
+                    parsedExtension = (short) ((syntax.getOpcodeEntry().secondOpcode >> 3) & 0x07);
+                } else {
+                    parsedExtension = (short) ((seq.readUByte() >> 3) & 0x07);
+                    seq.skip(-1);
+                }
+            }
+            if(syntax.getExtension() != parsedExtension) {
+                return false;
+            }
+        }
+
+        ModRM modRM = null;
+        long operandPos = seq.getPosition();
+
+        OpcodeEntry entry = syntax.getOpcodeEntry();
+        if(entry.modRM) {
+            modRM = new ModRM(seq, ctx);
+        }
+        for(OpcodeOperand op : syntax.getOperands()) {
+            if(op.indirect) {
+                continue;
+            }
+            Operand decodedOp = decodeOperand(op, seq, ctx, modRM);
+            if(decodedOp != null) {
+                operands.add(decodedOp);
+            } else {
+                seq.seek(operandPos);
+                return false;
+            }
+        }
+        size = (int) (prefix.prefixBytes.size() + seq.getPosition() - operandPos);
+
+        // now that the size is known, convert RelativeOps to ImmediateOps
+        for(int i = 0; i < operands.size(); i++) {
+            Operand op = operands.get(i);
+            if(op instanceof RelativeOp) {
+                operands.set(i, ((RelativeOp) op).toImmediateOp(size));
+            }
+        }
+        return true;
     }
 
     public boolean isPrefix() {
@@ -43,37 +106,7 @@ public class X86Instruction implements Instruction {
         return syntax.getOpcodeEntry();
     }
 
-    // the prefix has been read from seq already
-    public void decode(ByteSequence seq, X86Context ctx) {
-        this.prefix = ctx.getPrefix();
-        ModRM modRM = null;
-        long operandPos = seq.getPosition();
-
-        OpcodeEntry entry = syntax.getOpcodeEntry();
-        if(entry.modRM) {
-            modRM = new ModRM(seq, ctx);
-        }
-        for(OpcodeOperand op : syntax.getOperands()) {
-            Operand decodedOp = decodeOperand(op, seq, ctx, modRM);
-            if(decodedOp != null) {
-                operands.add(decodedOp);
-            }
-        }
-        size = (int) (prefix.prefixBytes.size() + seq.getPosition() - operandPos);
-
-        // now that the size is known, convert RelativeOps to ImmediateOps
-        for(int i = 0; i < operands.size(); i++) {
-            Operand op = operands.get(i);
-            if(op instanceof RelativeOp) {
-                operands.set(i, ((RelativeOp) op).toImmediateOp(size));
-            }
-        }
-    }
-
     private Operand decodeOperand(OpcodeOperand op, ByteSequence seq, X86Context ctx, ModRM modRM) {
-        if(op.indirect) {
-            return null;
-        }
         switch(op.adrType) {
         case GROUP:                 return decodeGroup(op, ctx);
         case OFFSET:                return decodeOffset(seq, op, ctx);
@@ -89,9 +122,15 @@ public class X86Instruction implements Instruction {
             }
             return modRM.getReg(op);
 
-        case MOD_RM_M_FORCE_GEN:
+        // Msr : mod_rm_m_force, fpu r
+
+        case MOD_RM_MUST_M:
+            if(modRM == null) {
+                modRM = new ModRM(seq, ctx);
+            }
+            return modRM.getMem(op, false, false);
         case MOD_RM_M_FPU_REG:
-        case MOD_RM_M_FORCE:
+        case MOD_RM_M_FORCE_GEN:
         case MOD_RM_M_FPU:
         case MOD_RM_M_MMX:
         case MOD_RM_M_XMM:
@@ -99,7 +138,7 @@ public class X86Instruction implements Instruction {
             if(modRM == null) {
                 modRM = new ModRM(seq, ctx);
             }
-            return modRM.getMem(op);
+            return modRM.getMem(op, true, false);
 
         case DIRECT:
         case IMMEDIATE:             return decodeImmediate(seq, op, ctx);
@@ -138,7 +177,7 @@ public class X86Instruction implements Instruction {
             if(modRM == null) {
                 modRM = new ModRM(seq, ctx);
             }
-            return modRM.getMem(op);
+            return modRM.getMem(op, true, false);
         case SEGMENT2:
             Register reg = X86CPU.getOperandRegister(op, ctx, syntax.getOpcodeEntry().opcode);
             return new RegisterOp(op.usageType, reg);

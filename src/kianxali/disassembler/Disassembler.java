@@ -95,14 +95,13 @@ public class Disassembler {
                 if(inst != null) {
                     decodedLocations.put(memAddr, inst);
                     examineInstruction(inst);
+                    tellEntityChange(memAddr);
                     memAddr += inst.getSize();
                 }
             } catch(Exception e) {
                 System.err.println(String.format("Disassemble error at %08X: %s", memAddr, inst));
                 throw e;
             }
-
-            tellEntityChange(memAddr);
 
             if(inst == null || inst.stopsTrace()) {
                 break;

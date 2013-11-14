@@ -12,7 +12,7 @@ public class SIB {
     public SIB(ByteSequence seq, OpcodeOperand op, short mode, X86Context ctx) {
         OperandType operType = op.operType;
         if(operType == null) {
-            if(op.adrType == AddressType.MOD_RM_M_FORCE) {
+            if(op.adrType == AddressType.MOD_RM_MUST_M) {
                 operType = OperandType.WORD_DWORD_64;
             } else {
                 throw new UnsupportedOperationException("invalid address type: " + op.adrType);

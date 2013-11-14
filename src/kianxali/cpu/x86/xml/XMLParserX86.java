@@ -224,10 +224,6 @@ public class XMLParserX86 {
                 inheritProcStart = proc;
             }
         } else if(inProcEnd) {
-            if(currentEntry.supportedProcessors.size() == 0) {
-                // there was no proc_start -> default is 8086
-                currentEntry.setStartProcessor(Model.I8086);
-            }
             currentEntry.setEndProcessor(parseProcessor(val));
         } else if(inOpcdExt) {
             opcdExt = Short.parseShort(val);
@@ -270,11 +266,9 @@ public class XMLParserX86 {
             inOpcdExt = false;
             break;
         case "entry":
-            if(currentEntry.supportedProcessors.size() == 0) {
+            if(currentEntry.startModel == null) {
                 if(inheritProcStart != null) {
                     currentEntry.setStartProcessor(inheritProcStart);
-                } else {
-                    currentEntry.setStartProcessor(Model.I8086);
                 }
             }
             currentEntry = null;
@@ -385,7 +379,7 @@ public class XMLParserX86 {
         case "H":   return AddressType.MOD_RM_M_FORCE_GEN;
         case "I":   return AddressType.IMMEDIATE;
         case "J":   return AddressType.RELATIVE;
-        case "M":   return AddressType.MOD_RM_M_FORCE;
+        case "M":   return AddressType.MOD_RM_MUST_M;
         case "N":   return AddressType.MOD_RM_M_MMX;
         case "O":   return AddressType.OFFSET;
         case "P":   return AddressType.MOD_RM_R_MMX;

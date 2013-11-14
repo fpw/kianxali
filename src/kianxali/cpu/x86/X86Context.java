@@ -40,10 +40,8 @@ public class X86Context implements Context {
     }
 
     public boolean acceptsOpcode(OpcodeSyntax syntax) {
-        if(model != Model.ANY) {
-            if(!syntax.getOpcodeEntry().supportedProcessors.contains(model)) {
-                return false;
-            }
+        if(!syntax.getOpcodeEntry().isSupportedOn(model, execMode)) {
+            return false;
         }
 
         switch(syntax.getOpcodeEntry().mode) {
@@ -60,7 +58,8 @@ public class X86Context implements Context {
         case REAL:
         case SMM:
             break;
-        default:        throw new UnsupportedOperationException("invalid execution mode: " + syntax.getOpcodeEntry().mode);
+        default:
+            throw new UnsupportedOperationException("invalid execution mode: " + syntax.getOpcodeEntry().mode);
         }
 
         return true;
@@ -125,7 +124,7 @@ public class X86Context implements Context {
     @Override
     public Decoder createInstructionDecoder() {
         try {
-            return X86Decoder.fromXML("./xml/x86/x86reference.xml", "./xml/x86/x86reference.dtd");
+            return X86Decoder.fromXML(model, execMode, "./xml/x86/x86reference.xml", "./xml/x86/x86reference.dtd");
         } catch (SAXException | IOException e) {
             System.err.println("Couldn't create X86 decoder: " + e.getMessage());
             e.printStackTrace();

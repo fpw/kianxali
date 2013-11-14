@@ -4,21 +4,26 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import kianxali.decoder.DecodedEntity;
 import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblingListener;
 import kianxali.image.ImageFile;
 import kianxali.image.pe.PEFile;
+import kianxali.util.OutputFormatter;
 
 public class Controller implements DisassemblingListener {
     private static final Logger LOG = Logger.getLogger("kianxali.gui.controller");
 
+    private final OutputFormatter formatter;
     private final Disassembler disassembler;
     private Thread dasmThread;
     private ImageFile currentImage;
     private KianxaliGUI gui;
 
     public Controller() {
-        disassembler = new Disassembler();
+        this.disassembler = new Disassembler();
+        this.formatter = new OutputFormatter();
+
         disassembler.addDisassemblingListener(this);
     }
 
@@ -66,6 +71,10 @@ public class Controller implements DisassemblingListener {
 
     @Override
     public void onDisassembledAddress(long memAddr) {
+        DecodedEntity entity = disassembler.getEntity(memAddr);
+        if(entity != null) {
+            LOG.finest(String.format("%08X: %s", memAddr, entity.asString(formatter)));
+        }
     }
 
     @Override

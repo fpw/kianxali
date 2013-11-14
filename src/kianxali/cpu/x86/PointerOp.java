@@ -117,7 +117,7 @@ public class PointerOp implements Operand {
             return null;
         }
 
-        if(baseRegister == null && indexRegister == null) {
+        if(baseRegister == null && indexRegister == null && opType != null) {
             // only addressed by constant -> great because we know the size then
             // TODO: work on opType directly for more information
             switch(X86CPU.getOperandSize(context, opType)) {
@@ -138,14 +138,18 @@ public class PointerOp implements Operand {
     public String asString(OutputFormatter formatter) {
         StringBuilder str = new StringBuilder();
 
-        switch(X86CPU.getOperandSize(context, opType)) {
-        case O8:    str.append("byte ptr "); break;
-        case O16:   str.append("word ptr "); break;
-        case O32:   str.append("dword ptr "); break;
-        case O64:   str.append("qword ptr "); break;
-        case O80:   str.append("tbyte ptr "); break;
-        case O128:  str.append("dqword ptr "); break;
-        default: throw new RuntimeException("invalid operand size: " + opType);
+        if(opType == null) {
+            str.append("? ptr ");
+        } else {
+            switch(X86CPU.getOperandSize(context, opType)) {
+            case O8:    str.append("byte ptr "); break;
+            case O16:   str.append("word ptr "); break;
+            case O32:   str.append("dword ptr "); break;
+            case O64:   str.append("qword ptr "); break;
+            case O80:   str.append("tbyte ptr "); break;
+            case O128:  str.append("dqword ptr "); break;
+            default: throw new RuntimeException("invalid operand size: " + opType);
+            }
         }
 
         if(segment != null) {

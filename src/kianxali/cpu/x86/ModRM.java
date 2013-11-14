@@ -3,8 +3,6 @@ package kianxali.cpu.x86;
 import kianxali.cpu.x86.X86CPU.AddressSize;
 import kianxali.cpu.x86.X86CPU.Register;
 import kianxali.cpu.x86.xml.OpcodeOperand;
-import kianxali.cpu.x86.xml.OpcodeOperand.AddressType;
-import kianxali.cpu.x86.xml.OpcodeOperand.OperandType;
 import kianxali.decoder.Operand;
 import kianxali.image.ByteSequence;
 
@@ -14,6 +12,8 @@ public class ModRM {
     private final short codedMem;
     private final X86Context ctx;
     private final ByteSequence seq;
+
+    // TODO: op.operType can be null.. derive it from the other operands somehow
 
     public ModRM(ByteSequence seq, X86Context ctx) {
         this.seq = seq;
@@ -40,25 +40,25 @@ public class ModRM {
         return new RegisterOp(op.usageType, reg);
     }
 
-    public Operand getMem(OpcodeOperand op) {
+    public Operand getMem(OpcodeOperand op, boolean allowRegister, boolean enforceRegister) {
         AddressSize addrSize = X86CPU.getAddressSize(ctx);
         switch(addrSize) {
-        case A16:   return getMem16(op);
-        case A32:   return getMem32(op);
-        case A64:   return getMem32(op);
+        case A16:   return getMem16(op, allowRegister, enforceRegister);
+        case A32:   return getMem32(op, allowRegister, enforceRegister);
+        case A64:   return getMem32(op, allowRegister, enforceRegister);
         default:    throw new UnsupportedOperationException("invalid address size: " + addrSize);
         }
     }
 
-    public Operand getMem16(OpcodeOperand op) {
-        OperandType operType = op.operType;
-        if(operType == null) {
-            if(op.adrType == AddressType.MOD_RM_M_FORCE) {
-                operType = OperandType.WORD;
-            } else {
-                throw new UnsupportedOperationException("invalid address type: " + op.adrType);
-            }
+    public Operand getMem16(OpcodeOperand op, boolean allowRegister, boolean enforceRegister) {
+        if(!allowRegister && codedMod != 3) {
+            return null;
         }
+
+        if(codedMod == 3 || enforceRegister) {
+            return new RegisterOp(op.usageType, X86CPU.getOperandRegister(op, ctx, codedMem));
+        }
+
         Register baseReg = null, indexReg = null;
         switch(codedMem) {
         case 0: baseReg = Register.BX; indexReg = Register.SI; break;
@@ -76,13 +76,13 @@ public class ModRM {
         case 0: {
             if(codedMem != 6) {
                 PointerOp res = new PointerOp(ctx, baseReg, 1, indexReg);
-                res.setOpType(operType);
+                res.setOpType(op.operType);
                 res.setUsage(op.usageType);
                 return res;
             } else {
                 long disp = seq.readSWord();
                 PointerOp res = new PointerOp(ctx, disp);
-                res.setOpType(operType);
+                res.setOpType(op.operType);
                 res.setUsage(op.usageType);
                 return res;
             }
@@ -90,33 +90,30 @@ public class ModRM {
         case 1: {
             long disp = seq.readSByte();
             PointerOp res = new PointerOp(ctx, baseReg, 1, indexReg, disp);
-            res.setOpType(operType);
+            res.setOpType(op.operType);
             res.setUsage(op.usageType);
             return res;
         }
         case 2: {
             long disp = seq.readSWord();
             PointerOp res = new PointerOp(ctx, baseReg, 1, indexReg, disp);
-            res.setOpType(operType);
+            res.setOpType(op.operType);
             res.setUsage(op.usageType);
             return res;
-        }
-        case 3: {
-            return new RegisterOp(op.usageType, X86CPU.getOperandRegister(op, ctx, codedMem));
         }
         default: throw new UnsupportedOperationException("invalid mode: " + codedMod);
         }
     }
 
-    public Operand getMem32(OpcodeOperand op) {
-        OperandType operType = op.operType;
-        if(operType == null) {
-            switch(op.adrType) {
-            case MOD_RM_M_FORCE:    operType = OperandType.WORD_DWORD_64; break;
-            case MOD_RM_M_FPU_REG:      operType = OperandType.DOUBLE_FPU; break;
-            default: throw new UnsupportedOperationException("invalid address type: " + op.adrType);
+    public Operand getMem32(OpcodeOperand op, boolean allowRegister, boolean enforceRegister) {
+        if(codedMod == 3 || enforceRegister) {
+            // encoding specifies register (or user forced so)
+            if(!allowRegister) {
+                return null;
             }
+            return new RegisterOp(op.usageType, X86CPU.getOperandRegister(op, ctx, codedMem));
         }
+
         switch(codedMod) {
         case 0:
             if(codedMem == 4 || codedMem == 12) {
@@ -125,13 +122,13 @@ public class ModRM {
             } else if(codedMem == 5 || codedMem == 13) {
                 long disp = seq.readUDword();
                 PointerOp res = new PointerOp(ctx, disp);
-                res.setOpType(operType);
+                res.setOpType(op.operType);
                 res.setUsage(op.usageType);
                 return res;
             } else {
                 PointerOp res;
                 res = new PointerOp(ctx, X86CPU.getGenericAddressRegister(ctx, codedMem));
-                res.setOpType(operType);
+                res.setOpType(op.operType);
                 res.setUsage(op.usageType);
                 return res;
             }
@@ -147,7 +144,7 @@ public class ModRM {
                 long disp = seq.readSByte();
                 PointerOp res;
                 res = new PointerOp(ctx, X86CPU.getGenericAddressRegister(ctx, codedMem), disp);
-                res.setOpType(operType);
+                res.setOpType(op.operType);
                 res.setUsage(op.usageType);
                 return res;
             }
@@ -163,12 +160,10 @@ public class ModRM {
                 long disp = seq.readSDword();
                 PointerOp res;
                 res = new PointerOp(ctx, X86CPU.getGenericAddressRegister(ctx, codedMem), disp);
-                res.setOpType(operType);
+                res.setOpType(op.operType);
                 res.setUsage(op.usageType);
                 return res;
             }
-        case 3:
-            return new RegisterOp(op.usageType, X86CPU.getOperandRegister(op, ctx, codedMem));
         default:
             throw new UnsupportedOperationException("unsupported mode: " + codedMod);
         }

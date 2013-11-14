@@ -27,58 +27,51 @@ public class OpcodeEntry {
     public InstructionSetExtension instrExt;
 
     private final List<OpcodeSyntax> syntaxes;
-    public final Set<Model> supportedProcessors;
+    Model startModel, lastModel;
     public final Set<OpcodeGroup> groups;
 
     public OpcodeEntry() {
-        this.supportedProcessors = new HashSet<>();
         this.groups = new HashSet<>();
         this.syntaxes = new ArrayList<>(4);
     }
 
     public void setStartProcessor(Model p) {
-        // fall-through on purpose
-        switch (p) {
-        case I8086:         supportedProcessors.add(Model.I8086);
-        case I80186:        supportedProcessors.add(Model.I80186);
-        case I80286:        supportedProcessors.add(Model.I80286);
-        case I80386:        supportedProcessors.add(Model.I80386);
-        case I80486:        supportedProcessors.add(Model.I80486);
-        case PENTIUM:       supportedProcessors.add(Model.PENTIUM);
-        case PENTIUM_MMX:   supportedProcessors.add(Model.PENTIUM_MMX);
-        case PENTIUM_PRO:   supportedProcessors.add(Model.PENTIUM_PRO);
-        case PENTIUM_II:    supportedProcessors.add(Model.PENTIUM_II);
-        case PENTIUM_III:   supportedProcessors.add(Model.PENTIUM_III);
-        case PENTIUM_IV:    supportedProcessors.add(Model.PENTIUM_IV);
-        case CORE_1:        supportedProcessors.add(Model.CORE_1);
-        case CORE_2:        supportedProcessors.add(Model.CORE_2);
-        case CORE_I7:       supportedProcessors.add(Model.CORE_I7);
-        case ITANIUM:       supportedProcessors.add(Model.ITANIUM);
-                            break;
-        default:            throw new UnsupportedOperationException("invalid model: " + p);
+        this.startModel = p;
+    }
+
+    public Model getStartModel() {
+        if(startModel != null) {
+            return startModel;
+        } else {
+            return Model.I8086;
         }
     }
 
     public void setEndProcessor(Model p) {
-        // fall-through on purpose
-        switch (p) {
-        case I8086:         supportedProcessors.remove(Model.I80186);
-        case I80186:        supportedProcessors.remove(Model.I80286);
-        case I80286:        supportedProcessors.remove(Model.I80386);
-        case I80386:        supportedProcessors.remove(Model.I80486);
-        case I80486:        supportedProcessors.remove(Model.PENTIUM);
-        case PENTIUM:       supportedProcessors.remove(Model.PENTIUM_MMX);
-        case PENTIUM_MMX:   supportedProcessors.remove(Model.PENTIUM_PRO);
-        case PENTIUM_PRO:   supportedProcessors.remove(Model.PENTIUM_II);
-        case PENTIUM_II:    supportedProcessors.remove(Model.PENTIUM_III);
-        case PENTIUM_III:   supportedProcessors.remove(Model.PENTIUM_IV);
-        case PENTIUM_IV:    supportedProcessors.remove(Model.CORE_1);
-        case CORE_1:        supportedProcessors.remove(Model.CORE_2);
-        case CORE_2:        supportedProcessors.remove(Model.CORE_I7);
-        case CORE_I7:       supportedProcessors.remove(Model.ITANIUM);
-        case ITANIUM:       break;
-        default:            throw new UnsupportedOperationException("invalid model: " + p);
+        this.lastModel = p;
+    }
+
+    public Model getLastModel() {
+        if(lastModel != null) {
+            return lastModel;
+        } else {
+            return Model.ANY;
         }
+    }
+
+    public boolean isSupportedOn(Model p, ExecutionMode pMode) {
+        Model compare = p;
+        if(p == Model.ANY) {
+            compare = Model.CORE_I7;
+        }
+        Model last = getLastModel();
+        if(last.ordinal() < compare.ordinal()) {
+            return false;
+        }
+        if(mode.ordinal() > pMode.ordinal()) {
+            return false;
+        }
+        return true;
     }
 
     public void addOpcodeGroup(OpcodeGroup group) {

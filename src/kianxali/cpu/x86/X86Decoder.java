@@ -1,11 +1,14 @@
 package kianxali.cpu.x86;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
-import kianxali.cpu.x86.xml.OpcodeOperand;
-import kianxali.cpu.x86.xml.OpcodeOperand.AddressType;
+import kianxali.cpu.x86.X86CPU.Model;
 import kianxali.cpu.x86.xml.OpcodeSyntax;
 import kianxali.cpu.x86.xml.XMLParserX86;
 import kianxali.decoder.Context;
@@ -17,28 +20,33 @@ import kianxali.image.ByteSequence;
 import org.xml.sax.SAXException;
 
 public final class X86Decoder implements Decoder {
-    private static DecodeTree<OpcodeSyntax> xmlTree;
+    private static final Logger LOG = Logger.getLogger("kianxali.x86.decoder");
+    private static XMLParserX86 parser;
     private final DecodeTree<OpcodeSyntax> decodeTree;
 
     private X86Decoder(DecodeTree<OpcodeSyntax> tree) {
         this.decodeTree = tree;
     }
 
-    public static synchronized X86Decoder fromXML(String xmlPath, String dtdPath) throws SAXException, IOException {
-        if(xmlTree == null) {
-            xmlTree = createDecodeTree(xmlPath, dtdPath);
-        }
-        return new X86Decoder(xmlTree);
+    public static synchronized X86Decoder fromXML(Model cpu, ExecutionMode mode, String xmlPath, String dtdPath) throws SAXException, IOException {
+        DecodeTree<OpcodeSyntax> tree = createDecodeTree(cpu, mode, xmlPath, dtdPath);
+        return new X86Decoder(tree);
     }
 
-    private static DecodeTree<OpcodeSyntax> createDecodeTree(String xmlPath, String dtdPath) throws SAXException, IOException {
-        XMLParserX86 parser = new XMLParserX86();
+    private static DecodeTree<OpcodeSyntax> createDecodeTree(Model cpu, ExecutionMode mode, String xmlPath, String dtdPath) throws SAXException, IOException {
+        if(parser == null) {
+            LOG.config("Creating x86 decoding tree from XML...");
+            parser = new XMLParserX86();
+            parser.loadXML(xmlPath, dtdPath);
+        }
         DecodeTree<OpcodeSyntax> tree = new DecodeTree<>();
-
-        parser.loadXML(xmlPath, dtdPath);
 
         // build decode tree
         for(final OpcodeSyntax entry : parser.getSyntaxEntries()) {
+            // if an opcode isn't supported on this model, don't put it into the tree
+            if(!entry.getOpcodeEntry().isSupportedOn(cpu, mode)) {
+                continue;
+            }
             short[] prefix = entry.getPrefix();
             if(entry.hasEncodedRegister()) {
                 int regIndex = entry.getEncodedRegisterPrefixIndex();
@@ -50,7 +58,63 @@ public final class X86Decoder implements Decoder {
                 tree.addEntry(prefix, entry);
             }
         }
+
+        // filter decode tree: remove opcodes that have a special version in the requested mode
+        filterTree(mode, tree);
+
         return tree;
+    }
+
+    private static void filterTree(ExecutionMode mode, DecodeTree<OpcodeSyntax> tree) {
+        for(short s : tree.getLeaveCodes()) {
+            List<OpcodeSyntax> syntaxes = tree.getLeaves(s);
+            if(syntaxes.size() > 1) {
+                filterSpecializedMode(syntaxes, mode);
+                // if(syntaxes.size() > 1) {
+                //    LOG.finest("Double prefix: " + syntaxes.get(0).getPrefixAsHexString());
+                // }
+            }
+        }
+        for(DecodeTree<OpcodeSyntax> subTree : tree.getSubTrees()) {
+            filterTree(mode, subTree);
+        }
+    }
+
+    private static boolean filterSpecializedMode(List<OpcodeSyntax> syntaxes, ExecutionMode mode) {
+        boolean hasSpecialMode = false;
+        for(OpcodeSyntax syntax : syntaxes) {
+            if(syntax.getOpcodeEntry().mode == mode) {
+                hasSpecialMode = true;
+            }
+        }
+
+        if(hasSpecialMode) {
+            Iterator<OpcodeSyntax> it = syntaxes.iterator();
+            while(it.hasNext()) {
+                OpcodeSyntax syntax = it.next();
+                if(syntax.getOpcodeEntry().mode != mode) {
+                    // LOG.finest("Removing due to specialized version: " + syntax);
+                    it.remove();
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public List<OpcodeSyntax> getAllSyntaxes() {
+        return getAllSyntaxesFromTree(decodeTree);
+    }
+
+    private List<OpcodeSyntax> getAllSyntaxesFromTree(DecodeTree<OpcodeSyntax> tree) {
+        List<OpcodeSyntax> res = new LinkedList<>();
+        for(short s : tree.getLeaveCodes()) {
+            res.addAll(tree.getLeaves(s));
+        }
+        for(DecodeTree<OpcodeSyntax> subTree : tree.getSubTrees()) {
+            res.addAll(getAllSyntaxesFromTree(subTree));
+        }
+        return Collections.unmodifiableList(res);
     }
 
     @Override
@@ -58,9 +122,6 @@ public final class X86Decoder implements Decoder {
         X86Context ctx = (X86Context) context;
         ctx.reset();
         X86Instruction inst = decodeNext(seq, ctx, decodeTree);
-        if(inst != null) {
-            inst.decode(seq, ctx);
-        }
         return inst;
     }
 
@@ -84,77 +145,15 @@ public final class X86Decoder implements Decoder {
             return null;
         }
 
-        OpcodeSyntax res = null;
-
-        // first pass: check if there is a special 64 bit op if in 64 bit mode
-        if(ctx.getExecMode() == ExecutionMode.LONG) {
-            res = selectSyntax(ctx, leaves, sequence, true);
-        }
-
-        // if nothing found, do normal search in 2nd pass
-        if(res == null) {
-            res = selectSyntax(ctx, leaves, sequence, false);
-        }
-
-        if(res == null) {
-            sequence.skip(-1);
-            ctx.getPrefix().popPrefixByte();
+        X86Instruction inst = new X86Instruction(ctx.getInstructionPointer(), leaves);
+        if(!inst.decode(sequence, ctx)) {
             return null;
         }
-
-        X86Instruction inst = new X86Instruction(ctx.getInstructionPointer(), res);
         if(inst.isPrefix()) {
             ctx.applyPrefix(inst);
             return decodeNext(sequence, ctx, decodeTree);
         } else {
             return inst;
         }
-    }
-
-    private OpcodeSyntax selectSyntax(X86Context ctx, List<OpcodeSyntax> syntaxes, ByteSequence seq, boolean onlyLong) {
-        OpcodeSyntax res = null;
-        Short extension = null;
-
-        for(OpcodeSyntax syntax : syntaxes) {
-            if(onlyLong && syntax.getOpcodeEntry().mode != ExecutionMode.LONG) {
-                continue;
-            }
-            if(syntax.isExtended()) {
-                if(extension == null) {
-                    if(syntax.getOpcodeEntry().secondOpcode != null) {
-                        // TODO: verify that this is always correct
-                        extension = (short) ((syntax.getOpcodeEntry().secondOpcode >> 3) & 0x07);
-                    } else {
-                        extension = (short) ((seq.readUByte() >> 3) & 0x07);
-                        seq.skip(-1);
-                    }
-                }
-                if(syntax.getExtension() == extension && ctx.acceptsOpcode(syntax)) {
-                    if(res == null || fitsBetter(ctx, seq, syntax, res)) {
-                        res = syntax;
-                    }
-                }
-            } else if(ctx.acceptsOpcode(syntax)) {
-                if(res == null || fitsBetter(ctx, seq, syntax, res)) {
-                    res = syntax;
-                }
-            }
-        }
-        return res;
-    }
-
-    private boolean fitsBetter(X86Context ctx, ByteSequence seq, OpcodeSyntax candidate, OpcodeSyntax current) {
-        // check if a candidate has an encoding that forces us to do a look-ahead...
-        for(OpcodeOperand op : candidate.getOperands()) {
-            if(!op.indirect && op.adrType == AddressType.MOD_RM_M_FPU_REG) {
-                // this forces a mod/rm with mode 3, i.e. next byte must have a 0xC0 mask
-                short s = seq.readUByte();
-                seq.skip(-1);
-                if((s & 0xC0) != 0) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

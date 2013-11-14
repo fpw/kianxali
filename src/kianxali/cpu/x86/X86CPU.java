@@ -350,23 +350,29 @@ public final class X86CPU {
         switch(op.adrType) {
         case MOD_RM_R:
         case MOD_RM_M:
-        case MOD_RM_M_FORCE:
-        case LEAST_REG:     return getOperandRegisterGeneral(op, ctx, id);
-        case MOD_RM_R_SEG:  return getSegmentRegister(id);
+        case LEAST_REG:
+            return getOperandRegisterGeneral(op, ctx, id);
+        case MOD_RM_R_SEG:
+            return getSegmentRegister(id);
         case MOD_RM_M_FPU:
-        case MOD_RM_M_FPU_REG:  return getFPURegister(id);
+        case MOD_RM_M_FPU_REG:
+            return getFPURegister(id);
         case MOD_RM_MMX:
-        case MOD_RM_R_MMX:  return getMMXRegister(id);
+        case MOD_RM_R_MMX:
+            return getMMXRegister(id);
         case MOD_RM_XMM:
-        case MOD_RM_R_XMM:  return getXMMRegister(id);
-        case SEGMENT2:      return getSegmentRegister((short) ((id >> 3) & 0x3));
+        case MOD_RM_R_XMM:
+            return getXMMRegister(id);
+        case SEGMENT2:
+            return getSegmentRegister((short) ((id >> 3) & 0x3));
         case GROUP:
             switch(op.directGroup) {
             case GENERIC:   return getOperandRegisterGeneral(op, ctx, id);
             case X87FPU:    return getFPURegister(id);
             default:        throw new UnsupportedOperationException("invalid directGroup: " + op.directGroup);
             }
-        default:    throw new UnsupportedOperationException("invalid adrType: " + op.adrType);
+        default:
+            throw new UnsupportedOperationException("invalid adrType: " + op.adrType);
         }
     }
 }
