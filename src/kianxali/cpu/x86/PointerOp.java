@@ -143,6 +143,7 @@ public class PointerOp implements Operand {
         case O16:   str.append("word ptr "); break;
         case O32:   str.append("dword ptr "); break;
         case O64:   str.append("qword ptr "); break;
+        case O80:   str.append("tbyte ptr "); break;
         case O128:  str.append("dqword ptr "); break;
         default: throw new RuntimeException("invalid operand size: " + opType);
         }

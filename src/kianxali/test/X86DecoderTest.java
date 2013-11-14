@@ -27,7 +27,9 @@ public class X86DecoderTest {
     @Test
     public void testSpecials() {
         checkOpcode32(new short[] {0xDF,  0xE0}, "fnstsw ax");
-        checkOpcode32(new short[] {0xDD,  0x05, 0x98, 0x9A, 0x68, 0x00}, "fld "); // ffree is DD C0 .. C7
+        checkOpcode32(new short[] {0xDB,  0x29}, "fld tbyte ptr [ecx]");
+        checkOpcode32(new short[] {0xDD,  0xC5}, "ffree st5");
+        checkOpcode32(new short[] {0xDD,  0x05, 0x40, 0x30, 0x20, 0x10}, "fld qword ptr [10203040h]");
     }
 
     @Test

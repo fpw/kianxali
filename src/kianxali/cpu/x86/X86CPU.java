@@ -18,7 +18,7 @@ public final class X86CPU {
     }
 
     public enum OperandSize {
-        O8, O16, O32, O64, O128
+        O8, O16, O32, O64, O80, O128
     }
 
     public enum AddressSize {
@@ -162,6 +162,8 @@ public final class X86CPU {
         case SCALAR_SINGLE:
         case DQWORD:
             return OperandSize.O128;
+        case REAL_EXT_FPU:
+            return OperandSize.O80;
         default:
             throw new UnsupportedOperationException("invalid generic register type: " + opType);
         }
@@ -352,7 +354,7 @@ public final class X86CPU {
         case LEAST_REG:     return getOperandRegisterGeneral(op, ctx, id);
         case MOD_RM_R_SEG:  return getSegmentRegister(id);
         case MOD_RM_M_FPU:
-        case MOD_RM_R_FPU:  return getFPURegister(id);
+        case MOD_RM_M_FPU_REG:  return getFPURegister(id);
         case MOD_RM_MMX:
         case MOD_RM_R_MMX:  return getMMXRegister(id);
         case MOD_RM_XMM:

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
+import kianxali.cpu.x86.xml.OpcodeOperand;
+import kianxali.cpu.x86.xml.OpcodeOperand.AddressType;
 import kianxali.cpu.x86.xml.OpcodeSyntax;
 import kianxali.cpu.x86.xml.XMLParserX86;
 import kianxali.decoder.Context;
@@ -109,7 +111,7 @@ public final class X86Decoder implements Decoder {
         }
     }
 
-    private OpcodeSyntax selectSyntax(X86Context ctx, List<OpcodeSyntax> syntaxes, ByteSequence sequence, boolean onlyLong) {
+    private OpcodeSyntax selectSyntax(X86Context ctx, List<OpcodeSyntax> syntaxes, ByteSequence seq, boolean onlyLong) {
         OpcodeSyntax res = null;
         Short extension = null;
 
@@ -123,17 +125,17 @@ public final class X86Decoder implements Decoder {
                         // TODO: verify that this is always correct
                         extension = (short) ((syntax.getOpcodeEntry().secondOpcode >> 3) & 0x07);
                     } else {
-                        extension = (short) ((sequence.readUByte() >> 3) & 0x07);
-                        sequence.skip(-1);
+                        extension = (short) ((seq.readUByte() >> 3) & 0x07);
+                        seq.skip(-1);
                     }
                 }
                 if(syntax.getExtension() == extension && ctx.acceptsOpcode(syntax)) {
-                    if(res == null || fitsBetter(ctx, syntax, res)) {
+                    if(res == null || fitsBetter(ctx, seq, syntax, res)) {
                         res = syntax;
                     }
                 }
             } else if(ctx.acceptsOpcode(syntax)) {
-                if(res == null || fitsBetter(ctx, syntax, res)) {
+                if(res == null || fitsBetter(ctx, seq, syntax, res)) {
                     res = syntax;
                 }
             }
@@ -141,7 +143,18 @@ public final class X86Decoder implements Decoder {
         return res;
     }
 
-    private boolean fitsBetter(X86Context ctx, OpcodeSyntax s, OpcodeSyntax old) {
-        return true;
+    private boolean fitsBetter(X86Context ctx, ByteSequence seq, OpcodeSyntax candidate, OpcodeSyntax current) {
+        // check if a candidate has an encoding that forces us to do a look-ahead...
+        for(OpcodeOperand op : candidate.getOperands()) {
+            if(!op.indirect && op.adrType == AddressType.MOD_RM_M_FPU_REG) {
+                // this forces a mod/rm with mode 3, i.e. next byte must have a 0xC0 mask
+                short s = seq.readUByte();
+                seq.skip(-1);
+                if((s & 0xC0) != 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

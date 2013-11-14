@@ -79,9 +79,7 @@ public class X86Instruction implements Instruction {
         case OFFSET:                return decodeOffset(seq, op, ctx);
         case LEAST_REG:             return decodeLeastReg(op, ctx);
 
-        case MOD_RM_R_FORCE:
         case MOD_RM_R_FORCE2:
-        case MOD_RM_R_FPU:
         case MOD_RM_R_MMX:
         case MOD_RM_R_SEG:
         case MOD_RM_R_XMM:
@@ -91,6 +89,8 @@ public class X86Instruction implements Instruction {
             }
             return modRM.getReg(op);
 
+        case MOD_RM_M_FORCE_GEN:
+        case MOD_RM_M_FPU_REG:
         case MOD_RM_M_FORCE:
         case MOD_RM_M_FPU:
         case MOD_RM_M_MMX:

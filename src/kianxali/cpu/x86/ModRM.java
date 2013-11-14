@@ -111,10 +111,10 @@ public class ModRM {
     public Operand getMem32(OpcodeOperand op) {
         OperandType operType = op.operType;
         if(operType == null) {
-            if(op.adrType == AddressType.MOD_RM_M_FORCE) {
-                operType = OperandType.WORD_DWORD_64;
-            } else {
-                throw new UnsupportedOperationException("invalid address type: " + op.adrType);
+            switch(op.adrType) {
+            case MOD_RM_M_FORCE:    operType = OperandType.WORD_DWORD_64; break;
+            case MOD_RM_M_FPU_REG:      operType = OperandType.DOUBLE_FPU; break;
+            default: throw new UnsupportedOperationException("invalid address type: " + op.adrType);
             }
         }
         switch(codedMod) {

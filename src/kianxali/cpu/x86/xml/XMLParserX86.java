@@ -380,9 +380,9 @@ public class XMLParserX86 {
         case "E":   return AddressType.MOD_RM_M;
         case "F":   return AddressType.FLAGS;
         case "ES":  return AddressType.MOD_RM_M_FPU;
-        case "EST": return AddressType.MOD_RM_R_FPU;
+        case "EST": return AddressType.MOD_RM_M_FPU_REG;
         case "G":   return AddressType.MOD_RM_R;
-        case "H":   return AddressType.MOD_RM_R_FORCE;
+        case "H":   return AddressType.MOD_RM_M_FORCE_GEN;
         case "I":   return AddressType.IMMEDIATE;
         case "J":   return AddressType.RELATIVE;
         case "M":   return AddressType.MOD_RM_M_FORCE;
