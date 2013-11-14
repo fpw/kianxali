@@ -112,26 +112,36 @@ public final class X86Decoder implements Decoder {
     private OpcodeSyntax selectSyntax(X86Context ctx, List<OpcodeSyntax> syntaxes, ByteSequence sequence, boolean onlyLong) {
         OpcodeSyntax res = null;
         Short extension = null;
+
         for(OpcodeSyntax syntax : syntaxes) {
             if(onlyLong && syntax.getOpcodeEntry().mode != ExecutionMode.LONG) {
                 continue;
             }
             if(syntax.isExtended()) {
                 if(extension == null) {
-                    extension = (short) ((sequence.readUByte() >> 3) & 0x07);
-                    sequence.skip(-1);
+                    if(syntax.getOpcodeEntry().secondOpcode != null) {
+                        // TODO: verify that this is always correct
+                        extension = (short) ((syntax.getOpcodeEntry().secondOpcode >> 3) & 0x07);
+                    } else {
+                        extension = (short) ((sequence.readUByte() >> 3) & 0x07);
+                        sequence.skip(-1);
+                    }
                 }
-                if(syntax.getExtension() == extension) {
-                    res = syntax;
-                    break;
+                if(syntax.getExtension() == extension && ctx.acceptsOpcode(syntax)) {
+                    if(res == null || fitsBetter(ctx, syntax, res)) {
+                        res = syntax;
+                    }
                 }
             } else if(ctx.acceptsOpcode(syntax)) {
-                // TODO: what if there are multiple syntaxes for this sequence without extension?
-                // take first match for now
-                res = syntax;
-                break;
+                if(res == null || fitsBetter(ctx, syntax, res)) {
+                    res = syntax;
+                }
             }
         }
         return res;
+    }
+
+    private boolean fitsBetter(X86Context ctx, OpcodeSyntax s, OpcodeSyntax old) {
+        return true;
     }
 }

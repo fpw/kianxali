@@ -92,9 +92,11 @@ public class Disassembler {
             Instruction inst = null;
             try {
                 inst = decoder.decodeOpcode(ctx, image.getByteSequence(memAddr));
-                decodedLocations.put(memAddr, inst);
-                examineInstruction(inst);
-                memAddr += inst.getSize();
+                if(inst != null) {
+                    decodedLocations.put(memAddr, inst);
+                    examineInstruction(inst);
+                    memAddr += inst.getSize();
+                }
             } catch(Exception e) {
                 System.err.println(String.format("Disassemble error at %08X: %s", memAddr, inst));
                 throw e;

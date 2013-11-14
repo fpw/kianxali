@@ -262,22 +262,8 @@ public class X86Instruction implements Instruction {
     }
 
     private Operand decodeGroup(OpcodeOperand op, X86Context ctx) {
-        switch(op.directGroup) {
-        case GENERIC:
-            Register reg = X86CPU.getOperandRegister(op, ctx, (short) op.numForGroup);
-            return new RegisterOp(op.usageType, reg);
-        case CONTROL:
-        case DEBUG:
-        case MMX:
-        case MSR:
-        case SEGMENT:
-        case SYSTABP:
-        case X87FPU:
-        case XCR:
-        case XMM:
-        default:
-            throw new UnsupportedOperationException("unsupported direct group: " + op.directGroup);
-        }
+        Register reg = X86CPU.getOperandRegister(op, ctx, (short) op.numForGroup);
+        return new RegisterOp(op.usageType, reg);
     }
 
     // whether this instruction stops an execution trace

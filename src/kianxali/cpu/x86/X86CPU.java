@@ -159,6 +159,7 @@ public final class X86CPU {
             } else {
                 return OperandSize.O16;
             }
+        case SCALAR_SINGLE:
         case DQWORD:
             return OperandSize.O128;
         default:
@@ -360,6 +361,7 @@ public final class X86CPU {
         case GROUP:
             switch(op.directGroup) {
             case GENERIC:   return getOperandRegisterGeneral(op, ctx, id);
+            case X87FPU:    return getFPURegister(id);
             default:        throw new UnsupportedOperationException("invalid directGroup: " + op.directGroup);
             }
         default:    throw new UnsupportedOperationException("invalid adrType: " + op.adrType);

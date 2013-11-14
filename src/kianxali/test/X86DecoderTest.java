@@ -25,6 +25,12 @@ public class X86DecoderTest {
     }
 
     @Test
+    public void testSpecials() {
+        checkOpcode32(new short[] {0xDF,  0xE0}, "fnstsw ax");
+        checkOpcode32(new short[] {0xDD,  0x05, 0x98, 0x9A, 0x68, 0x00}, "fld "); // ffree is DD C0 .. C7
+    }
+
+    @Test
     public void testModRM16() {
         // mode 0
         checkOpcode16(new short[] {0x88, 0x38}, "mov byte ptr [bx + si], bh");
