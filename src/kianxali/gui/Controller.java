@@ -24,6 +24,7 @@ public class Controller implements DisassemblingListener {
 
     public void showGUI() {
         gui = new KianxaliGUI(this);
+        gui.setLocationRelativeTo(null);
         gui.setVisible(true);
     }
 

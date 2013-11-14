@@ -1,6 +1,7 @@
 package kianxali.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Logger;
@@ -25,6 +26,7 @@ public class KianxaliGUI extends JFrame {
         this.controller = controller;
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setMinimumSize(new Dimension(640, 480));
 
         setupLookAndFeel();
         setupMenu();
@@ -40,6 +42,7 @@ public class KianxaliGUI extends JFrame {
         if(System.getProperty("os.name").equals("Mac OS X")) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -74,5 +77,9 @@ public class KianxaliGUI extends JFrame {
         if(res == JFileChooser.APPROVE_OPTION) {
             controller.onFileOpened(chooser.getSelectedFile());
         }
+    }
+
+    public ImageView getImageView() {
+        return imageView;
     }
 }
