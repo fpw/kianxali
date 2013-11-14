@@ -26,6 +26,10 @@ public class X86DecoderTest {
 
     @Test
     public void testSpecials() {
+        // Prefixes
+        checkOpcode32(new short[] {0x66,  0xD1, 0xEF}, "shr di, 1h");
+
+        // FPU
         checkOpcode32(new short[] {0xDF,  0xE0}, "fnstsw ax");
         checkOpcode32(new short[] {0xDB,  0x29}, "fld tbyte ptr [ecx]");
         checkOpcode32(new short[] {0xDD,  0xC5}, "ffree st5");

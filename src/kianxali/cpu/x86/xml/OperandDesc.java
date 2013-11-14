@@ -18,7 +18,7 @@ public class OperandDesc {
         MOD_RM_R_FORCE2,    // to be checked: modRM.reg regardless of mdoe TODO
         MOD_RM_XMM,         // modRM as XMM
         MOD_RM_R_XMM,       // modRM.reg as XMM
-        MOD_RM_M_XMM,       // modRM.mem as XMM
+        MOD_RM_M_XMM_REG,       // modRM.mem as XMM
         IMMEDIATE,          // immediate coded after opcode
         RELATIVE,           // relative address coded after opcode
         MOD_RM_MMX,         // modRM.reg or modRM.mem as MMX TODO

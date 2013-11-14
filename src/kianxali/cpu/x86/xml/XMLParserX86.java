@@ -397,7 +397,7 @@ public class XMLParserX86 {
         case "S33": return AddressType.SEGMENT33;
         case "SC":  return AddressType.STACK;
         case "T":   return AddressType.TEST;
-        case "U":   return AddressType.MOD_RM_M_XMM;
+        case "U":   return AddressType.MOD_RM_M_XMM_REG;
         case "V":   return AddressType.MOD_RM_R_XMM;
         case "W":   return AddressType.MOD_RM_XMM;
         case "X":   return AddressType.DS_ESI_RSI;

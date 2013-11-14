@@ -84,7 +84,10 @@ public class Disassembler {
 
     private void disassembleTrace(long memAddr, Context ctx, Decoder decoder) {
         while(!Thread.currentThread().isInterrupted()) {
-            if(decodedLocations.containsKey(memAddr) || !isValidAddress(memAddr)) {
+            if(!isValidAddress(memAddr)) {
+                break;
+            }
+            if(decodedLocations.containsKey(memAddr) && decodedLocations.get(memAddr) instanceof Instruction) {
                 break;
             }
 
@@ -123,9 +126,12 @@ public class Disassembler {
     // checks whether the instruction's operands could start a new trace or data
     private void examineInstruction(Instruction inst) {
         for(long addr : inst.getBranchAddresses()) {
-            if(!decodedLocations.containsKey(addr)) {
-                pendingInstructionAddresses.add(addr);
+            if(decodedLocations.containsKey(addr)) {
+                if(decodedLocations.get(addr) instanceof Instruction) {
+                    continue;
+                }
             }
+            pendingInstructionAddresses.add(addr);
         }
 
         for(Data data : inst.getAssociatedData()) {

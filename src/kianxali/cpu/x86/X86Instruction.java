@@ -133,7 +133,7 @@ public class X86Instruction implements Instruction {
         case MOD_RM_M_FORCE_GEN:
         case MOD_RM_M_FPU:
         case MOD_RM_M_MMX:
-        case MOD_RM_M_XMM:
+        case MOD_RM_M_XMM_REG:
         case MOD_RM_M:
             if(modRM == null) {
                 modRM = new ModRM(seq, ctx);
@@ -214,12 +214,8 @@ public class X86Instruction implements Instruction {
 
     private Operand decodeImmediate(ByteSequence seq, OperandDesc op, X86Context ctx) {
         long immediate;
-        if(op.operType == null) {
-            if(op.hardcoded != null) {
-                immediate = Long.parseLong(op.hardcoded, 16);
-            } else {
-                throw new UnsupportedOperationException("invalid immediate: " + op.adrType);
-            }
+        if(op.hardcoded != null) {
+            immediate = Long.parseLong(op.hardcoded, 16);
         } else {
             switch(op.operType) {
             case BYTE:

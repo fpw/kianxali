@@ -159,13 +159,15 @@ public final class X86CPU {
             } else {
                 return OperandSize.O16;
             }
+        case SCALAR_DOUBLE:
         case SCALAR_SINGLE:
         case DQWORD:
+        case DOUBLE_128:
             return OperandSize.O128;
         case REAL_EXT_FPU:
             return OperandSize.O80;
         default:
-            throw new UnsupportedOperationException("invalid generic register type: " + opType);
+            throw new UnsupportedOperationException("invalid operand type: " + opType);
         }
     }
 
@@ -360,6 +362,7 @@ public final class X86CPU {
         case MOD_RM_MMX:
         case MOD_RM_R_MMX:
             return getMMXRegister(id);
+        case MOD_RM_M_XMM_REG:
         case MOD_RM_XMM:
         case MOD_RM_R_XMM:
             return getXMMRegister(id);
