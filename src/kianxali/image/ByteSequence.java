@@ -63,6 +63,10 @@ public final class ByteSequence {
         return bytes.hasRemaining();
     }
 
+    public int getRemaining() {
+        return bytes.remaining();
+    }
+
     public short readUByte() {
         return (short) (bytes.get() & 0xFF);
     }

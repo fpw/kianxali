@@ -316,6 +316,7 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0xDB,  0x29}, "fld tbyte ptr [ecx]");
         checkOpcode32(new short[] {0xDD,  0xC5}, "ffree st5");
         checkOpcode32(new short[] {0xDD,  0x05, 0x40, 0x30, 0x20, 0x10}, "fld qword ptr [10203040h]");
+        checkOpcode32(new short[] {0xD9,  0x58, 0x1C}, "fstp dword ptr [eax + 1Ch]");
     }
 
     @Test

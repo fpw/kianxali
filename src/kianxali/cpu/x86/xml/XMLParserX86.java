@@ -361,6 +361,9 @@ public class XMLParserX86 {
         if(attr.contains("undef")) {
             currentModeOpts.undefined = true;
         }
+        if("yes".equals(atts.getValue("particular"))) {
+            currentModeOpts.particular = true;
+        }
 
         String tttnStr = atts.getValue("tttn");
         if(tttnStr != null) {

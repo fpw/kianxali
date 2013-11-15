@@ -85,6 +85,9 @@ public final class X86Decoder implements Decoder {
         Model latestStart = null;
         Short extension = null;
         for(OpcodeSyntax syntax : syntaxes) {
+            if(syntax.getOpcodeEntry().particular) {
+                continue;
+            }
             if(latestStart == null || syntax.getOpcodeEntry().getStartModel().ordinal() > latestStart.ordinal()) {
                 latestStart = syntax.getOpcodeEntry().getStartModel();
                 extension = syntax.getExtension();
@@ -150,7 +153,7 @@ public final class X86Decoder implements Decoder {
         ctx.reset();
         X86Instruction inst = decodeNext(seq, ctx, decodeTree);
         if(inst == null) {
-            int count = 5;
+            int count = Math.min(5, seq.getRemaining());
             StringBuilder hex = new StringBuilder();
             for(int i = 0; i < count; i++) {
                 hex.append(String.format("%2X ", seq.readUByte()));

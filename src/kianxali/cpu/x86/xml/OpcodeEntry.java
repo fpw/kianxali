@@ -20,6 +20,7 @@ public class OpcodeEntry {
     public boolean opSize;
     public boolean modRM;
     public boolean lock;
+    public boolean particular;
     public byte tttn;
 
     public Short prefix; // prefix that must be present for this opcode
