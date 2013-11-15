@@ -373,7 +373,7 @@ public class XMLParserX86 {
         switch(val) {
         case "A":   return AddressType.DIRECT;
         case "BA":  return AddressType.DS_EAX_RAX;
-        case "BB":  return AddressType.DS_EAX_AL_RBX;
+        case "BB":  return AddressType.DS_EBX_AL_RBX;
         case "BD":  return AddressType.DS_EDI_RDI;
         case "C":   return AddressType.CONTROL;
         case "D":   return AddressType.DEBUG;

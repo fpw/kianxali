@@ -59,6 +59,10 @@ public final class ByteSequence {
         return bytes.position();
     }
 
+    public boolean hasMore() {
+        return bytes.hasRemaining();
+    }
+
     public short readUByte() {
         return (short) (bytes.get() & 0xFF);
     }

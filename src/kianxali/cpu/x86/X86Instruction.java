@@ -179,13 +179,25 @@ public class X86Instruction implements Instruction {
             }
             return modRM.getMem(op, true, false);
         case SEGMENT2:
-            Register reg = X86CPU.getOperandRegister(op, ctx, syntax.getOpcodeEntry().opcode);
-            return new RegisterOp(op.usageType, reg);
-        case SEGMENT30:
         case SEGMENT33:
+        case SEGMENT30:
         case CONTROL:
         case DEBUG:
-        case DS_EAX_AL_RBX:
+            Register reg = X86CPU.getOperandRegister(op, ctx, syntax.getOpcodeEntry().opcode);
+            return new RegisterOp(op.usageType, reg);
+        case DS_EBX_AL_RBX: {
+            PointerOp res;
+            switch(X86CPU.getAddressSize(ctx)) {
+            case A16: res = new PointerOp(ctx, Register.BX, 1, Register.AL); break;
+            case A32: res = new PointerOp(ctx, Register.EBX, 1, Register.AL); break;
+            case A64: res = new PointerOp(ctx, Register.RBX, 1, Register.AL); break;
+            default: throw new UnsupportedOperationException("invalid address size: " + X86CPU.getAddressSize(ctx));
+            }
+            res.setOpType(op.operType);
+            res.setUsage(op.usageType);
+            res.setSegment(Segment.DS);
+            return res;
+        }
         case DS_EAX_RAX:
         case DS_EDI_RDI:
         case FLAGS:

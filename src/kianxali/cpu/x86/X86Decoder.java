@@ -60,23 +60,46 @@ public final class X86Decoder implements Decoder {
         }
 
         // filter decode tree: remove opcodes that have a special version in the requested mode
-        filterTree(mode, tree);
+        filterTree(cpu, mode, tree);
 
         return tree;
     }
 
-    private static void filterTree(ExecutionMode mode, DecodeTree<OpcodeSyntax> tree) {
+    private static void filterTree(Model cpu, ExecutionMode mode, DecodeTree<OpcodeSyntax> tree) {
         for(short s : tree.getLeaveCodes()) {
             List<OpcodeSyntax> syntaxes = tree.getLeaves(s);
             if(syntaxes.size() > 1) {
                 filterSpecializedMode(syntaxes, mode);
+                filterReplaced(syntaxes, cpu);
                 // if(syntaxes.size() > 1) {
                 //    LOG.finest("Double prefix: " + syntaxes.get(0).getPrefixAsHexString());
                 // }
             }
         }
         for(DecodeTree<OpcodeSyntax> subTree : tree.getSubTrees()) {
-            filterTree(mode, subTree);
+            filterTree(cpu, mode, subTree);
+        }
+    }
+
+    private static void filterReplaced(List<OpcodeSyntax> syntaxes, Model cpu) {
+        Model latestStart = null;
+        Short extension = null;
+        for(OpcodeSyntax syntax : syntaxes) {
+            if(latestStart == null || syntax.getOpcodeEntry().getStartModel().ordinal() > latestStart.ordinal()) {
+                latestStart = syntax.getOpcodeEntry().getStartModel();
+                extension = syntax.getExtension();
+            }
+        }
+
+        Iterator<OpcodeSyntax> it = syntaxes.iterator();
+        while(it.hasNext()) {
+            OpcodeSyntax syntax = it.next();
+            if(syntax.getExtension() != extension) {
+                continue;
+            }
+            if(syntax.getOpcodeEntry().getStartModel().ordinal() < latestStart.ordinal()) {
+                it.remove();
+            }
         }
     }
 
@@ -139,6 +162,9 @@ public final class X86Decoder implements Decoder {
     }
 
     private X86Instruction decodeNext(ByteSequence sequence, X86Context ctx, DecodeTree<OpcodeSyntax> tree) {
+        if(!sequence.hasMore()) {
+            return null;
+        }
         short s = sequence.readUByte();
         ctx.getPrefix().pushPrefixByte(s);
 

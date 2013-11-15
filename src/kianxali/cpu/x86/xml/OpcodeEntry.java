@@ -71,6 +71,7 @@ public class OpcodeEntry {
         if(mode.ordinal() > pMode.ordinal()) {
             return false;
         }
+
         return true;
     }
 

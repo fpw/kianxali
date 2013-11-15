@@ -368,6 +368,8 @@ public final class X86CPU {
             return getXMMRegister(id);
         case SEGMENT2:
             return getSegmentRegister((short) ((id >> 3) & 0x3));
+        case SEGMENT33:
+            return getSegmentRegister((short) ((id >> 3) & 0x7));
         case GROUP:
             switch(op.directGroup) {
             case GENERIC:   return getOperandRegisterGeneral(op, ctx, id);

@@ -25,6 +25,82 @@ public class X86DecoderTest {
     }
 
     @Test
+    public void testOpcodes() {
+        checkOpcode32(new short[] {0x98}, "cwde");
+        // checkOpcode32(new short[] {0x66, 0x98}, "cbw");
+        checkOpcode32(new short[] {0x99}, "cdq");
+        // checkOpcode32(new short[] {0x66, 0x99}, "cwd");
+        checkOpcode32(new short[] {0xF5}, "cmc");
+        checkOpcode32(new short[] {0xF8}, "clc");
+        checkOpcode32(new short[] {0xF9}, "stc");
+        checkOpcode32(new short[] {0xFA}, "cli");
+        checkOpcode32(new short[] {0xFB}, "sti");
+        checkOpcode32(new short[] {0xFC}, "cld");
+        checkOpcode32(new short[] {0xFD}, "std");
+        // checkOpcode32(new short[] {0xD6}, "setalc");
+        checkOpcode32(new short[] {0xD7}, "xlat byte ptr ds:[ebx + al]");
+        checkOpcode32(new short[] {0xC9}, "leave");
+        checkOpcode32(new short[] {0xF1}, "int1");
+        checkOpcode32(new short[] {0xCD, 0x01}, "int 1h");
+        checkOpcode32(new short[] {0xCC}, "int 3h"); // should be int3, XML needs fixing
+        checkOpcode32(new short[] {0xCD, 0x03}, "int 3h");
+        // checkOpcode32(new short[] {0xF1}, "smi");
+        checkOpcode32(new short[] {0xCE}, "into");
+        checkOpcode32(new short[] {0xCF}, "iretd");
+        // checkOpcode32(new short[] {0x66, 0xCF}, "iretw");
+        checkOpcode32(new short[] {0xC3}, "retn");
+        checkOpcode32(new short[] {0xC2, 0x10, 0x20}, "retn 2010h");
+        checkOpcode32(new short[] {0xCA, 0x10, 0x20}, "retf 2010h");
+        checkOpcode32(new short[] {0xCB}, "retf");
+        checkOpcode32(new short[] {0xF4}, "hlt");
+        checkOpcode32(new short[] {0x9F}, "lahf");
+        checkOpcode32(new short[] {0x9E}, "sahf");
+        checkOpcode32(new short[] {0x9C}, "pushfd");
+        checkOpcode32(new short[] {0x9D}, "popfd");
+        // checkOpcode32(new short[] {0x66, 0x9C}, "pushf");
+        // checkOpcode32(new short[] {0x66, 0x9D}, "popf");
+        // checkOpcode32(new short[] {0x66, 0x60}, "pushaw");
+        checkOpcode32(new short[] {0x60}, "pushad");
+        checkOpcode32(new short[] {0x61}, "popad");
+        // checkOpcode32(new short[] {0x66, 0x61}, "popad");
+        checkOpcode32(new short[] {0x27}, "daa");
+        checkOpcode32(new short[] {0x37}, "aaa");
+        checkOpcode32(new short[] {0x2F}, "das");
+        checkOpcode32(new short[] {0x3F}, "aas");
+        checkOpcode32(new short[] {0x50}, "push eax");
+        checkOpcode32(new short[] {0x51}, "push ecx");
+        checkOpcode32(new short[] {0x52}, "push edx");
+        checkOpcode32(new short[] {0x53}, "push ebx");
+        checkOpcode32(new short[] {0x54}, "push esp");
+        checkOpcode32(new short[] {0x55}, "push ebp");
+        checkOpcode32(new short[] {0x56}, "push esi");
+        checkOpcode32(new short[] {0x57}, "push edi");
+        checkOpcode32(new short[] {0x58}, "pop eax");
+        checkOpcode32(new short[] {0x59}, "pop ecx");
+        checkOpcode32(new short[] {0x5A}, "pop edx");
+        checkOpcode32(new short[] {0x5B}, "pop ebx");
+        checkOpcode32(new short[] {0x5C}, "pop esp");
+        checkOpcode32(new short[] {0x5D}, "pop ebp");
+        checkOpcode32(new short[] {0x5E}, "pop esi");
+        checkOpcode32(new short[] {0x5F}, "pop edi");
+        checkOpcode32(new short[] {0xFF, 0x30}, "push dword ptr [eax]");
+        checkOpcode32(new short[] {0x8F, 0x00}, "pop dword ptr [eax]");
+        checkOpcode32(new short[] {0x06}, "push es");
+        checkOpcode32(new short[] {0x0E}, "push cs");
+        checkOpcode32(new short[] {0x16}, "push ss");
+        checkOpcode32(new short[] {0x1E}, "push ds");
+        checkOpcode32(new short[] {0x07}, "pop es");
+        checkOpcode32(new short[] {0x17}, "pop ss");
+        checkOpcode32(new short[] {0x1F}, "pop ds");
+        checkOpcode32(new short[] {0x6A, 0x01}, "push 1h");
+        checkOpcode32(new short[] {0x68, 0x10, 0x20, 0x30, 0x40}, "push 40302010h");
+        checkOpcode32(new short[] {0x0F, 0xA0}, "push fs");
+        checkOpcode32(new short[] {0x0F, 0xA1}, "pop fs");
+        checkOpcode32(new short[] {0x0F, 0xA8}, "push gs");
+        checkOpcode32(new short[] {0x0F, 0xA9}, "pop gs");
+    }
+
+    @Test
     public void testSpecials() {
         // Prefixes
         checkOpcode32(new short[] {0x66,  0xD1, 0xEF}, "shr di, 1h");

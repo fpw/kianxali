@@ -35,7 +35,7 @@ public class OperandDesc {
         ES_EDI_RDI,         // by group: memory through ES:EDI or RDI
         DS_ESI_RSI,         // by group: memory through DS:ESI or RSI
         DS_EAX_RAX,         // by group: memory through DS:EAX or RAX
-        DS_EAX_AL_RBX,      // by group: memory through DS:EAX+AL or RBX+AL
+        DS_EBX_AL_RBX,      // by group: memory through DS:EBX+AL or RBX+AL
         DS_EDI_RDI          // by group: memory through DS:EDI or RDI
     }
 
