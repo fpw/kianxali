@@ -260,14 +260,16 @@ public class X86Instruction implements Instruction {
                 default: throw new UnsupportedOperationException("invalid size: " + X86CPU.getOperandSize(ctx, op.operType));
                 }
                 break;
-            case POINTER:
-                switch(X86CPU.getAddressSize(ctx)) {
-                case A16: immediate = seq.readUWord(); break;
-                case A32: immediate = seq.readUDword(); break;
-                case A64: immediate = seq.readSQword(); break;
-                default: throw new UnsupportedOperationException("unsupported pointer size: " + X86CPU.getAddressSize(ctx));
+            case POINTER: {
+                long seg, off;
+                switch(X86CPU.getOperandSize(ctx, op.operType)) {
+                case O16:  off = seq.readUWord(); break;
+                case O32:  off = seq.readUDword(); break;
+                default: throw new UnsupportedOperationException("unsupported pointer type: " + X86CPU.getOperandSize(ctx, op.operType));
                 }
-                break;
+                seg = seq.readUWord();
+                return new ImmediateOp(op.usageType, seg, off);
+            }
             default:
                 throw new UnsupportedOperationException("unsupported immediate type: " + op.operType);
             }

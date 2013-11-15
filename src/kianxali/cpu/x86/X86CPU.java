@@ -143,6 +143,20 @@ public final class X86CPU {
             } else {
                 return OperandSize.O64;
             }
+        case POINTER_REX:
+            if(ctx.getPrefix().rexWPrefix) {
+                return OperandSize.O80;
+            } else if(ctx.getPrefix().opSizePrefix) {
+                return OperandSize.O16;
+            } else {
+                return OperandSize.O32;
+            }
+        case POINTER:
+            if(ctx.getPrefix().opSizePrefix) {
+                return OperandSize.O16;
+            } else {
+                return OperandSize.O32;
+            }
         case DWORD_INT_FPU:
         case REAL_SINGLE_FPU:
             return OperandSize.O32;
@@ -163,6 +177,7 @@ public final class X86CPU {
         case SCALAR_SINGLE:
         case DQWORD:
         case DOUBLE_128:
+        case SINGLE_128:
             return OperandSize.O128;
         case REAL_EXT_FPU:
             return OperandSize.O80;

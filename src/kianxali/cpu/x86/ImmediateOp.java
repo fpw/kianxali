@@ -7,14 +7,26 @@ import kianxali.util.OutputFormatter;
 public class ImmediateOp implements Operand {
     private final UsageType usage;
     private final long immediate;
+    private final Long segment;
 
     public ImmediateOp(UsageType usage, long immediate) {
         this.usage = usage;
         this.immediate = immediate;
+        this.segment = null;
+    }
+
+    public ImmediateOp(UsageType usage, long seg, long off) {
+        this.usage = usage;
+        this.immediate = off;
+        this.segment = seg;
     }
 
     public long getImmediate() {
         return immediate;
+    }
+
+    public Long getSegment() {
+        return segment;
     }
 
     @Override
@@ -24,6 +36,10 @@ public class ImmediateOp implements Operand {
 
     @Override
     public String asString(OutputFormatter options) {
-        return options.formatImmediate(immediate);
+        if(segment != null) {
+            return options.formatImmediate(segment) + ":" + options.formatImmediate(immediate);
+        } else {
+            return options.formatImmediate(immediate);
+        }
     }
 }
