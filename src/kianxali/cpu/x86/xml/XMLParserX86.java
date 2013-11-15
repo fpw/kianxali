@@ -106,11 +106,16 @@ public class XMLParserX86 {
             inOpcdExt = true;
             break;
         case "syntax":
-            // TODO: attribute mod: mem|nomem
             if(opcdExt != null) {
                 currentSyntax = new OpcodeSyntax(currentEntry, opcdExt);
             } else {
                 currentSyntax = new OpcodeSyntax(currentEntry);
+            }
+            String mod = atts.getValue("mod");
+            if("mem".equals(mod)) {
+                currentSyntax.setModRMMustMem(true);
+            } else if("nomem".equals(mod)) {
+                currentSyntax.setModRMMustReg(true);
             }
             inSyntax = true;
             break;

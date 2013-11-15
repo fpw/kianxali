@@ -33,6 +33,14 @@ public class ModRM {
         }
     }
 
+    public boolean isRMMem() {
+        return codedMod != 3;
+    }
+
+    public boolean isRMReg() {
+        return codedMod == 3;
+    }
+
     public Operand getReg(OperandDesc op) {
         Register reg = X86CPU.getOperandRegister(op, ctx, codedReg);
         return new RegisterOp(op.usageType, reg);
@@ -49,7 +57,7 @@ public class ModRM {
     }
 
     public Operand getMem16(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
-        if(codedMod == 3) {
+        if(isRMReg()) {
             // encoding specifies register (or user forced so)
             if(!allowRegister) {
                 return null;
@@ -106,7 +114,7 @@ public class ModRM {
     }
 
     public Operand getMem32(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
-        if(codedMod == 3) {
+        if(isRMReg()) {
             // encoding specifies register (or user forced so)
             if(!allowRegister) {
                 return null;

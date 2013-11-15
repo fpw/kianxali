@@ -12,6 +12,7 @@ public class OpcodeSyntax {
     private final OpcodeEntry entry; // syntax belongs to this entry
     private final List<OperandDesc> operands;
     private Short extension;
+    private boolean modRMMustMem, modRMMustReg;
     private X86Mnemonic mnemonic;
 
     {
@@ -25,6 +26,22 @@ public class OpcodeSyntax {
     public OpcodeSyntax(OpcodeEntry entry, short extension) {
         this.entry = entry;
         this.extension = extension;
+    }
+
+    public void setModRMMustMem(boolean must) {
+        this.modRMMustMem = must;
+    }
+
+    public void setModRMMustReg(boolean must) {
+        this.modRMMustReg = must;
+    }
+
+    public boolean isModRMMustMem() {
+        return modRMMustMem;
+    }
+
+    public boolean isModRMMustReg() {
+        return modRMMustReg;
     }
 
     public OpcodeEntry getOpcodeEntry() {
@@ -67,7 +84,7 @@ public class OpcodeSyntax {
     // negative from end of opcode
     public int getEncodedRegisterRelativeIndex() {
         int pos = 0;
-        if(entry.twoByte) {
+        if(entry.secondOpcode != null) {
             pos = 1;
         }
         return pos;

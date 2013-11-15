@@ -70,7 +70,12 @@ public class X86Instruction implements Instruction {
         OpcodeEntry entry = syntax.getOpcodeEntry();
         if(entry.modRM) {
             modRM = new ModRM(seq, ctx);
+            if((syntax.isModRMMustMem() && !modRM.isRMMem()) || (syntax.isModRMMustReg() && !modRM.isRMReg())) {
+                seq.skip(-1);
+                return false;
+            }
         }
+
         for(OperandDesc op : syntax.getOperands()) {
             if(op.indirect) {
                 continue;
@@ -79,6 +84,7 @@ public class X86Instruction implements Instruction {
             if(decodedOp != null) {
                 operands.add(decodedOp);
             } else {
+                // failure to decode one operand -> failure to decode instruction
                 seq.seek(operandPos);
                 return false;
             }
@@ -340,7 +346,11 @@ public class X86Instruction implements Instruction {
             res.append("\t");
         }
         res.append(prefix.toString());
-        res.append(syntax.getMnemonic().toString().toLowerCase());
+        if(syntax.getMnemonic() == null) {
+            res.append("NO_MNEM");
+        } else {
+            res.append(syntax.getMnemonic().toString().toLowerCase());
+        }
         for(int i = 0; i < operands.size(); i++) {
             if(i == 0) {
                 res.append(" ");

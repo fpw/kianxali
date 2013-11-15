@@ -12,6 +12,10 @@ import kianxali.util.OutputFormatter;
 import org.junit.Before;
 import org.junit.Test;
 
+// Test suite: https://code.google.com/p/corkami/source/browse/trunk/wip/MakePE/examples/asm/opcodes32.asm
+
+// TODO: done to line 596
+
 public class X86DecoderTest {
     private OutputFormatter format;
     private X86Context ctx16, ctx32, ctx64;
@@ -34,14 +38,67 @@ public class X86DecoderTest {
         testIncDec();
         testMov();
         testArithmetic();
+        testBit();
         testJMPCall();
 
         testMMX();
         testSSE();
+        testVM();
         testMisc();
         testSpecials();
 
         testControlDebug();
+    }
+
+    private void testVM() {
+        checkOpcode32(new short[] {0x0F, 0x01, 0xC1}, "vmcall");
+        checkOpcode32(new short[] {0x0F, 0x01, 0xC2}, "vmlaunch");
+        checkOpcode32(new short[] {0x0F, 0x01, 0xC3}, "vmresume");
+        checkOpcode32(new short[] {0x0F, 0x01, 0xC4}, "vmxoff");
+        checkOpcode32(new short[] {0x0F, 0x01, 0xC8}, "monitor");
+        checkOpcode32(new short[] {0x0F, 0x01, 0xC9}, "mwait");
+        checkOpcode32(new short[] {0x0F, 0x01, 0xD0}, "xgetbv");
+        checkOpcode32(new short[] {0x0F, 0x01, 0xD1}, "xsetbv");
+        // checkOpcode32(new short[] {0x0F, 0x01, 0xD8}, "vmrun");
+        // checkOpcode32(new short[] {0x0F, 0x01, 0xD9}, "vmcall");
+        // checkOpcode32(new short[] {0x0F, 0x01, 0xDA}, "vmload");
+        // checkOpcode32(new short[] {0x0F, 0x01, 0xDB}, "vmsave");
+        // checkOpcode32(new short[] {0x0F, 0x01, 0xDC}, "stgi");
+        // checkOpcode32(new short[] {0x0F, 0x01, 0xDD}, "clgi");
+        // checkOpcode32(new short[] {0x0F, 0x01, 0xDE}, "skinit");
+        // checkOpcode32(new short[] {0x0F, 0x01, 0xDF}, "invlpga");
+        checkOpcode32(new short[] {0x0F, 0x78, 0x00}, "vmread dword ptr [eax], eax");
+        checkOpcode32(new short[] {0x0F, 0x79, 0x00}, "vmwrite eax, dword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xC7, 0x30}, "vmptrld qword ptr [eax]");
+        checkOpcode32(new short[] {0x66, 0x0F, 0xC7, 0x30}, "vmclear qword ptr [eax]");
+        checkOpcode32(new short[] {0xF3, 0x0F, 0xC7, 0x30}, "vmxon qword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xC7, 0x38}, "vmptrst qword ptr [eax]");
+    }
+
+    private void testBit() {
+        checkOpcode32(new short[] {0x0F, 0xA3, 0x00}, "bt dword ptr [eax], eax");
+        checkOpcode32(new short[] {0x0F, 0xBA, 0xE0, 0x01}, "bt eax, 1h");
+        checkOpcode32(new short[] {0x0F, 0xAB, 0x00}, "bts dword ptr [eax], eax");
+        checkOpcode32(new short[] {0x0F, 0xBA, 0xE8, 0x01}, "bts eax, 1h");
+        checkOpcode32(new short[] {0x0F, 0xB3, 0x00}, "btr dword ptr [eax], eax");
+        // checkOpcode32(new short[] {0x0F, 0xF0, 0x00}, "btr eax, 0");
+        checkOpcode32(new short[] {0x0F, 0xBB, 0x00}, "btc dword ptr [eax], eax");
+        // checkOpcode32(new short[] {0x0F, 0xF8, 0x00}, "btc eax, 0");
+        checkOpcode32(new short[] {0x0F, 0xA4, 0x00, 0x01}, "shld dword ptr [eax], eax, 1h");
+        checkOpcode32(new short[] {0x0F, 0xAC, 0x00, 0x01}, "shrd dword ptr [eax], eax, 1h");
+        checkOpcode32(new short[] {0x0F, 0xA5, 0x00}, "shld dword ptr [eax], eax, cl");
+        checkOpcode32(new short[] {0x0F, 0xAD, 0x00}, "shrd dword ptr [eax], eax, cl");
+        checkOpcode32(new short[] {0x0F, 0xBC, 0x00}, "bsf eax, dword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xBD, 0x00}, "bsr eax, dword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xC8}, "bswap eax");
+        checkOpcode32(new short[] {0x0F, 0xC9}, "bswap ecx");
+        checkOpcode32(new short[] {0x0F, 0xCA}, "bswap edx");
+        checkOpcode32(new short[] {0x0F, 0xCB}, "bswap ebx");
+        checkOpcode32(new short[] {0x0F, 0xCC}, "bswap esp");
+        checkOpcode32(new short[] {0x0F, 0xCD}, "bswap ebp");
+        checkOpcode32(new short[] {0x0F, 0xCE}, "bswap esi");
+        checkOpcode32(new short[] {0x0F, 0xCF}, "bswap edi");
+        checkOpcode32(new short[] {0x66, 0x0F, 0xC8}, "bswap ax");
     }
 
     private void testControlDebug() {
@@ -147,6 +204,11 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0xBD, 0x10, 0x20, 0x30, 0x40}, "mov ebp, 40302010h");
         checkOpcode32(new short[] {0xBE, 0x10, 0x20, 0x30, 0x40}, "mov esi, 40302010h");
         checkOpcode32(new short[] {0xBF, 0x10, 0x20, 0x30, 0x40}, "mov edi, 40302010h");
+        checkOpcode32(new short[] {0x0F, 0xB6, 0x00}, "movzx eax, byte ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xB7, 0x00}, "movzx eax, word ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xBE, 0x00}, "movsx eax, byte ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xBF, 0x00}, "movsx eax, word ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xC3, 0x00}, "movnti dword ptr [eax], eax");
     }
 
     private void testArithmetic() {
@@ -212,6 +274,8 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0x33, 0x00}, "xor eax, dword ptr [eax]");
         checkOpcode32(new short[] {0x34, 0x00}, "xor al, 0");
         checkOpcode32(new short[] {0x35, 0x40, 0x30, 0x20, 0x10}, "xor eax, 10203040h");
+        checkOpcode32(new short[] {0x0F, 0xC0, 0x00}, "xadd byte ptr [eax], al");
+        checkOpcode32(new short[] {0x0F, 0xC1, 0x00}, "xadd dword ptr [eax], eax");
     }
 
     private void testJMPCall() {
@@ -249,6 +313,15 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0x0F, 0x6F, 0x00}, "movq mm0, qword ptr [eax]");
         checkOpcode32(new short[] {0x0F, 0x7E, 0x00}, "movd dword ptr [eax], mm0");
         checkOpcode32(new short[] {0x0F, 0x7F, 0x00}, "movq qword ptr [eax], mm0");
+        checkOpcode32(new short[] {0x0F, 0xC4, 0x00, 0x01}, "pinsrw mm0, word ptr [eax], 1h");
+        checkOpcode32(new short[] {0x0F, 0xC5, 0xC0, 0x01}, "pextrw eax, mm0, 1h");
+        checkOpcode32(new short[] {0x0F, 0xD8, 0x00}, "psubusb mm0, qword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xD9, 0x00}, "psubusw mm0, qword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xDB, 0x00}, "pand mm0, qword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xDF, 0x00}, "pandn mm0, qword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xEB, 0x00}, "por mm0, qword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xEF, 0x00}, "pxor mm0, qword ptr [eax]");
+
 
         // SSE variants
         checkOpcode32(new short[] {0x66, 0x0F, 0x60, 0x00}, "punpcklbw xmm0, dqword ptr [eax]");
@@ -277,6 +350,12 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0xF3, 0x0F, 0x6F, 0x00}, "movdqu xmm0, dqword ptr [eax]");
         checkOpcode32(new short[] {0xF3, 0x0F, 0x7E, 0x00}, "movq xmm0, qword ptr [eax]");
         checkOpcode32(new short[] {0xF3, 0x0F, 0x7F, 0x00}, "movdqu dqword ptr [eax], xmm0");
+        checkOpcode32(new short[] {0x66, 0x0F, 0xC4, 0x00, 0x01}, "pinsrw xmm0, word ptr [eax], 1h");
+        checkOpcode32(new short[] {0x66, 0x0F, 0x3A, 0x22, 0x00, 0x01}, "pinsrd xmm0, dword ptr [eax], 1h");
+        checkOpcode32(new short[] {0x66, 0x0F, 0xC5, 0xC0, 0x01}, "pextrw eax, xmm0, 1h");
+        checkOpcode32(new short[] {0x66, 0x0F, 0x3A, 0x14, 0xC0, 0x01}, "pextrb eax, xmm0, 1h");
+        checkOpcode32(new short[] {0x66, 0x0F, 0x3A, 0x15, 0xC0, 0x01}, "pextrw eax, xmm0, 1h");
+        checkOpcode32(new short[] {0x66, 0x0F, 0x3A, 0x16, 0xC0, 0x01}, "pextrd eax, xmm0, 1h");
     }
 
     private void testSSE() {
@@ -338,6 +417,7 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0xF2, 0x0F, 0x5F, 0x00}, "maxsd xmm0, qword ptr [eax]");
         checkOpcode32(new short[] {0xF3, 0x0F, 0x5D, 0x00}, "minss xmm0, dword ptr [eax]");
         checkOpcode32(new short[] {0xF3, 0x0F, 0x5F, 0x00}, "maxss xmm0, dword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0xC6, 0x00, 0x01}, "shufps xmm0, xmmword ptr [eax], 1h");
     }
 
     private void testMisc() {
@@ -397,7 +477,6 @@ public class X86DecoderTest {
         // checkOpcode32(new short[] {0xE3, 0x02}, "jecxz 4h");
         checkOpcode32(new short[] {0x67, 0xE3, 0x02}, "jcxz 5h");
         checkOpcode32(new short[] {0xC8, 0x10, 0x20, 0x30}, "enter 2010h, 30h");
-
         // checkOpcode32(new short[] {0x0F, 0x05}, "loadall");
         // checkOpcode32(new short[] {0x0F, 0x07}, "loadall");
         checkOpcode32(new short[] {0x0F, 0x06}, "clts");
@@ -406,24 +485,6 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0x0F, 0x08}, "invd");
         checkOpcode32(new short[] {0x0F, 0x09}, "wbinvd");
         checkOpcode32(new short[] {0xF3, 0x90}, "pause");
-        checkOpcode32(new short[] {0x0F, 0x01, 0xC1}, "vmcall");
-        checkOpcode32(new short[] {0x0F, 0x01, 0xC2}, "vmlaunch");
-        checkOpcode32(new short[] {0x0F, 0x01, 0xC3}, "vmresume");
-        checkOpcode32(new short[] {0x0F, 0x01, 0xC4}, "vmxoff");
-        checkOpcode32(new short[] {0x0F, 0x01, 0xC8}, "monitor");
-        checkOpcode32(new short[] {0x0F, 0x01, 0xC9}, "mwait");
-        checkOpcode32(new short[] {0x0F, 0x01, 0xD0}, "xgetbv");
-        checkOpcode32(new short[] {0x0F, 0x01, 0xD1}, "xsetbv");
-        // checkOpcode32(new short[] {0x0F, 0x01, 0xD8}, "vmrun");
-        // checkOpcode32(new short[] {0x0F, 0x01, 0xD9}, "vmcall");
-        // checkOpcode32(new short[] {0x0F, 0x01, 0xDA}, "vmload");
-        // checkOpcode32(new short[] {0x0F, 0x01, 0xDB}, "vmsave");
-        // checkOpcode32(new short[] {0x0F, 0x01, 0xDC}, "stgi");
-        // checkOpcode32(new short[] {0x0F, 0x01, 0xDD}, "clgi");
-        // checkOpcode32(new short[] {0x0F, 0x01, 0xDE}, "skinit");
-        // checkOpcode32(new short[] {0x0F, 0x01, 0xDF}, "invlpga");
-        checkOpcode32(new short[] {0x0F, 0x78, 0x00}, "vmread dword ptr [eax], eax");
-        checkOpcode32(new short[] {0x0F, 0x79, 0x00}, "vmwrite eax, dword ptr [eax]");
         checkOpcode32(new short[] {0x0F, 0x01, 0xF9}, "rdtscp");
         checkOpcode32(new short[] {0x0F, 0x02, 0x00}, "lar eax, word ptr [eax]");
         checkOpcode32(new short[] {0x0F, 0x03, 0x00}, "lsl eax, word ptr [eax]");
@@ -441,6 +502,11 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0x0F, 0x35}, "sysexit");
         checkOpcode32(new short[] {0x0F, 0x77}, "emms");
         // checkOpcode32(new short[] {0x0F, 0x0E}, "femms");
+        checkOpcode32(new short[] {0x0F, 0xB0, 0x00}, "cmpxchg byte ptr [eax], al");
+        checkOpcode32(new short[] {0x0F, 0xB1, 0x00}, "cmpxchg dword ptr [eax], eax");
+        // checkOpcode32(new short[] {0x0F, 0xA7, 0x00}, "cmpxchg dword ptr [eax], eax");
+        // checkOpcode32(new short[] {0x0F, 0xA6, 0x00}, "cmpxchg dword ptr [eax], eax");
+        checkOpcode32(new short[] {0x0F, 0xC7, 0x08}, "cmpxchg8b qword ptr [eax]");
     }
 
     private void testSpecials() {

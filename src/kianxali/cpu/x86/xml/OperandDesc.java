@@ -23,7 +23,7 @@ public class OperandDesc {
         RELATIVE,           // relative address coded after opcode
         MOD_RM_MMX,         // modRM.reg or modRM.mem as MMX TODO
         MOD_RM_R_MMX,       // modRM.reg as MMX register
-        MOD_RM_M_MMX,       // modRM.mem pointing to MMX qword
+        MOD_RM_M_MMX,       // modRM.mem pointing to MMX qword / reg
         OFFSET,             // offset coded after opcode, TODO check difference to DIRECT
         LEAST_REG,          // least 3 bits of opcode (!) select general register
         GROUP,              // indirectly given by instruction -> look at DirectGroup

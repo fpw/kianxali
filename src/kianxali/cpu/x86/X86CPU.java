@@ -428,6 +428,7 @@ public final class X86CPU {
             return getFPURegister(id);
         case MOD_RM_MMX:
         case MOD_RM_R_MMX:
+        case MOD_RM_M_MMX:
             return getMMXRegister(id);
         case MOD_RM_M_XMM_REG:
         case MOD_RM_XMM:

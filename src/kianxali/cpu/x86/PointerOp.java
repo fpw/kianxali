@@ -141,7 +141,9 @@ public class PointerOp implements Operand {
 
         switch(opType) {
         case SINGLE_128:
-        case DOUBLE_128:    str.append("xmmword ptr "); break;
+        case DOUBLE_128:
+            str.append("xmmword ptr ");
+            break;
         default:
             switch(X86CPU.getOperandSize(context, opType)) {
             case O8:    str.append("byte ptr "); break;
