@@ -65,7 +65,7 @@ public final class X86CPU {
         MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7,
 
         // SSE registers
-        XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7,
+        XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15
     }
 
     public enum ExecutionMode {
@@ -303,7 +303,7 @@ public final class X86CPU {
     }
 
     private static Register getFPURegister(short id) {
-        switch(id) {
+        switch(id & 0x07) {
         case 0: return Register.ST0;
         case 1: return Register.ST1;
         case 2: return Register.ST2;
@@ -318,7 +318,7 @@ public final class X86CPU {
     }
 
     private static Register getMMXRegister(short id) {
-        switch(id) {
+        switch(id & 0x07) {
         case 0: return Register.MM0;
         case 1: return Register.MM1;
         case 2: return Register.MM2;
@@ -328,7 +328,7 @@ public final class X86CPU {
         case 6: return Register.MM6;
         case 7: return Register.MM7;
         default:
-            throw new UnsupportedOperationException("invalid XMM register: " + id);
+            throw new UnsupportedOperationException("invalid MMX register: " + id);
         }
     }
 
@@ -342,6 +342,14 @@ public final class X86CPU {
         case 5: return Register.XMM5;
         case 6: return Register.XMM6;
         case 7: return Register.XMM7;
+        case 8: return Register.XMM8;
+        case 9: return Register.XMM9;
+        case 10: return Register.XMM10;
+        case 11: return Register.XMM11;
+        case 12: return Register.XMM12;
+        case 13: return Register.XMM13;
+        case 14: return Register.XMM14;
+        case 15: return Register.XMM15;
         default:
             throw new UnsupportedOperationException("invalid XMM register: " + id);
         }

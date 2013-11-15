@@ -1,4 +1,4 @@
-package kianxali.gui;
+package kianxali.gui.model.imagefile;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;

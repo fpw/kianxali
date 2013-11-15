@@ -85,6 +85,7 @@ public class X86Context implements Context {
         case 0x44:
         case 0x45:
         case 0x46:
+        case 0x47:
         case 0x48:
         case 0x49:
         case 0x4A:
