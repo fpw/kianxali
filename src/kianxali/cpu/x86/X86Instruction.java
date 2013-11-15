@@ -63,6 +63,7 @@ public class X86Instruction implements Instruction {
             }
         }
 
+        operands.clear();
         ModRM modRM = null;
         long operandPos = seq.getPosition();
 
@@ -121,25 +122,25 @@ public class X86Instruction implements Instruction {
                 modRM = new ModRM(seq, ctx);
             }
             return modRM.getReg(op);
-
-        // Msr : mod_rm_m_force, fpu r
-
         case MOD_RM_MUST_M:
             if(modRM == null) {
                 modRM = new ModRM(seq, ctx);
             }
             return modRM.getMem(op, false, false);
         case MOD_RM_M_FPU_REG:
+        case MOD_RM_M_XMM_REG:
+            if(modRM == null) {
+                modRM = new ModRM(seq, ctx);
+            }
+            return modRM.getMem(op, true, true);
         case MOD_RM_M_FORCE_GEN:
         case MOD_RM_M_FPU:
         case MOD_RM_M_MMX:
-        case MOD_RM_M_XMM_REG:
         case MOD_RM_M:
             if(modRM == null) {
                 modRM = new ModRM(seq, ctx);
             }
             return modRM.getMem(op, true, false);
-
         case DIRECT:
         case IMMEDIATE:             return decodeImmediate(seq, op, ctx);
         case RELATIVE:              return decodeRelative(seq, op);

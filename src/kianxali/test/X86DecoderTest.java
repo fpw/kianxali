@@ -203,6 +203,12 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0x0F, 0x11, 0x00}, "movups xmmword ptr [eax], xmm0");
         checkOpcode32(new short[] {0x0F, 0x14, 0x00}, "unpcklps xmm0, qword ptr [eax]");
         checkOpcode32(new short[] {0x0F, 0x15, 0x00}, "unpckhps xmm0, qword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0x12, 0xC0}, "movhlps xmm0, xmm0");
+        checkOpcode32(new short[] {0x0F, 0x13, 0x00}, "movlps qword ptr [eax], xmm0");
+        checkOpcode32(new short[] {0x0F, 0x12, 0x00}, "movlps xmm0, qword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0x16, 0xC0}, "movlhps xmm0, xmm0");
+        checkOpcode32(new short[] {0x0F, 0x16, 0x00}, "movhps xmm0, qword ptr [eax]");
+        checkOpcode32(new short[] {0x0F, 0x17, 0x00}, "movhps qword ptr [eax], xmm0");
     }
 
     @Test

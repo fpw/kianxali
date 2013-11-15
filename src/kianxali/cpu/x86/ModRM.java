@@ -38,23 +38,25 @@ public class ModRM {
         return new RegisterOp(op.usageType, reg);
     }
 
-    public Operand getMem(OperandDesc op, boolean allowRegister, boolean enforceRegister) {
+    public Operand getMem(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
         AddressSize addrSize = X86CPU.getAddressSize(ctx);
         switch(addrSize) {
-        case A16:   return getMem16(op, allowRegister, enforceRegister);
-        case A32:   return getMem32(op, allowRegister, enforceRegister);
-        case A64:   return getMem32(op, allowRegister, enforceRegister);
+        case A16:   return getMem16(op, allowRegister, mustBeRegister);
+        case A32:   return getMem32(op, allowRegister, mustBeRegister);
+        case A64:   return getMem32(op, allowRegister, mustBeRegister);
         default:    throw new UnsupportedOperationException("invalid address size: " + addrSize);
         }
     }
 
-    public Operand getMem16(OperandDesc op, boolean allowRegister, boolean enforceRegister) {
-        if(!allowRegister && codedMod != 3) {
-            return null;
-        }
-
-        if(codedMod == 3 || enforceRegister) {
+    public Operand getMem16(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
+        if(codedMod == 3) {
+            // encoding specifies register (or user forced so)
+            if(!allowRegister) {
+                return null;
+            }
             return new RegisterOp(op.usageType, X86CPU.getOperandRegister(op, ctx, codedMem));
+        } else if(mustBeRegister) {
+            return null;
         }
 
         Register baseReg = null, indexReg = null;
@@ -103,13 +105,15 @@ public class ModRM {
         }
     }
 
-    public Operand getMem32(OperandDesc op, boolean allowRegister, boolean enforceRegister) {
-        if(codedMod == 3 || enforceRegister) {
+    public Operand getMem32(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
+        if(codedMod == 3) {
             // encoding specifies register (or user forced so)
             if(!allowRegister) {
                 return null;
             }
             return new RegisterOp(op.usageType, X86CPU.getOperandRegister(op, ctx, codedMem));
+        } else if(mustBeRegister) {
+            return null;
         }
 
         switch(codedMod) {
