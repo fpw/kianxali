@@ -41,6 +41,7 @@ public class Controller implements DisassemblingListener {
         try {
             // TODO: add more file types and decide somehow
             currentImage = new PEFile(file);
+            gui.getImageView().setImageFile(currentImage);
             startDisassembling();
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Couldn't load image: " + e.getMessage(), e);
