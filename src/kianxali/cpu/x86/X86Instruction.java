@@ -289,8 +289,8 @@ public class X86Instruction implements Instruction {
     }
 
     private Operand decodeLeastReg(OperandDesc op, X86Context ctx) {
-        int idx = syntax.getEncodedRegisterPrefixIndex();
-        short regId = (short) (prefix.prefixBytes.get(idx) & 0x7);
+        int regIndex = prefix.prefixBytes.size() - 1 - syntax.getEncodedRegisterRelativeIndex();
+        short regId = (short) (prefix.prefixBytes.get(regIndex) & 0x7);
         Register reg = X86CPU.getOperandRegister(op, ctx, regId);
         return new RegisterOp(op.usageType, reg);
     }

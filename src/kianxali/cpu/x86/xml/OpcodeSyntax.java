@@ -64,13 +64,11 @@ public class OpcodeSyntax {
         return Collections.unmodifiableList(operands);
     }
 
-    public int getEncodedRegisterPrefixIndex() {
+    // negative from end of opcode
+    public int getEncodedRegisterRelativeIndex() {
         int pos = 0;
-        if(entry.prefix != null) {
-            pos++;
-        }
         if(entry.twoByte) {
-            pos++;
+            pos = 1;
         }
         return pos;
     }

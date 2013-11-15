@@ -49,7 +49,7 @@ public final class X86Decoder implements Decoder {
             }
             short[] prefix = entry.getPrefix();
             if(entry.hasEncodedRegister()) {
-                int regIndex = entry.getEncodedRegisterPrefixIndex();
+                int regIndex = prefix.length - 1 - entry.getEncodedRegisterRelativeIndex();
                 for(int i = 0; i < 8; i++) {
                     tree.addEntry(prefix, entry);
                     prefix[regIndex]++;

@@ -117,7 +117,7 @@ public class PointerOp implements Operand {
             return null;
         }
 
-        if(baseRegister == null && indexRegister == null && opType != null) {
+        if(baseRegister == null && indexRegister == null) {
             // only addressed by constant -> great because we know the size then
             // TODO: work on opType directly for more information
             switch(X86CPU.getOperandSize(context, opType)) {
