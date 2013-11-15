@@ -113,7 +113,10 @@ public class X86Instruction implements Instruction {
         case OFFSET:                return decodeOffset(seq, op, ctx);
         case LEAST_REG:             return decodeLeastReg(op, ctx);
 
-        case MOD_RM_R_FORCE2:
+        case MOD_RM_R_FORCE_GEN:
+        case MOD_RM_R_CTRL:
+        case MOD_RM_R_DEBUG:
+        case MOD_RM_R_TEST:
         case MOD_RM_R_MMX:
         case MOD_RM_R_SEG:
         case MOD_RM_R_XMM:
@@ -182,8 +185,6 @@ public class X86Instruction implements Instruction {
         case SEGMENT2:
         case SEGMENT33:
         case SEGMENT30:
-        case CONTROL:
-        case DEBUG:
             Register reg = X86CPU.getOperandRegister(op, ctx, syntax.getOpcodeEntry().opcode);
             return new RegisterOp(op.usageType, reg);
         case DS_EBX_AL_RBX: {
@@ -203,7 +204,6 @@ public class X86Instruction implements Instruction {
         case DS_EDI_RDI:
         case FLAGS:
         case STACK:
-        case TEST:
         default:
             throw new UnsupportedOperationException("unsupported address type: " + op.adrType);
         }

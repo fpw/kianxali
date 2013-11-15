@@ -378,8 +378,8 @@ public class XMLParserX86 {
         case "BA":  return AddressType.DS_EAX_RAX;
         case "BB":  return AddressType.DS_EBX_AL_RBX;
         case "BD":  return AddressType.DS_EDI_RDI;
-        case "C":   return AddressType.CONTROL;
-        case "D":   return AddressType.DEBUG;
+        case "C":   return AddressType.MOD_RM_R_CTRL;
+        case "D":   return AddressType.MOD_RM_R_DEBUG;
         case "E":   return AddressType.MOD_RM_M;
         case "F":   return AddressType.FLAGS;
         case "ES":  return AddressType.MOD_RM_M_FPU;
@@ -393,13 +393,13 @@ public class XMLParserX86 {
         case "O":   return AddressType.OFFSET;
         case "P":   return AddressType.MOD_RM_R_MMX;
         case "Q":   return AddressType.MOD_RM_MMX;
-        case "R":   return AddressType.MOD_RM_R_FORCE2;
+        case "R":   return AddressType.MOD_RM_R_FORCE_GEN;
         case "S":   return AddressType.MOD_RM_R_SEG;
         case "S2":  return AddressType.SEGMENT2;
         case "S30": return AddressType.SEGMENT30;
         case "S33": return AddressType.SEGMENT33;
         case "SC":  return AddressType.STACK;
-        case "T":   return AddressType.TEST;
+        case "T":   return AddressType.MOD_RM_R_TEST;
         case "U":   return AddressType.MOD_RM_M_XMM_REG;
         case "V":   return AddressType.MOD_RM_R_XMM;
         case "W":   return AddressType.MOD_RM_XMM;

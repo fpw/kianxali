@@ -49,6 +49,15 @@ public final class X86CPU {
         // segment registers
         CS, DS, ES, FS, GS, SS,
 
+        // Control registers
+        CR0, CR2, CR3, CR4,
+
+        // Debug registers
+        DR0, DR1, DR2, DR3, DR4, DR5, DR6, DR7,
+
+        // Test registers
+        TR0, TR1, TR2, TR3, TR4, TR5, TR6, TR7,
+
         // FPU registers
         ST0, ST1, ST2, ST3, ST4, ST5, ST6, ST7,
 
@@ -138,10 +147,10 @@ public final class X86CPU {
                 return OperandSize.O32;
             }
         case DWORD_QWORD:
-            if(ctx.getPrefix().opSizePrefix) {
-                return OperandSize.O32;
-            } else {
+            if(ctx.getPrefix().rexWPrefix) {
                 return OperandSize.O64;
+            } else {
+                return OperandSize.O32;
             }
         case POINTER_REX:
             if(ctx.getPrefix().rexWPrefix) {
@@ -174,7 +183,9 @@ public final class X86CPU {
                 return OperandSize.O16;
             }
         case SCALAR_DOUBLE:
+            return OperandSize.O64;
         case SCALAR_SINGLE:
+            return OperandSize.O32;
         case DQWORD:
         case DOUBLE_128:
         case SINGLE_128:
@@ -336,6 +347,47 @@ public final class X86CPU {
         }
     }
 
+    private static Register getControlRegister(short id) {
+        switch(id) {
+        case 0: return Register.CR0;
+        case 2: return Register.CR2;
+        case 3: return Register.CR3;
+        case 4: return Register.CR4;
+        default:
+            throw new UnsupportedOperationException("invalid control register: " + id);
+        }
+    }
+
+    private static Register getDebugRegister(short id) {
+        switch(id) {
+        case 0: return Register.DR0;
+        case 1: return Register.DR1;
+        case 2: return Register.DR2;
+        case 3: return Register.DR3;
+        case 4: return Register.DR4;
+        case 5: return Register.DR5;
+        case 6: return Register.DR6;
+        case 7: return Register.DR7;
+        default:
+            throw new UnsupportedOperationException("invalid debug register: " + id);
+        }
+    }
+
+    private static Register getTestRegister(short id) {
+        switch(id) {
+        case 0: return Register.TR0;
+        case 1: return Register.TR1;
+        case 2: return Register.TR2;
+        case 3: return Register.TR3;
+        case 4: return Register.TR4;
+        case 5: return Register.TR5;
+        case 6: return Register.TR6;
+        case 7: return Register.TR7;
+        default:
+            throw new UnsupportedOperationException("invalid test register: " + id);
+        }
+    }
+
     public static Register getGenericAddressRegister(X86Context ctx, short id) {
         if(ctx.getExecMode() != ExecutionMode.LONG && id > 7) {
             throw new UnsupportedOperationException("used 64 bit register id in 32 bit mode");
@@ -385,6 +437,14 @@ public final class X86CPU {
             return getSegmentRegister((short) ((id >> 3) & 0x3));
         case SEGMENT33:
             return getSegmentRegister((short) ((id >> 3) & 0x7));
+        case MOD_RM_R_FORCE_GEN:
+            return getGenericAddressRegister(ctx, id);
+        case MOD_RM_R_DEBUG:
+            return getDebugRegister(id);
+        case MOD_RM_R_CTRL:
+            return getControlRegister(id);
+        case MOD_RM_R_TEST:
+            return getTestRegister(id);
         case GROUP:
             switch(op.directGroup) {
             case GENERIC:   return getOperandRegisterGeneral(op, ctx, id);

@@ -14,7 +14,7 @@ import kianxali.decoder.Decoder;
 import org.xml.sax.SAXException;
 
 public class X86Context implements Context {
-    private final Model model;
+    private Model model;
     private final ExecutionMode execMode;
     private long instructionPointer;
     private Prefix prefix;
@@ -107,6 +107,10 @@ public class X86Context implements Context {
         default:
             throw new UnsupportedOperationException("unknown prefix: " + opcode);
         }
+    }
+
+    public void setModel(Model model) {
+        this.model = model;
     }
 
     public Model getModel() {

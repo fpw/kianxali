@@ -5,20 +5,20 @@ import kianxali.decoder.UsageType;
 public class OperandDesc {
     public enum AddressType {
         DIRECT,             // absolute address of adressType coded after opcode
-        CONTROL,            // modRM.reg selects control register
-        DEBUG,              // modRM.reg selects debug register
-        TEST,               // modRM.reg selects test register
         MOD_RM_M,           // modRM.mem
         MOD_RM_M_FPU,       // modRM.mem but use FPU registers when not mem
         MOD_RM_M_FPU_REG,   // modRM.mem must be mode 3 with FPU reg TODO
         MOD_RM_R,           // modRM.reg
+        MOD_RM_R_CTRL,      // modRM.reg selects control register
+        MOD_RM_R_DEBUG,     // modRM.reg selects debug register
+        MOD_RM_R_TEST,      // modRM.reg selects test register
         MOD_RM_R_SEG,       // modRM.reg as segment register
         MOD_RM_M_FORCE_GEN, // to be checked: modRM.mem regardless of mode TODO
         MOD_RM_MUST_M,      // to be checked: modRM.mem regardless of mode TODO
-        MOD_RM_R_FORCE2,    // to be checked: modRM.reg regardless of mdoe TODO
+        MOD_RM_R_FORCE_GEN, // to be checked: modRM.reg regardless of mode TODO
         MOD_RM_XMM,         // modRM as XMM
         MOD_RM_R_XMM,       // modRM.reg as XMM
-        MOD_RM_M_XMM_REG,       // modRM.mem as XMM
+        MOD_RM_M_XMM_REG,   // modRM.mem as XMM
         IMMEDIATE,          // immediate coded after opcode
         RELATIVE,           // relative address coded after opcode
         MOD_RM_MMX,         // modRM.reg or modRM.mem as MMX TODO
