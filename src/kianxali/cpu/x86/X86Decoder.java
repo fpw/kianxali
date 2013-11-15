@@ -81,10 +81,12 @@ public final class X86Decoder implements Decoder {
     }
 
     private static boolean filterSpecializedMode(List<OpcodeSyntax> syntaxes, ExecutionMode mode) {
+        Short extension = null;
         boolean hasSpecialMode = false;
         for(OpcodeSyntax syntax : syntaxes) {
             if(syntax.getOpcodeEntry().mode == mode) {
                 hasSpecialMode = true;
+                extension = syntax.getExtension();
             }
         }
 
@@ -93,8 +95,10 @@ public final class X86Decoder implements Decoder {
             while(it.hasNext()) {
                 OpcodeSyntax syntax = it.next();
                 if(syntax.getOpcodeEntry().mode != mode) {
-                    // LOG.finest("Removing due to specialized version: " + syntax);
-                    it.remove();
+                    if(extension == null || extension == syntax.getExtension()) {
+                        // LOG.finest("Removing due to specialized version: " + syntax);
+                        it.remove();
+                    }
                 }
             }
         }
