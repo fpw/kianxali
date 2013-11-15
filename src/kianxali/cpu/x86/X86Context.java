@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
 
 public class X86Context implements Context {
     private Model model;
-    private final ExecutionMode execMode;
+    private ExecutionMode execMode;
     private long instructionPointer;
     private Prefix prefix;
 
@@ -107,6 +107,10 @@ public class X86Context implements Context {
         default:
             throw new UnsupportedOperationException("unknown prefix: " + opcode);
         }
+    }
+
+    public void setMode(ExecutionMode mode) {
+        this.execMode = mode;
     }
 
     public void setModel(Model model) {

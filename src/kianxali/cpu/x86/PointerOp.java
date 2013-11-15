@@ -10,10 +10,11 @@ import kianxali.decoder.Data.DataType;
 import kianxali.util.OutputFormatter;
 
 public class PointerOp implements Operand {
+    // TODO: context should be removed from here
+    private final X86Context context;
     private UsageType usage;
     private OperandType opType;
     private Segment segment;
-    private final X86Context context;
     private Register baseRegister, indexRegister;
     private Integer indexScale;
     private Long offset;

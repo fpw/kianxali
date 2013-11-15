@@ -295,6 +295,9 @@ public class XMLParserX86 {
                 if(currentOpDesc.operType == null) {
                     LOG.warning("No opType for " + currentSyntax);
                 }
+            } else if(currentOpDesc.adrType == AddressType.MOD_RM_MMX && currentOpDesc.operType == OperandType.DWORD) {
+                // TODO bug in xml?
+                currentOpDesc.operType = OperandType.QWORD;
             }
             currentOpDesc = null;
             inDst = false;
