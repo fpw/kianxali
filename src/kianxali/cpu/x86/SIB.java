@@ -2,22 +2,12 @@ package kianxali.cpu.x86;
 
 import kianxali.cpu.x86.X86CPU.Register;
 import kianxali.cpu.x86.xml.OperandDesc;
-import kianxali.cpu.x86.xml.OperandDesc.AddressType;
-import kianxali.cpu.x86.xml.OperandDesc.OperandType;
 import kianxali.image.ByteSequence;
 
 public class SIB {
     private PointerOp sibOp;
 
     public SIB(ByteSequence seq, OperandDesc op, short mode, X86Context ctx) {
-        OperandType operType = op.operType;
-        if(operType == null) {
-            if(op.adrType == AddressType.MOD_RM_MUST_M) {
-                operType = OperandType.WORD_DWORD_64;
-            } else {
-                throw new UnsupportedOperationException("invalid address type: " + op.adrType);
-            }
-        }
         short sib = seq.readUByte();
         int scale = 1 << (sib >> 6);
         short index = (short) ((sib >> 3) & 0x07);
