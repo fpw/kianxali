@@ -10,12 +10,10 @@ import java.util.List;
 import kianxali.cpu.x86.X86Context;
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
 import kianxali.cpu.x86.X86CPU.Model;
-import kianxali.image.ByteSequence;
 import kianxali.image.ImageFile;
 import kianxali.image.Section;
 
-public class PEFile implements AddressConverter, ImageFile {
-    private final ByteSequence image;
+public class PEFile extends ImageFile implements AddressConverter {
     private DOSStub dosStub;
     private PEHeader peHeader;
     private OptionalHeader optionalHeader;
@@ -23,11 +21,12 @@ public class PEFile implements AddressConverter, ImageFile {
     private Imports imports;
 
     public PEFile(File file) throws IOException {
-        image = ByteSequence.fromFile(file);
+        super(file);
         loadHeaders();
         loadImports();
     }
 
+    @Override
     public X86Context createContext() {
         if(optionalHeader.isPE64()) {
             return new X86Context(Model.ANY, ExecutionMode.LONG);
@@ -79,45 +78,35 @@ public class PEFile implements AddressConverter, ImageFile {
     }
 
     private void loadHeaders() {
-        image.lock();
-        image.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        image.seek(0);
-        dosStub = new DOSStub(image);
+        imageFile.lock();
+        imageFile.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        imageFile.seek(0);
+        dosStub = new DOSStub(imageFile);
 
-        image.seek(dosStub.getPEPointer());
-        peHeader = new PEHeader(image);
+        imageFile.seek(dosStub.getPEPointer());
+        peHeader = new PEHeader(imageFile);
 
-        optionalHeader = new OptionalHeader(image);
+        optionalHeader = new OptionalHeader(imageFile);
 
         sections = new ArrayList<>(peHeader.getNumSections());
         for(int i = 0; i < peHeader.getNumSections(); i++) {
-            sections.add(i, new PESection(image, this));
+            sections.add(i, new PESection(imageFile, this));
         }
-        image.unlock();
+        imageFile.unlock();
     }
 
     private void loadImports() {
         long importsRVA = optionalHeader.getDataDirectoryOffsetRVA(OptionalHeader.DATA_DIRECTORY_IMPORT);
         if(importsRVA != 0) {
-            image.lock();
-            image.seek(rvaToFile(importsRVA));
-            imports = new Imports(image, this);
-            image.unlock();
+            imageFile.lock();
+            imageFile.seek(rvaToFile(importsRVA));
+            imports = new Imports(imageFile, this);
+            imageFile.unlock();
         } else {
             // no imports
             imports = new Imports();
             imports.getDLLName(0); // XXX: remove
         }
-    }
-
-    public long getFirstMemAddress() {
-        return optionalHeader.getImageBase();
-    }
-
-    public long getMemorySize() {
-        PESection last = sections.get(sections.size() - 1);
-        long lastAddress = last.getVirtualAddressRVA() + last.getRawSize();
-        return lastAddress;
     }
 
     @Override
@@ -130,36 +119,17 @@ public class PEFile implements AddressConverter, ImageFile {
     }
 
     @Override
-    public Section getSectionForMemAddress(long memAddress) {
-        for(Section sec : sections) {
-            if(memAddress >= sec.getStartAddress() && memAddress < sec.getEndAddress()) {
-                return sec;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public long memToFileAddress(long memAddress) {
+    public long toFileAddress(long memAddress) {
         return memoryToFile(memAddress);
     }
 
     @Override
-    public long fileToMemAddress(long fileOffset) {
+    public long toMemAddress(long fileOffset) {
         return fileToMemory(fileOffset);
     }
 
     @Override
     public long getCodeEntryPointMem() {
         return rvaToMemory(optionalHeader.getEntryPointRVA());
-    }
-
-    @Override
-    public ByteSequence getByteSequence(long memAddress, boolean locked) {
-        if(locked) {
-            image.lock();
-        }
-        image.seek(memToFileAddress(memAddress));
-        return image;
     }
 }

@@ -3,7 +3,7 @@ package kianxali.decoder;
 import kianxali.image.ByteSequence;
 import kianxali.util.OutputFormatter;
 
-public class Data implements DecodableEntity {
+public class Data implements DecodedEntity {
     public enum DataType {
         BYTE, WORD, DWORD, QWORD, DQWORD,
         FLOAT, DOUBLE,

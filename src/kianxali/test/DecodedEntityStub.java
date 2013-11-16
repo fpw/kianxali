@@ -1,9 +1,9 @@
 package kianxali.test;
 
-import kianxali.decoder.DecodableEntity;
+import kianxali.decoder.DecodedEntity;
 import kianxali.util.OutputFormatter;
 
-public class DecodedEntityStub implements DecodableEntity {
+public class DecodedEntityStub implements DecodedEntity {
     private final long addr;
     private final int size;
     private final String name;

@@ -2,7 +2,7 @@ package kianxali.decoder;
 
 import java.util.List;
 
-public interface Instruction extends DecodableEntity {
+public interface Instruction extends DecodedEntity {
     boolean stopsTrace();
     List<Operand> getOperands();
     List<Long> getBranchAddresses();
