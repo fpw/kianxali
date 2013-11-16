@@ -7,6 +7,8 @@ import java.util.logging.Logger;
 import kianxali.decoder.DecodedEntity;
 import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblingListener;
+import kianxali.gui.model.imagefile.ImageDocument;
+import kianxali.gui.model.imagefile.ImageDocumentReader;
 import kianxali.image.ImageFile;
 import kianxali.image.pe.PEFile;
 import kianxali.util.OutputFormatter;
@@ -16,6 +18,7 @@ public class Controller implements DisassemblingListener {
 
     private final OutputFormatter formatter;
     private final Disassembler disassembler;
+    private final ImageDocument document;
     private Thread dasmThread;
     private ImageFile currentImage;
     private KianxaliGUI gui;
@@ -23,12 +26,15 @@ public class Controller implements DisassemblingListener {
     public Controller() {
         this.disassembler = new Disassembler();
         this.formatter = new OutputFormatter();
+        this.document = new ImageDocument();
 
         disassembler.addDisassemblingListener(this);
+        prepareDocument();
     }
 
     public void showGUI() {
         gui = new KianxaliGUI(this);
+        gui.getImageView().setDocument(document);
         gui.setLocationRelativeTo(null);
         gui.setVisible(true);
     }
@@ -41,7 +47,7 @@ public class Controller implements DisassemblingListener {
         try {
             // TODO: add more file types and decide somehow
             currentImage = new PEFile(file);
-            gui.getImageView().setImageFile(currentImage);
+            readImage();
             startDisassembling();
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Couldn't load image: " + e.getMessage(), e);
@@ -64,6 +70,14 @@ public class Controller implements DisassemblingListener {
             };
         };
         dasmThread.start();
+    }
+
+    private void prepareDocument() {
+    }
+
+    private void readImage() {
+        ImageDocumentReader reader = new ImageDocumentReader(document);
+        reader.read(currentImage);
     }
 
     @Override

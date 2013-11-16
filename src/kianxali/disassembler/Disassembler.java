@@ -74,6 +74,10 @@ public class Disassembler {
         LOG.fine("Disassembling: done");
     }
 
+    public ImageFile getImageFile() {
+        return image;
+    }
+
     public DecodedEntity getEntity(long memAddr) {
         return decodedLocations.get(memAddr);
     }
