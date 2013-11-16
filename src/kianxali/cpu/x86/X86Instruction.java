@@ -324,6 +324,10 @@ public class X86Instruction implements Instruction {
     // whether this instruction stops an execution trace
     @Override
     public boolean stopsTrace() {
+        X86Mnemonic mnemonic = syntax.getMnemonic();
+        if(mnemonic == null) {
+            throw new UnsupportedOperationException(String.format("No mnemonic for %s at %08X", syntax, memAddr));
+        }
         switch(syntax.getMnemonic()) {
         case JMP:
         case JMPE:

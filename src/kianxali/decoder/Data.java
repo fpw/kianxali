@@ -3,7 +3,7 @@ package kianxali.decoder;
 import kianxali.image.ByteSequence;
 import kianxali.util.OutputFormatter;
 
-public class Data implements DecodedEntity {
+public class Data implements DecodableEntity {
     public enum DataType {
         BYTE, WORD, DWORD, QWORD, DQWORD,
         FLOAT, DOUBLE,
@@ -40,6 +40,23 @@ public class Data implements DecodedEntity {
     @Override
     public long getMemAddress() {
         return memAddr;
+    }
+
+    @Override
+    public int getSize() {
+        switch(type) {
+        case BYTE:      return 1;
+        case WORD:      return 2;
+        case DWORD:     return 4;
+        case QWORD:     return 8;
+        case DQWORD:    return 16;
+        case FLOAT:     return 4;
+        case DOUBLE:    return 8;
+        case FUN_PTR:   return 4; // FIXME
+        case STRING:    return 1; // FIXME
+        case UNKNOWN:   return 1;
+        default:        return 1;
+        }
     }
 
     public DataType getType() {

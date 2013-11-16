@@ -155,7 +155,10 @@ public class PEFile implements AddressConverter, ImageFile {
     }
 
     @Override
-    public ByteSequence getByteSequence(long memAddress) {
+    public ByteSequence getByteSequence(long memAddress, boolean locked) {
+        if(locked) {
+            image.lock();
+        }
         image.seek(memToFileAddress(memAddress));
         return image;
     }

@@ -1,5 +1,6 @@
 package kianxali;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -13,6 +14,9 @@ import kianxali.cpu.x86.X86CPU.ExecutionMode;
 import kianxali.cpu.x86.X86CPU.Model;
 import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.cpu.x86.xml.OpcodeSyntax;
+import kianxali.disassembler.Disassembler;
+import kianxali.image.ImageFile;
+import kianxali.image.pe.PEFile;
 
 public final class Test {
     private static final Logger LOG = Logger.getLogger("kianxali");
@@ -44,8 +48,15 @@ public final class Test {
         }
     }
 
+    private void testDisassembler() throws IOException {
+        ImageFile image = new PEFile(new File("./targets/borland.exe"));
+        Disassembler dasm = new Disassembler(image);
+        dasm.startAnalyzer();
+    }
+
     public static void main(String[] args) throws Exception {
         Test test = new Test();
         test.checkSyntaxes();
+        test.testDisassembler();
     }
 }

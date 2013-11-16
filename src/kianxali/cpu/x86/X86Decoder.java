@@ -152,15 +152,6 @@ public final class X86Decoder implements Decoder {
         X86Context ctx = (X86Context) context;
         ctx.reset();
         X86Instruction inst = decodeNext(seq, ctx, decodeTree);
-        if(inst == null) {
-            int count = Math.min(5, seq.getRemaining());
-            StringBuilder hex = new StringBuilder();
-            for(int i = 0; i < count; i++) {
-                hex.append(String.format("%2X ", seq.readUByte()));
-            }
-            seq.skip(-count);
-            throw new RuntimeException(String.format("Couldn't decode location %08X / %X: %s", ctx.getInstructionPointer(), seq.getPosition(), hex));
-        }
         return inst;
     }
 

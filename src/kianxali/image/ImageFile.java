@@ -11,5 +11,5 @@ public interface ImageFile {
     long memToFileAddress(long memAddress);
     long fileToMemAddress(long fileOffset);
     long getCodeEntryPointMem();
-    ByteSequence getByteSequence(long memAddress);
+    ByteSequence getByteSequence(long memAddress, boolean locked);
 }
