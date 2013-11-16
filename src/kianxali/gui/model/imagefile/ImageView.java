@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 public class ImageView extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -14,7 +15,7 @@ public class ImageView extends JPanel {
         editor = new JEditorPane();
         editor.setEditable(false);
         editor.setEditorKit(new ImageEditorKit());
-        add(editor, BorderLayout.CENTER);
+        add(new JScrollPane(editor), BorderLayout.CENTER);
     }
 
     public ImageDocument getDocument() {

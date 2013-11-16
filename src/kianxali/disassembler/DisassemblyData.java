@@ -1,7 +1,9 @@
 package kianxali.disassembler;
 
+import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import kianxali.decoder.DecodedEntity;
@@ -45,6 +47,10 @@ public class DisassemblyData {
             return null;
         }
         return res;
+    }
+
+    public Set<Entry<Long, DecodedEntity>> getEntities() {
+        return Collections.unmodifiableSet(memoryMap.entrySet());
     }
 
     public int getEntityCount() {

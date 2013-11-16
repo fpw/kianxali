@@ -7,12 +7,12 @@ import java.util.TreeMap;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Element;
+import javax.swing.text.PlainDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.undo.UndoableEdit;
 
-public class ImageDocument extends DefaultStyledDocument {
+public class ImageDocument extends PlainDocument {
     private static final long serialVersionUID = 1L;
     public static final Object OFFSET_ATTRIBUTE = new Object();
 
@@ -106,11 +106,12 @@ public class ImageDocument extends DefaultStyledDocument {
         writeLock();
         try {
             SectionElement section = getSectionElement(sectionNum);
+            int startOffset = 0;
             if(section == null) {
-                System.err.println("no section");
-                return;
+                // System.err.println("no section");
+            } else {
+                startOffset = section.getOffsetForMemory(memAddr);
             }
-            int startOffset = section.getOffsetForMemory(memAddr);
             UndoableEdit ue = getContent().insertString(startOffset, info);
             DefaultDocumentEvent dde = new DefaultDocumentEvent(startOffset, info.length(), DocumentEvent.EventType.INSERT);
             dde.addEdit(ue);
