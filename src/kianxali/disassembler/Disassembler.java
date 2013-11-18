@@ -22,6 +22,9 @@ import kianxali.image.ImageFile;
 public class Disassembler {
     private static final Logger LOG = Logger.getLogger("kianxali.disassembler");
 
+    // TODO: start at first address of the code segment, walking linear to the end
+    //       while building the queue. Then iterate again until queue is empty
+
     private final Queue<Entry<Long, DecodedEntity>> workQueue;
     private final Set<DisassemblyListener> listeners;
     private final DisassemblyData disassemblyData;

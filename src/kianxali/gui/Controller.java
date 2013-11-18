@@ -16,21 +16,22 @@ import kianxali.util.OutputFormatter;
 public class Controller implements DisassemblyListener {
     private static final Logger LOG = Logger.getLogger("kianxali.gui.controller");
 
-    private final ImageDocument document;
+    private final ImageDocument imageDoc;
     private Disassembler disassembler;
     private DisassemblyData disassemblyData;
+    private long beginDisassembleTime;
     private ImageFile imageFile;
     private final OutputFormatter formatter;
     private KianxaliGUI gui;
 
     public Controller() {
-        this.document = new ImageDocument();
+        this.imageDoc = new ImageDocument();
         this.formatter = new OutputFormatter();
     }
 
     public void showGUI() {
         gui = new KianxaliGUI(this);
-        gui.getImageView().setDocument(document);
+        gui.getImageView().setDocument(imageDoc);
         gui.setLocationRelativeTo(null);
         gui.setVisible(true);
     }
@@ -56,11 +57,12 @@ public class Controller implements DisassemblyListener {
 
     @Override
     public void onAnalyzeStart() {
+        beginDisassembleTime = System.currentTimeMillis();
     }
 
     @Override
     public void onAnalyzeEntity(final DecodedEntity entity) {
-        document.setOffsetLines(entity.getMemAddress(), new String[] {entity.asString(formatter)});
+        imageDoc.setOffsetLines(entity.getMemAddress(), new String[] {entity.asString(formatter)});
     }
 
     @Override
@@ -69,5 +71,7 @@ public class Controller implements DisassemblyListener {
 
     @Override
     public void onAnalyzeStop() {
+        double duration = (System.currentTimeMillis() - beginDisassembleTime) / 1000.0;
+        LOG.info(String.format("Initial auto-analysis finished after %.2f seconds", duration));
     }
 }

@@ -20,7 +20,7 @@ public class ImageEditorKit extends EditorKit {
 
     @Override
     public ViewFactory getViewFactory() {
-        return new ImageViewFactory();
+       return new ImageViewFactory();
     }
 
     @Override
