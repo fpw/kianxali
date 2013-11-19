@@ -30,7 +30,7 @@ public class DisassemblyData {
         memoryMap.put(memAddr, new DataEntry(entity));
     }
 
-    public synchronized void clearAddress(long memAddr) {
+    public synchronized void clearEntity(long memAddr) {
         DecodedEntity old = findEntityOnAddress(memAddr);
         if(old != null) {
             memoryMap.remove(old.getMemAddress());

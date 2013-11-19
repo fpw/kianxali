@@ -7,9 +7,11 @@ import kianxali.decoder.Context;
 
 public abstract class ImageFile {
     protected final ByteSequence imageFile;
+    protected final long fileSize;
 
     public ImageFile(File file) throws IOException {
         this.imageFile = ByteSequence.fromFile(file);
+        this.fileSize = imageFile.getRemaining();
     }
 
     public abstract List<Section> getSections();
@@ -37,5 +39,9 @@ public abstract class ImageFile {
 
     public boolean isValidAddress(long memAddress) {
         return getSectionForMemAddress(memAddress) != null;
+    }
+
+    public long getFileSize() {
+        return fileSize;
     }
 }

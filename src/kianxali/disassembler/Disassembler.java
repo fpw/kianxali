@@ -125,7 +125,7 @@ public class Disassembler {
             }
         } catch(Exception e) {
             LOG.log(Level.WARNING, String.format("Data decode error (%s) at %08X", e, data.getMemAddress()), e);
-            disassemblyData.clearAddress(data.getMemAddress());
+            disassemblyData.clearEntity(data.getMemAddress());
             for(DisassemblyListener listener : listeners) {
                 listener.onAnalyzeError(data.getMemAddress());
             }
@@ -163,7 +163,7 @@ public class Disassembler {
             }
 
             if(inst == null) {
-                disassemblyData.clearAddress(memAddr);
+                disassemblyData.clearEntity(memAddr);
                 for(DisassemblyListener listener : listeners) {
                     listener.onAnalyzeError(memAddr);
                 }
