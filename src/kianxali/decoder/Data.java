@@ -65,6 +65,11 @@ public class Data implements DecodedEntity {
 
     @Override
     public String asString(OutputFormatter format) {
-        return "<" + type + ": " + content + ">";
+        if(content instanceof Number) {
+            Number n = (Number) content;
+            return "<" + type + ": " + format.formatImmediate(n.longValue()) + ">";
+        } else {
+            return "<" + type + ": " + content + ">";
+        }
     }
 }
