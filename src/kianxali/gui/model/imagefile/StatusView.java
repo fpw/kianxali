@@ -16,6 +16,7 @@ public class StatusView extends JComponent {
 
     public StatusView() {
         this.decodeStatus = new DecodeType[NUM_STRIPES + 1];
+        initNewData(0);
 
         setMinimumSize(new Dimension(0, 25));
         setPreferredSize(getMinimumSize());
