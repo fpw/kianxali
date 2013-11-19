@@ -20,22 +20,22 @@ public class DisassemblyDataTest {
 
         disassemblyData.insertEntity(a);
         assertEquals(a, disassemblyData.getEntityOnExactAddress(0x400000));
-        assertNull(disassemblyData.findEntity(0x3FFFFF));
+        assertNull(disassemblyData.findEntityOnAddress(0x3FFFFF));
         for(int i = 0; i < a.getSize(); i++) {
-            assertEquals(a, disassemblyData.findEntity(0x400000 + i));
+            assertEquals(a, disassemblyData.findEntityOnAddress(0x400000 + i));
             if(i > 1) {
                 assertNull(disassemblyData.getEntityOnExactAddress(0x400000 + i));
             }
         }
-        assertNull(disassemblyData.findEntity(0x400005));
+        assertNull(disassemblyData.findEntityOnAddress(0x400005));
 
         DecodedEntityStub b = new DecodedEntityStub(0x400002, 2, "b");
         disassemblyData.insertEntity(b);
-        assertNull(disassemblyData.findEntity(0x400000));
-        assertNull(disassemblyData.findEntity(0x400001));
-        assertEquals(b, disassemblyData.findEntity(0x400002));
-        assertEquals(b, disassemblyData.findEntity(0x400003));
-        assertNull(disassemblyData.findEntity(0x400004));
-        assertNull(disassemblyData.findEntity(0x400005));
+        assertNull(disassemblyData.findEntityOnAddress(0x400000));
+        assertNull(disassemblyData.findEntityOnAddress(0x400001));
+        assertEquals(b, disassemblyData.findEntityOnAddress(0x400002));
+        assertEquals(b, disassemblyData.findEntityOnAddress(0x400003));
+        assertNull(disassemblyData.findEntityOnAddress(0x400004));
+        assertNull(disassemblyData.findEntityOnAddress(0x400005));
     }
 }

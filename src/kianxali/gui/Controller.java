@@ -62,7 +62,7 @@ public class Controller implements DisassemblyListener {
 
     @Override
     public void onAnalyzeEntity(final DecodedEntity entity) {
-        imageDoc.setOffsetLines(entity.getMemAddress(), new String[] {entity.asString(formatter)});
+        imageDoc.insertEntity(entity.getMemAddress(), new String[] {entity.asString(formatter)});
     }
 
     @Override
@@ -72,6 +72,7 @@ public class Controller implements DisassemblyListener {
     @Override
     public void onAnalyzeStop() {
         double duration = (System.currentTimeMillis() - beginDisassembleTime) / 1000.0;
-        LOG.info(String.format("Initial auto-analysis finished after %.2f seconds", duration));
+        LOG.info(String.format("Initial auto-analysis finished after %.2f seconds, got %d entities",
+                duration, disassemblyData.getEntityCount()));
     }
 }

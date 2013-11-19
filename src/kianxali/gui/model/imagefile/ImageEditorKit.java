@@ -19,25 +19,24 @@ public class ImageEditorKit extends EditorKit {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public ViewFactory getViewFactory() {
-       return new ImageViewFactory();
+    public String getContentType() {
+        return "application/octet-stream";
     }
 
     @Override
-    public String getContentType() {
-        return "application/octet-stream";
+    public Document createDefaultDocument() {
+        return new ImageDocument();
+    }
+
+    @Override
+    public ViewFactory getViewFactory() {
+       return new ImageViewFactory();
     }
 
     @Override
     public Caret createCaret() {
         LOG.finest("createCaret");
         return null;
-    }
-
-    @Override
-    public Document createDefaultDocument() {
-        LOG.finest("createDefaultDocument");
-        return new ImageDocument();
     }
 
     @Override

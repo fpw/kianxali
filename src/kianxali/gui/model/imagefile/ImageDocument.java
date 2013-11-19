@@ -16,20 +16,20 @@ import javax.swing.text.StyleConstants;
 public class ImageDocument extends DefaultStyledDocument {
     private static final long serialVersionUID = 1L;
     private final NavigableMap<Long, Element> offsetMap;
-    private final MutableAttributeSet addressAttributes, lineAttributes, paragraphAttributes;
-
-    {
-        this.offsetMap = new TreeMap<Long, Element>();
-        this.addressAttributes = new SimpleAttributeSet();
-        this.lineAttributes = new SimpleAttributeSet();
-        this.paragraphAttributes = new SimpleAttributeSet();
-        setupStyles();
-    }
+    private final MutableAttributeSet addressAttributes, lineAttributes, paragraphAttributes, sectionAttributes;
 
     public ImageDocument() {
         // PriorityQueue:           ~ 128s
         // Hoechste Adresse zuerst  > 300s
         // FIFO                     > 300s
+        this.offsetMap              = new TreeMap<Long, Element>();
+        this.addressAttributes      = new SimpleAttributeSet();
+        this.lineAttributes         = new SimpleAttributeSet();
+        this.paragraphAttributes    = new SimpleAttributeSet();
+        this.sectionAttributes      = new SimpleAttributeSet();
+
+        sectionAttributes.addAttribute(ElementNameAttribute, SectionElementName);
+        setupStyles();
     }
 
     private void setupStyles() {
@@ -38,17 +38,22 @@ public class ImageDocument extends DefaultStyledDocument {
         StyleConstants.setForeground(lineAttributes, new Color(0x00, 0x00, 0xCC));
     }
 
-    public synchronized void setOffsetLines(long memAddr, String[] lines) {
+    public synchronized void insertEntity(long memAddr, String[] lines) {
         Element element = offsetMap.get(memAddr);
         int offset;
+        boolean append = false, atStart = false;
         if(element == null) {
             Entry<Long, Element> entry = offsetMap.floorEntry(memAddr);
             if(entry == null) {
+                // no floor element -> insert at beginning
                 element = getDefaultRootElement();
                 offset = element.getStartOffset();
+                atStart = true;
             } else {
+                // got a floor element -> insert after it
                 element = entry.getValue();
                 offset = element.getEndOffset();
+                append = true;
             }
         } else {
             // remove old paragraph
@@ -59,6 +64,10 @@ public class ImageDocument extends DefaultStyledDocument {
         try {
             List<ElementSpec> specs = new LinkedList<>();
             specs.add(endTag());
+            if(append || (atStart && getLength() > 0)) {
+                specs.add(endTag());
+            }
+            specs.add(startTag(sectionAttributes, ElementSpec.OriginateDirection));
             for(String line : lines) {
                 specs.add(startTag(paragraphAttributes, ElementSpec.OriginateDirection));
                 String address = String.format("%08X: ", memAddr);
@@ -69,7 +78,8 @@ public class ImageDocument extends DefaultStyledDocument {
             ElementSpec[] specArr = new ElementSpec[specs.size()];
             specs.toArray(specArr);
             insert(offset, specArr);
-            offsetMap.put(memAddr, getParagraphElement(offset));
+            Element section = getParagraphElement(offset).getParentElement();
+            offsetMap.put(memAddr, section);
         } catch (BadLocationException e) {
             e.printStackTrace();
         }

@@ -144,7 +144,7 @@ public class Disassembler {
                 break;
             }
 
-            if(disassemblyData.findEntity(memAddr) != null) {
+            if(disassemblyData.findEntityOnAddress(memAddr) != null) {
                 // TODO: covers other instruction or data
                 break;
             }
