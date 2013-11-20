@@ -1,16 +1,17 @@
 package kianxali.image;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
+
 import kianxali.decoder.Context;
 
 public abstract class ImageFile {
     protected final ByteSequence imageFile;
     protected final long fileSize;
 
-    public ImageFile(File file) throws IOException {
-        this.imageFile = ByteSequence.fromFile(file);
+    public ImageFile(Path path) throws IOException {
+        this.imageFile = ByteSequence.fromFile(path);
         this.fileSize = imageFile.getRemaining();
     }
 

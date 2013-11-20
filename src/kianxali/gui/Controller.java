@@ -1,6 +1,6 @@
 package kianxali.gui;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,8 +28,9 @@ public class Controller implements DisassemblyListener {
     private KianxaliGUI gui;
 
     public Controller() {
-        this.imageDoc = new ImageDocument();
         this.formatter = new OutputFormatter();
+        this.imageDoc = new ImageDocument();
+        imageDoc.getDocumentProperties().put(ImageDocument.FORMATTER_KEY, formatter);
     }
 
     public void showGUI() {
@@ -43,10 +44,10 @@ public class Controller implements DisassemblyListener {
         gui.showFileOpenDialog();
     }
 
-    public void onFileOpened(File file) {
+    public void onFileOpened(Path path) {
         try {
             // TODO: add more file types and decide somehow
-            imageFile = new PEFile(file);
+            imageFile = new PEFile(path);
 
             disassemblyData = new DisassemblyData();
             disassembler = new Disassembler(imageFile, disassemblyData);
@@ -66,7 +67,7 @@ public class Controller implements DisassemblyListener {
 
     @Override
     public void onAnalyzeEntity(final DecodedEntity entity) {
-        imageDoc.insertEntity(entity.getMemAddress(), new String[] {entity.asString(formatter)});
+        imageDoc.insertEntity(entity);
         StatusView sv = gui.getImageView().getStatusView();
         long offset = imageFile.toFileAddress(entity.getMemAddress());
         if(entity instanceof Instruction) {

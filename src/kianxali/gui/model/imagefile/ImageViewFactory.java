@@ -6,6 +6,8 @@ import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
 public class ImageViewFactory implements ViewFactory {
+    public static final String ENTITY_NAME = "entity";
+    public static final String ENTITY_KEY = "entity_key";
     private final ViewFactory delegate;
 
     public ImageViewFactory() {
@@ -14,6 +16,11 @@ public class ImageViewFactory implements ViewFactory {
 
     @Override
     public View create(Element e) {
-        return delegate.create(e);
+        String kind = e.getName();
+        if(kind == ENTITY_NAME) {
+            return new EntityView(e);
+        } else {
+            return delegate.create(e);
+        }
     }
 }

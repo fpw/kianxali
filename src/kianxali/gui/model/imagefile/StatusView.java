@@ -9,7 +9,7 @@ import javax.swing.border.BevelBorder;
 
 public class StatusView extends JComponent {
     private static final long serialVersionUID = 1L;
-    private static final int NUM_STRIPES = 250;
+    private static final int NUM_STRIPES = 500;
     private enum DecodeType { UNKNOWN, CODE, DATA };
     private final DecodeType[] decodeStatus;
     private long dataLength;

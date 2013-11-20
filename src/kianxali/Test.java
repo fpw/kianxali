@@ -1,7 +1,8 @@
 package kianxali;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -57,7 +58,8 @@ public final class Test implements DisassemblyListener {
     }
 
     private void testDisassembler() throws IOException {
-        ImageFile image = new PEFile(new File("./targets/client.exe"));
+        Path path = FileSystems.getDefault().getPath(".", "targets", "client.exe");
+        ImageFile image = new PEFile(path);
         data = new DisassemblyData();
         dasm = new Disassembler(image, data);
         formatter = new OutputFormatter();

@@ -77,7 +77,7 @@ public class KianxaliGUI extends JFrame {
         JFileChooser chooser = new JFileChooser("./");
         int res = chooser.showOpenDialog(this);
         if(res == JFileChooser.APPROVE_OPTION) {
-            controller.onFileOpened(chooser.getSelectedFile());
+            controller.onFileOpened(chooser.getSelectedFile().toPath());
         }
     }
 
