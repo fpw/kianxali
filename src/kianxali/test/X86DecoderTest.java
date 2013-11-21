@@ -512,6 +512,7 @@ public class X86DecoderTest {
     private void testSpecials() {
         // Prefixes
         checkOpcode32(new short[] {0x66,  0xD1, 0xEF}, "shr di, 1h");
+        checkOpcode64(new short[] {0x40, 0x53}, "push rbx");
         checkOpcode32(new short[] {0x51}, "push ecx");
         checkOpcode32(new short[] {0x66, 0x51}, "push cx");
         checkOpcode32(new short[] {0x0F, 0xA4, 0x01, 0x02}, "shld dword ptr [ecx], eax, 2h");

@@ -178,9 +178,9 @@ public final class X86CPU {
             return OperandSize.O64;
         case QWORD_WORD:
             if(ctx.getPrefix().opSizePrefix) {
-                return OperandSize.O64;
-            } else {
                 return OperandSize.O16;
+            } else {
+                return OperandSize.O64;
             }
         case SCALAR_DOUBLE:
             return OperandSize.O64;
