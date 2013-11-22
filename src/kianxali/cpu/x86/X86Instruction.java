@@ -431,6 +431,11 @@ public class X86Instruction implements Instruction {
         }
         return res;
     }
+
+    @Override
+    public String getMnemonicString(OutputFormatter formatter) {
+        return formatter.formatMnemonic(syntax.getMnemonic().toString());
+    }
 }
 
 // lives only temporarily, will be converted to ImmediateOp

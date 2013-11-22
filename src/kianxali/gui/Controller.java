@@ -19,7 +19,7 @@ import kianxali.util.OutputFormatter;
 public class Controller implements DisassemblyListener {
     private static final Logger LOG = Logger.getLogger("kianxali.gui.controller");
 
-    private final ImageDocument imageDoc;
+    private ImageDocument imageDoc;
     private Disassembler disassembler;
     private DisassemblyData disassemblyData;
     private long beginDisassembleTime;
@@ -29,13 +29,10 @@ public class Controller implements DisassemblyListener {
 
     public Controller() {
         this.formatter = new OutputFormatter();
-        this.imageDoc = new ImageDocument();
-        imageDoc.getDocumentProperties().put(ImageDocument.FORMATTER_KEY, formatter);
     }
 
     public void showGUI() {
         gui = new KianxaliGUI(this);
-        gui.getImageView().setDocument(imageDoc);
         gui.setLocationRelativeTo(null);
         gui.setVisible(true);
     }
@@ -61,6 +58,7 @@ public class Controller implements DisassemblyListener {
 
     @Override
     public void onAnalyzeStart() {
+        imageDoc = new ImageDocument(formatter);
         gui.getImageView().getStatusView().initNewData(imageFile.getFileSize());
         beginDisassembleTime = System.currentTimeMillis();
     }
@@ -86,5 +84,6 @@ public class Controller implements DisassemblyListener {
         double duration = (System.currentTimeMillis() - beginDisassembleTime) / 1000.0;
         LOG.info(String.format("Initial auto-analysis finished after %.2f seconds, got %d entities",
                 duration, disassemblyData.getEntityCount()));
+        gui.getImageView().setDocument(imageDoc);
     }
 }

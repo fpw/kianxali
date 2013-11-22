@@ -25,7 +25,7 @@ public class ImageEditorKit extends EditorKit {
 
     @Override
     public Document createDefaultDocument() {
-        return new ImageDocument();
+        return new ImageDocument(null);
     }
 
     @Override

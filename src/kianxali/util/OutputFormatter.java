@@ -37,4 +37,8 @@ public class OutputFormatter {
             return "0";
         }
     }
+
+    public String formatMnemonic(String string) {
+        return string.toLowerCase();
+    }
 }
