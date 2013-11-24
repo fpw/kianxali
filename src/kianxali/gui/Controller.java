@@ -4,12 +4,15 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import kianxali.decoder.Data;
+import kianxali.decoder.Instruction;
 import kianxali.disassembler.DataEntry;
 import kianxali.disassembler.DataListener;
 import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblyData;
 import kianxali.disassembler.DisassemblyListener;
 import kianxali.gui.model.imagefile.ImageDocument;
+import kianxali.gui.model.imagefile.StatusView;
 import kianxali.image.ImageFile;
 import kianxali.image.pe.PEFile;
 import kianxali.util.OutputFormatter;
@@ -69,13 +72,15 @@ public class Controller implements DisassemblyListener, DataListener {
     public void onAnalyzeChange(long memAddr) {
         DataEntry entry = disassemblyData.getInfoOnExactAddress(memAddr);
         imageDoc.updateDataEntry(memAddr, entry);
-//        StatusView sv = gui.getImageView().getStatusView();
-//        long offset = imageFile.toFileAddress(entity.getMemAddress());
-//        if(entity instanceof Instruction) {
-//            sv.onDiscoverCode(offset, entity.getSize());
-//        } else if(entity instanceof Data) {
-//            sv.onDiscoverData(offset, entity.getSize());
-//        }
+        if(entry != null && entry.getEntity() != null) {
+            StatusView sv = gui.getImageView().getStatusView();
+            long offset = imageFile.toFileAddress(memAddr);
+            if(entry.getEntity() instanceof Instruction) {
+                sv.onDiscoverCode(offset, entry.getEntity().getSize());
+            } else if(entry.getEntity() instanceof Data) {
+                sv.onDiscoverData(offset, entry.getEntity().getSize());
+            }
+        }
     }
 
     @Override
