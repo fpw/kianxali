@@ -2,64 +2,137 @@ package kianxali.disassembler;
 
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import kianxali.decoder.DecodedEntity;
+import kianxali.image.ImageFile;
+import kianxali.image.Section;
 
 public class DisassemblyData {
+    private final Set<DataListener> listeners;
     private final NavigableMap<Long, DataEntry> memoryMap;
 
-    private class DataEntry {
-        DecodedEntity entity;
+    public DisassemblyData() {
+        this.listeners = new CopyOnWriteArraySet<>();
+        this.memoryMap = new TreeMap<>();
+    }
 
-        public DataEntry(DecodedEntity entity) {
-            this.entity = entity;
+    public void addListener(DataListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(DataListener listener) {
+        listeners.remove(listener);
+    }
+
+    private void tellListeners(long memAddr) {
+        for(DataListener listener : listeners) {
+            listener.onAnalyzeChange(memAddr);
         }
     }
 
-    public DisassemblyData() {
-        this.memoryMap = new TreeMap<>();
+    private void put(long memAddr, DataEntry entry) {
+        memoryMap.put(memAddr, entry);
+        tellListeners(memAddr);
+    }
+
+    public synchronized void insertImageFileWithSections(ImageFile file) {
+        long imageAddress = 0L;
+        DataEntry old = getInfoOnExactAddress(imageAddress);
+        if(old != null) {
+            old.setStartImageFile(file);
+            tellListeners(imageAddress);
+        } else {
+            DataEntry entry = new DataEntry(file);
+            put(imageAddress, entry);
+        }
+
+        for(Section section : file.getSections()) {
+            long memAddrStart = section.getStartAddress();
+            long memAddrEnd = section.getEndAddress();
+            old = getInfoOnExactAddress(memAddrStart);
+            if(old != null) {
+                old.setStartSection(section);
+                tellListeners(memAddrStart);
+            } else {
+                DataEntry entry = new DataEntry(section);
+                put(memAddrStart, entry);
+            }
+
+            old = getInfoOnExactAddress(memAddrEnd);
+            if(old != null) {
+                old.setEndSection(section);
+                tellListeners(memAddrEnd);
+            } else {
+                DataEntry entry = new DataEntry();
+                entry.setEndSection(section);
+                put(memAddrEnd, entry);
+            }
+        }
     }
 
     public synchronized void insertEntity(DecodedEntity entity) {
         long memAddr = entity.getMemAddress();
-        DecodedEntity old = findEntityOnAddress(memAddr);
+        DataEntry old = getInfoOnExactAddress(memAddr);
         if(old != null) {
-            memoryMap.remove(old.getMemAddress());
+            // already got info for this address, add entity
+            old.setEntity(entity);
+            tellListeners(memAddr);
+        } else {
+            // check if another entry covers this address, i.e. there is data or an opcode that starts before
+            DecodedEntity covering = findEntityOnAddress(memAddr);
+            if(covering != null) {
+                throw new IllegalArgumentException("address covered by other entity");
+            } else {
+                // new entity entry as nothing covered the address
+                DataEntry entry = new DataEntry(entity);
+                put(memAddr, entry);
+            }
         }
-        memoryMap.put(memAddr, new DataEntry(entity));
     }
 
-    public synchronized void clearEntity(long memAddr) {
-        DecodedEntity old = findEntityOnAddress(memAddr);
-        if(old != null) {
-            memoryMap.remove(old.getMemAddress());
-        }
-    }
-
-    public synchronized DecodedEntity getEntityOnExactAddress(long memAddr) {
+    public synchronized DataEntry getInfoOnExactAddress(long memAddr) {
         DataEntry entry = memoryMap.get(memAddr);
-        if(entry == null) {
-            return null;
-        }
-        return entry.entity;
+        return entry;
     }
 
-    public synchronized DecodedEntity findEntityOnAddress(long memAddr) {
+    public synchronized DataEntry getInfoCoveringAddress(long memAddr) {
         // check if the last instruction at lower addresses overlaps
         Entry<Long, DataEntry> floorEntry = memoryMap.floorEntry(memAddr);
         if(floorEntry == null) {
             return null;
         }
         long lastAddress = floorEntry.getKey();
-        DecodedEntity res = floorEntry.getValue().entity;
-        if(memAddr < lastAddress || memAddr >= lastAddress + res.getSize()) {
+        DataEntry res = floorEntry.getValue();
+        DecodedEntity entity = res.getEntity();
+        if(entity == null) {
+            return res;
+        }
+        if(memAddr < lastAddress || memAddr >= lastAddress + entity.getSize()) {
             return null;
         }
         return res;
     }
 
-    public int getEntityCount() {
+    public synchronized DecodedEntity getEntityOnExactAddress(long memAddr) {
+        DataEntry entry = getInfoOnExactAddress(memAddr);
+        if(entry == null) {
+            return null;
+        }
+        return entry.getEntity();
+    }
+
+    public synchronized DecodedEntity findEntityOnAddress(long memAddr) {
+        DataEntry entry = getInfoCoveringAddress(memAddr);
+        if(entry == null) {
+            return null;
+        }
+        return entry.getEntity();
+    }
+
+    public synchronized int getEntityCount() {
         return memoryMap.size();
     }
 }

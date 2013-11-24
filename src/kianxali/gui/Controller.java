@@ -4,19 +4,17 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import kianxali.decoder.Data;
-import kianxali.decoder.DecodedEntity;
-import kianxali.decoder.Instruction;
+import kianxali.disassembler.DataEntry;
+import kianxali.disassembler.DataListener;
 import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblyData;
 import kianxali.disassembler.DisassemblyListener;
 import kianxali.gui.model.imagefile.ImageDocument;
-import kianxali.gui.model.imagefile.StatusView;
 import kianxali.image.ImageFile;
 import kianxali.image.pe.PEFile;
 import kianxali.util.OutputFormatter;
 
-public class Controller implements DisassemblyListener {
+public class Controller implements DisassemblyListener, DataListener {
     private static final Logger LOG = Logger.getLogger("kianxali.gui.controller");
 
     private ImageDocument imageDoc;
@@ -46,9 +44,15 @@ public class Controller implements DisassemblyListener {
             // TODO: add more file types and decide somehow
             imageFile = new PEFile(path);
 
+            imageDoc = new ImageDocument(formatter);
+            gui.getImageView().getStatusView().initNewData(imageFile.getFileSize());
+
             disassemblyData = new DisassemblyData();
+            disassemblyData.addListener(this);
+
             disassembler = new Disassembler(imageFile, disassemblyData);
             disassembler.addListener(this);
+
             disassembler.startAnalyzer();
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Couldn't load image: " + e.getMessage(), e);
@@ -58,21 +62,20 @@ public class Controller implements DisassemblyListener {
 
     @Override
     public void onAnalyzeStart() {
-        imageDoc = new ImageDocument(formatter);
-        gui.getImageView().getStatusView().initNewData(imageFile.getFileSize());
         beginDisassembleTime = System.currentTimeMillis();
     }
 
     @Override
-    public void onAnalyzeEntity(final DecodedEntity entity) {
-        imageDoc.insertEntity(entity);
-        StatusView sv = gui.getImageView().getStatusView();
-        long offset = imageFile.toFileAddress(entity.getMemAddress());
-        if(entity instanceof Instruction) {
-            sv.onDiscoverCode(offset, entity.getSize());
-        } else if(entity instanceof Data) {
-            sv.onDiscoverData(offset, entity.getSize());
-        }
+    public void onAnalyzeChange(long memAddr) {
+        DataEntry entry = disassemblyData.getInfoOnExactAddress(memAddr);
+        imageDoc.updateDataEntry(memAddr, entry);
+//        StatusView sv = gui.getImageView().getStatusView();
+//        long offset = imageFile.toFileAddress(entity.getMemAddress());
+//        if(entity instanceof Instruction) {
+//            sv.onDiscoverCode(offset, entity.getSize());
+//        } else if(entity instanceof Data) {
+//            sv.onDiscoverData(offset, entity.getSize());
+//        }
     }
 
     @Override

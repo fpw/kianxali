@@ -45,6 +45,9 @@ public class Disassembler {
         });
         this.ctx = imageFile.createContext();
         this.decoder = ctx.createInstructionDecoder();
+
+        disassemblyData.insertImageFileWithSections(imageFile);
+
         addCodeWork(imageFile.getCodeEntryPointMem());
     }
 
@@ -115,26 +118,6 @@ public class Disassembler {
         workQueue.add(entry);
     }
 
-    private void analyzeData(Data data) {
-        ByteSequence seq = imageFile.getByteSequence(data.getMemAddress(), true);
-        try {
-            data.analyze(seq);
-            disassemblyData.insertEntity(data);
-            for(DisassemblyListener listener : listeners) {
-                listener.onAnalyzeEntity(data);
-            }
-        } catch(Exception e) {
-            LOG.log(Level.WARNING, String.format("Data decode error (%s) at %08X", e, data.getMemAddress()), e);
-            disassemblyData.clearEntity(data.getMemAddress());
-            for(DisassemblyListener listener : listeners) {
-                listener.onAnalyzeError(data.getMemAddress());
-            }
-            throw e;
-        } finally {
-            seq.unlock();
-        }
-    }
-
     private void disassembleTrace(long memAddr) {
         while(true) {
             DecodedEntity old = disassemblyData.getEntityOnExactAddress(memAddr);
@@ -144,7 +127,8 @@ public class Disassembler {
                 break;
             }
 
-            if(disassemblyData.findEntityOnAddress(memAddr) != null) {
+            DecodedEntity covering = disassemblyData.findEntityOnAddress(memAddr);
+            if(covering != null) {
                 // TODO: covers other instruction or data
                 break;
             }
@@ -163,7 +147,8 @@ public class Disassembler {
             }
 
             if(inst == null) {
-                disassemblyData.clearEntity(memAddr);
+                // couldn't decode instruction
+                // TODO: change to data
                 for(DisassemblyListener listener : listeners) {
                     listener.onAnalyzeError(memAddr);
                 }
@@ -171,9 +156,6 @@ public class Disassembler {
             }
 
             disassemblyData.insertEntity(inst);
-            for(DisassemblyListener listener : listeners) {
-                listener.onAnalyzeEntity(inst);
-            }
 
             examineInstruction(inst);
 
@@ -182,6 +164,35 @@ public class Disassembler {
             }
 
             memAddr += inst.getSize();
+        }
+    }
+
+    private void analyzeData(Data data) {
+        long memAddr = data.getMemAddress();
+        DataEntry cover = disassemblyData.getInfoCoveringAddress(memAddr);
+        if(cover != null) {
+            if(cover.hasInstruction()) {
+                // data should not overwrite instruction
+                return;
+            } else if(cover.hasData()) {
+                // TODO: new information about data, e.g. DWORD also accessed byte-wise
+                return;
+            }
+        }
+
+        ByteSequence seq = imageFile.getByteSequence(memAddr, true);
+        try {
+            data.analyze(seq);
+            disassemblyData.insertEntity(data);
+        } catch(Exception e) {
+            LOG.log(Level.WARNING, String.format("Data decode error (%s) at %08X", e, data.getMemAddress()), e);
+            // TODO: change to raw data
+            for(DisassemblyListener listener : listeners) {
+                listener.onAnalyzeError(data.getMemAddress());
+            }
+            throw e;
+        } finally {
+            seq.unlock();
         }
     }
 

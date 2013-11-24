@@ -16,6 +16,8 @@ import kianxali.cpu.x86.X86CPU.Model;
 import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.cpu.x86.xml.OpcodeSyntax;
 import kianxali.decoder.DecodedEntity;
+import kianxali.disassembler.DataEntry;
+import kianxali.disassembler.DataListener;
 import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblyData;
 import kianxali.disassembler.DisassemblyListener;
@@ -23,7 +25,7 @@ import kianxali.image.ImageFile;
 import kianxali.image.pe.PEFile;
 import kianxali.util.OutputFormatter;
 
-public final class Test implements DisassemblyListener {
+public final class Test implements DisassemblyListener, DataListener {
     private static final Logger LOG = Logger.getLogger("kianxali");
     private DisassemblyData data;
     private Disassembler dasm;
@@ -61,6 +63,7 @@ public final class Test implements DisassemblyListener {
         Path path = FileSystems.getDefault().getPath(".", "targets", "client.exe");
         ImageFile image = new PEFile(path);
         data = new DisassemblyData();
+        data.addListener(this);
         dasm = new Disassembler(image, data);
         formatter = new OutputFormatter();
         dasm.addListener(this);
@@ -73,8 +76,16 @@ public final class Test implements DisassemblyListener {
     }
 
     @Override
-    public void onAnalyzeEntity(DecodedEntity entity) {
-        System.out.println(String.format("%08X: %s", entity.getMemAddress(), entity.asString(formatter)));
+    public void onAnalyzeChange(long memAddr) {
+        DataEntry info = data.getInfoOnExactAddress(memAddr);
+        if(info == null) {
+            return;
+        }
+        DecodedEntity entity = info.getEntity();
+        if(entity == null) {
+            return;
+        }
+        System.out.println(String.format("%08X: %s", memAddr, entity.asString(formatter)));
     }
 
     @Override
