@@ -1,11 +1,14 @@
 package kianxali.gui;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kianxali.decoder.Data;
 import kianxali.decoder.Instruction;
+import kianxali.decoder.Operand;
 import kianxali.disassembler.DataEntry;
 import kianxali.disassembler.DataListener;
 import kianxali.disassembler.Disassembler;
@@ -14,6 +17,7 @@ import kianxali.disassembler.DisassemblyListener;
 import kianxali.gui.model.imagefile.ImageDocument;
 import kianxali.gui.model.imagefile.StatusView;
 import kianxali.image.ImageFile;
+import kianxali.image.Section;
 import kianxali.image.pe.PEFile;
 import kianxali.util.OutputFormatter;
 
@@ -36,6 +40,69 @@ public class Controller implements DisassemblyListener, DataListener {
         gui = new KianxaliGUI(this);
         gui.setLocationRelativeTo(null);
         gui.setVisible(true);
+
+        DataEntry entry = new DataEntry(new Instruction() {
+            @Override
+            public int getSize() {
+                return 4;
+            }
+
+            @Override
+            public long getMemAddress() {
+                return 0;
+            }
+
+            @Override
+            public String asString(OutputFormatter format) {
+                return "push";
+            }
+
+            @Override
+            public boolean stopsTrace() {
+                return false;
+            }
+
+            @Override
+            public String getMnemonicString(OutputFormatter f) {
+                return "push";
+            }
+
+            @Override
+            public List<Operand> getOperands() {
+                return new ArrayList<>();
+            }
+
+            @Override
+            public List<Long> getBranchAddresses() {
+                return null;
+            }
+
+            @Override
+            public List<Data> getAssociatedData() {
+                return null;
+            }
+        });
+        entry.setStartSection(new Section() {
+            @Override
+            public long getStartAddress() {
+                return 0;
+            }
+
+            @Override
+            public String getName() {
+                return "code";
+            }
+
+            @Override
+            public long getEndAddress() {
+                return 23;
+            }
+        });
+        imageDoc = new ImageDocument(formatter);
+        imageDoc.updateDataEntry(2, entry);
+        imageDoc.updateDataEntry(0, entry);
+        imageDoc.updateDataEntry(3, entry);
+        gui.getImageView().setDocument(imageDoc);
     }
 
     public void onOpenFileRequest() {

@@ -129,6 +129,7 @@ public class Disassembler {
 
             DecodedEntity covering = disassemblyData.findEntityOnAddress(memAddr);
             if(covering != null) {
+                LOG.warning(String.format("%08X already covered", memAddr));
                 // TODO: covers other instruction or data
                 break;
             }
