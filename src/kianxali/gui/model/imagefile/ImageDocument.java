@@ -159,6 +159,7 @@ public class ImageDocument extends DefaultStyledDocument {
     }
 
     private void endLine(List<ElementSpec> specs) {
+        specs.add(contentTag(infoAttributes, "\n", ElementSpec.OriginateDirection));
         specs.add(endTag());
     }
 
