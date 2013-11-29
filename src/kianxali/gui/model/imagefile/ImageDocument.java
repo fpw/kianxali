@@ -2,15 +2,11 @@ package kianxali.gui.model.imagefile;
 import java.awt.Color;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TreeMap;
-import java.util.Map.Entry;
-import java.util.NavigableMap;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Element;
 import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
@@ -31,7 +27,8 @@ public class ImageDocument extends DefaultStyledDocument {
     public static final String OperandElementName = "operand";
     public static final String InfoElementName = "info";
     public static final String CommentElementName = "comment";
-    private final NavigableMap<Long, Position> offsetMap;
+    public static final String MemAddressKey = "memAddress";
+
     private final MutableAttributeSet addressAttributes;
     private final MutableAttributeSet lineAttributes, mnemonicAttributes, operandAttributes, infoAttributes, commentAttributes;
     private final OutputFormatter formatter;
@@ -41,7 +38,6 @@ public class ImageDocument extends DefaultStyledDocument {
         // PriorityQueue:           ~ 128s
         // Hoechste Adresse zuerst  > 300s
         // FIFO                     > 300s
-        this.offsetMap              = new TreeMap<Long, Position>();
         this.lineAttributes         = new SimpleAttributeSet();
         this.mnemonicAttributes     = new SimpleAttributeSet();
         this.operandAttributes      = new SimpleAttributeSet();
@@ -67,45 +63,65 @@ public class ImageDocument extends DefaultStyledDocument {
         StyleConstants.setForeground(mnemonicAttributes, new Color(0x00, 0x00, 0xCC));
     }
 
-    public synchronized void updateDataEntry(long memAddr, DataEntry data) {
-        Position pos = offsetMap.get(memAddr);
-        int offset;
-        boolean append = false, atStart = false;
-        if(pos == null) {
-            Entry<Long, Position> entry = offsetMap.floorEntry(memAddr);
-            if(entry == null) {
-                // no floor element -> insert at beginning
-                Element element = getDefaultRootElement();
-                offset = element.getStartOffset();
-                atStart = true;
-                System.out.println("no floor -> begin");
+    private Element findFloorElement(long memAddr) {
+        Element root = getDefaultRootElement();
+        Element res = root;
+        int first = 0;
+        Integer idx = null;
+        int last = root.getElementCount() - 2;
+
+        // do a binary search to find the floor element
+        while(first <= last) {
+            idx = first + (last - first) / 2;
+            res = root.getElement(idx);
+            long curAdr = (long) res.getAttributes().getAttribute(MemAddressKey);
+            if(memAddr < curAdr) {
+                last = idx - 1;
+            } else if(memAddr > curAdr) {
+                first = idx + 1;
             } else {
-                // got a floor element -> insert after it
-                pos = entry.getValue();
-                offset = getDefaultRootElement().getElement(getDefaultRootElement().getElementIndex(pos.getOffset())).getEndOffset();
-                append = true;
-                System.out.println("got floor at " + pos.getOffset() + "(" + entry.getKey() + ")  -> insert at " + offset);
+                break;
             }
-        } else {
-            // remove old paragraph
-            Element elem = getDefaultRootElement().getElement(getDefaultRootElement().getElementIndex(pos.getOffset()));
-            offset = elem.getStartOffset();
-            offsetMap.remove(memAddr);
-            removeElement(elem);
         }
 
+        if(res != root) {
+            long curAdr = (long) res.getAttributes().getAttribute(MemAddressKey);
+            if(curAdr > memAddr) {
+                if(idx > 0) {
+                    return root.getElement(idx - 1);
+                } else {
+                    return root;
+                }
+            }
+        }
+        return res;
+    }
+
+    public synchronized void updateDataEntry(long memAddr, DataEntry data) {
+        Element floorElem = findFloorElement(memAddr);
+        boolean isRoot = (floorElem == getDefaultRootElement());
+
         if(data == null) {
-            offsetMap.remove(memAddr);
+            // remove element if exists
+            if(!isRoot) {
+                long addr = (long) floorElem.getAttributes().getAttribute(MemAddressKey);
+                if(addr == memAddr) {
+                    removeElement(floorElem);
+                }
+            }
             return;
         }
 
         try {
             List<ElementSpec> specs = new LinkedList<>();
             specs.add(endTag());
-            if(append || (atStart && getLength() > 0)) {
+            if(getLength() > 0) {
                 specs.add(endTag());
             }
-            specs.add(startTag(addressAttributes, ElementSpec.OriginateDirection));
+            MutableAttributeSet adrAttributes = new SimpleAttributeSet(addressAttributes);
+            adrAttributes.addAttribute(MemAddressKey, memAddr);
+            specs.add(startTag(adrAttributes, ElementSpec.OriginateDirection));
+
             int startSize = specs.size();
             addImageStart(memAddr, data.getStartImageFile(), specs);
             addSectionEnd(memAddr, data.getEndSection(), specs);
@@ -114,15 +130,23 @@ public class ImageDocument extends DefaultStyledDocument {
 
             if(specs.size() == startSize) {
                 // nothing was actually added
-                offsetMap.remove(memAddr);
                 return;
             }
             specs.add(endTag());
 
             ElementSpec[] specArr = new ElementSpec[specs.size()];
             specs.toArray(specArr);
-            insert(offset, specArr);
-            offsetMap.put(memAddr, createPosition(offset));
+            if(isRoot) {
+                insert(0, specArr);
+            } else {
+                long addr = (long) floorElem.getAttributes().getAttribute(MemAddressKey);
+                int offset = floorElem.getEndOffset();
+                if(addr == memAddr) {
+                    offset = floorElem.getStartOffset();
+                    removeElement(floorElem);
+                }
+                insert(offset, specArr);
+            }
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
@@ -208,5 +232,4 @@ public class ImageDocument extends DefaultStyledDocument {
     private ElementSpec endTag() {
         return new ElementSpec(null, ElementSpec.EndTagType);
     }
-
 }
