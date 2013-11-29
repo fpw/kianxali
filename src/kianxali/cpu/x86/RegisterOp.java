@@ -1,15 +1,15 @@
 package kianxali.cpu.x86;
 
-import kianxali.cpu.x86.X86CPU.Register;
+import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.decoder.Operand;
 import kianxali.decoder.UsageType;
 import kianxali.util.OutputFormatter;
 
 public class RegisterOp implements Operand {
     private final UsageType usage;
-    private final Register register;
+    private final X86Register register;
 
-    public RegisterOp(UsageType usage, Register register) {
+    public RegisterOp(UsageType usage, X86Register register) {
         this.usage = usage;
         this.register = register;
     }

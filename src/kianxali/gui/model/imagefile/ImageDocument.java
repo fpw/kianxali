@@ -35,9 +35,6 @@ public class ImageDocument extends DefaultStyledDocument {
 
     public ImageDocument(OutputFormatter formatter) {
         this.formatter = formatter;
-        // PriorityQueue:           ~ 128s
-        // Hoechste Adresse zuerst  > 300s
-        // FIFO                     > 300s
         this.lineAttributes         = new SimpleAttributeSet();
         this.mnemonicAttributes     = new SimpleAttributeSet();
         this.operandAttributes      = new SimpleAttributeSet();

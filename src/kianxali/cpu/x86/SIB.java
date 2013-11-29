@@ -1,6 +1,6 @@
 package kianxali.cpu.x86;
 
-import kianxali.cpu.x86.X86CPU.Register;
+import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.image.ByteSequence;
 
@@ -19,7 +19,7 @@ public class SIB {
             base |= 8;
         }
 
-        Register indexReg;
+        X86Register indexReg;
         if(index == 4) {
             indexReg = null;
         } else {
@@ -35,17 +35,17 @@ public class SIB {
                 break;
             case 1:
                 disp = seq.readSByte();
-                sibOp = new PointerOp(ctx, Register.EBP, scale, indexReg, disp);
+                sibOp = new PointerOp(ctx, X86Register.EBP, scale, indexReg, disp);
                 break;
             case 2:
                 disp = seq.readSDword();
-                sibOp = new PointerOp(ctx, Register.EBP, scale, indexReg, disp);
+                sibOp = new PointerOp(ctx, X86Register.EBP, scale, indexReg, disp);
                 break;
             default:
                 throw new RuntimeException("invalid base: " + mode);
             }
         } else {
-            Register baseReg = X86CPU.getGenericAddressRegister(ctx, base);
+            X86Register baseReg = X86CPU.getGenericAddressRegister(ctx, base);
             sibOp = new PointerOp(ctx, baseReg, scale, indexReg);
         }
         sibOp.setOpType(op.operType);

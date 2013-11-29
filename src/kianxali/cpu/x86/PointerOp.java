@@ -1,6 +1,6 @@
 package kianxali.cpu.x86;
 
-import kianxali.cpu.x86.X86CPU.Register;
+import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.cpu.x86.X86CPU.Segment;
 import kianxali.cpu.x86.xml.OperandDesc.OperandType;
 import kianxali.decoder.Data;
@@ -15,7 +15,7 @@ public class PointerOp implements Operand {
     private UsageType usage;
     private OperandType opType;
     private Segment segment;
-    private Register baseRegister, indexRegister;
+    private X86Register baseRegister, indexRegister;
     private Integer indexScale;
     private Long offset;
 
@@ -26,19 +26,19 @@ public class PointerOp implements Operand {
     }
 
     // ptr [register]
-    public PointerOp(X86Context ctx, Register baseRegister) {
+    public PointerOp(X86Context ctx, X86Register baseRegister) {
         this.context = ctx;
         this.baseRegister = baseRegister;
     }
 
-    public PointerOp(X86Context ctx, Register baseRegister, long offset) {
+    public PointerOp(X86Context ctx, X86Register baseRegister, long offset) {
         this.context = ctx;
         this.baseRegister = baseRegister;
         this.offset = offset;
     }
 
     // ptr [scale * register]
-    public PointerOp(X86Context ctx, Register indexRegister, int scale) {
+    public PointerOp(X86Context ctx, X86Register indexRegister, int scale) {
         this.context = ctx;
         this.indexRegister = indexRegister;
         if(scale > 1 && indexRegister != null) {
@@ -47,7 +47,7 @@ public class PointerOp implements Operand {
     }
 
     // ptr [scale * register + offset]
-    public PointerOp(X86Context ctx, Register indexRegister, int scale, long offset) {
+    public PointerOp(X86Context ctx, X86Register indexRegister, int scale, long offset) {
         this.context = ctx;
         this.indexRegister = indexRegister;
         if(scale > 1 && indexRegister != null) {
@@ -57,7 +57,7 @@ public class PointerOp implements Operand {
     }
 
     // ptr [base + scale * index]
-    public PointerOp(X86Context ctx, Register baseRegister, int scale, Register indexRegister) {
+    public PointerOp(X86Context ctx, X86Register baseRegister, int scale, X86Register indexRegister) {
         this.context = ctx;
         this.baseRegister = baseRegister;
         if(scale > 1 && indexRegister != null) {
@@ -67,7 +67,7 @@ public class PointerOp implements Operand {
     }
 
     // ptr [scale * index + offset]
-    public PointerOp(X86Context ctx, int scale, Register indexRegister, long offset) {
+    public PointerOp(X86Context ctx, int scale, X86Register indexRegister, long offset) {
         this.context = ctx;
         if(scale > 1 && indexRegister != null) {
             this.indexScale = scale;
@@ -77,7 +77,7 @@ public class PointerOp implements Operand {
     }
 
     // ptr [base + scale * index + offset]
-    public PointerOp(X86Context ctx, Register baseRegister, int scale, Register indexRegister, long offset) {
+    public PointerOp(X86Context ctx, X86Register baseRegister, int scale, X86Register indexRegister, long offset) {
         this.context = ctx;
         this.baseRegister = baseRegister;
         if(scale > 1 && indexRegister != null) {

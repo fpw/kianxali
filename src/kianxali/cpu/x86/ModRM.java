@@ -1,7 +1,7 @@
 package kianxali.cpu.x86;
 
 import kianxali.cpu.x86.X86CPU.AddressSize;
-import kianxali.cpu.x86.X86CPU.Register;
+import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.decoder.Operand;
 import kianxali.image.ByteSequence;
@@ -42,7 +42,7 @@ public class ModRM {
     }
 
     public Operand getReg(OperandDesc op) {
-        Register reg = X86CPU.getOperandRegister(op, ctx, codedReg);
+        X86Register reg = X86CPU.getOperandRegister(op, ctx, codedReg);
         return new RegisterOp(op.usageType, reg);
     }
 
@@ -67,16 +67,16 @@ public class ModRM {
             return null;
         }
 
-        Register baseReg = null, indexReg = null;
+        X86Register baseReg = null, indexReg = null;
         switch(codedMem) {
-        case 0: baseReg = Register.BX; indexReg = Register.SI; break;
-        case 1: baseReg = Register.BX; indexReg = Register.DI; break;
-        case 2: baseReg = Register.BP; indexReg = Register.SI; break;
-        case 3: baseReg = Register.BP; indexReg = Register.DI; break;
-        case 4: baseReg = Register.SI; break;
-        case 5: baseReg = Register.DI; break;
-        case 6: baseReg = Register.BP; break;
-        case 7: baseReg = Register.BX; break;
+        case 0: baseReg = X86Register.BX; indexReg = X86Register.SI; break;
+        case 1: baseReg = X86Register.BX; indexReg = X86Register.DI; break;
+        case 2: baseReg = X86Register.BP; indexReg = X86Register.SI; break;
+        case 3: baseReg = X86Register.BP; indexReg = X86Register.DI; break;
+        case 4: baseReg = X86Register.SI; break;
+        case 5: baseReg = X86Register.DI; break;
+        case 6: baseReg = X86Register.BP; break;
+        case 7: baseReg = X86Register.BX; break;
         default: throw new UnsupportedOperationException("invalid mem type: " + codedMem);
         }
 

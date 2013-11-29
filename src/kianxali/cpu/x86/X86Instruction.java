@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import kianxali.cpu.x86.X86CPU.Register;
+import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.cpu.x86.X86CPU.Segment;
 import kianxali.cpu.x86.xml.OpcodeEntry;
 import kianxali.cpu.x86.xml.OpcodeGroup;
@@ -167,9 +167,9 @@ public class X86Instruction implements Instruction {
             // TODO: check
             PointerOp res;
             switch(X86CPU.getAddressSize(ctx)) {
-            case A16:   res = new PointerOp(ctx, Register.DI); break;
-            case A32:   res = new PointerOp(ctx, Register.EDI); break;
-            case A64:   res = new PointerOp(ctx, Register.RDI); break;
+            case A16:   res = new PointerOp(ctx, X86Register.DI); break;
+            case A32:   res = new PointerOp(ctx, X86Register.EDI); break;
+            case A64:   res = new PointerOp(ctx, X86Register.RDI); break;
             default: throw new UnsupportedOperationException("unsupported address size: " + X86CPU.getAddressSize(ctx));
             }
             res.setSegment(Segment.ES);
@@ -181,9 +181,9 @@ public class X86Instruction implements Instruction {
             // TODO: check
             PointerOp res;
             switch(X86CPU.getAddressSize(ctx)) {
-            case A16:   res = new PointerOp(ctx, Register.SI); break;
-            case A32:   res = new PointerOp(ctx, Register.ESI); break;
-            case A64:   res = new PointerOp(ctx, Register.RSI); break;
+            case A16:   res = new PointerOp(ctx, X86Register.SI); break;
+            case A32:   res = new PointerOp(ctx, X86Register.ESI); break;
+            case A64:   res = new PointerOp(ctx, X86Register.RSI); break;
             default: throw new UnsupportedOperationException("unsupported address size: " + X86CPU.getAddressSize(ctx));
             }
             res.setSegment(Segment.DS);
@@ -201,14 +201,14 @@ public class X86Instruction implements Instruction {
         case SEGMENT2:
         case SEGMENT33:
         case SEGMENT30:
-            Register reg = X86CPU.getOperandRegister(op, ctx, syntax.getOpcodeEntry().opcode);
+            X86Register reg = X86CPU.getOperandRegister(op, ctx, syntax.getOpcodeEntry().opcode);
             return new RegisterOp(op.usageType, reg);
         case DS_EBX_AL_RBX: {
             PointerOp res;
             switch(X86CPU.getAddressSize(ctx)) {
-            case A16: res = new PointerOp(ctx, Register.BX, 1, Register.AL); break;
-            case A32: res = new PointerOp(ctx, Register.EBX, 1, Register.AL); break;
-            case A64: res = new PointerOp(ctx, Register.RBX, 1, Register.AL); break;
+            case A16: res = new PointerOp(ctx, X86Register.BX, 1, X86Register.AL); break;
+            case A32: res = new PointerOp(ctx, X86Register.EBX, 1, X86Register.AL); break;
+            case A64: res = new PointerOp(ctx, X86Register.RBX, 1, X86Register.AL); break;
             default: throw new UnsupportedOperationException("invalid address size: " + X86CPU.getAddressSize(ctx));
             }
             res.setOpType(op.operType);
@@ -310,12 +310,12 @@ public class X86Instruction implements Instruction {
     private Operand decodeLeastReg(OperandDesc op, X86Context ctx) {
         int regIndex = ctx.getPrefix().prefixBytes.size() - 1 - syntax.getEncodedRegisterRelativeIndex();
         short regId = (short) (ctx.getPrefix().prefixBytes.get(regIndex) & 0x7);
-        Register reg = X86CPU.getOperandRegister(op, ctx, regId);
+        X86Register reg = X86CPU.getOperandRegister(op, ctx, regId);
         return new RegisterOp(op.usageType, reg);
     }
 
     private Operand decodeGroup(OperandDesc op, X86Context ctx) {
-        Register reg = X86CPU.getOperandRegister(op, ctx, (short) op.numForGroup);
+        X86Register reg = X86CPU.getOperandRegister(op, ctx, (short) op.numForGroup);
         return new RegisterOp(op.usageType, reg);
     }
 

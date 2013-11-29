@@ -2,6 +2,7 @@ package kianxali.cpu.x86;
 
 import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.cpu.x86.xml.OperandDesc.OperandType;
+import kianxali.decoder.Register;
 
 public final class X86CPU {
     public enum Model {
@@ -25,7 +26,7 @@ public final class X86CPU {
         A16, A32, A64
     }
 
-    public enum Register {
+    public enum X86Register implements Register {
         // generic 8 bit
         AL, AH, BL, BH, CL, CH, DL, DH,
 
@@ -197,206 +198,206 @@ public final class X86CPU {
         }
     }
 
-    private static Register getGenericRegister8(short id) {
+    private static X86Register getGenericRegister8(short id) {
         switch(id) {
-        case 0: return Register.AL;
-        case 1: return Register.CL;
-        case 2: return Register.DL;
-        case 3: return Register.BL;
-        case 4: return Register.AH;
-        case 5: return Register.CH;
-        case 6: return Register.DH;
-        case 7: return Register.BH;
-        case 8: return Register.R8B;
-        case 9: return Register.R9B;
-        case 10:return Register.R10B;
-        case 11:return Register.R11B;
-        case 12:return Register.R12B;
-        case 13:return Register.R13B;
-        case 14:return Register.R14B;
-        case 15:return Register.R15B;
+        case 0: return X86Register.AL;
+        case 1: return X86Register.CL;
+        case 2: return X86Register.DL;
+        case 3: return X86Register.BL;
+        case 4: return X86Register.AH;
+        case 5: return X86Register.CH;
+        case 6: return X86Register.DH;
+        case 7: return X86Register.BH;
+        case 8: return X86Register.R8B;
+        case 9: return X86Register.R9B;
+        case 10:return X86Register.R10B;
+        case 11:return X86Register.R11B;
+        case 12:return X86Register.R12B;
+        case 13:return X86Register.R13B;
+        case 14:return X86Register.R14B;
+        case 15:return X86Register.R15B;
         default:
             throw new UnsupportedOperationException("invalid generic 8 bit register: " + id);
         }
     }
 
-    private static Register getGenericRegister16(short id) {
+    private static X86Register getGenericRegister16(short id) {
         switch(id) {
-        case 0: return Register.AX;
-        case 1: return Register.CX;
-        case 2: return Register.DX;
-        case 3: return Register.BX;
-        case 4: return Register.SP;
-        case 5: return Register.BP;
-        case 6: return Register.SI;
-        case 7: return Register.DI;
-        case 8: return Register.R8W;
-        case 9: return Register.R9W;
-        case 10:return Register.R10W;
-        case 11:return Register.R11W;
-        case 12:return Register.R12W;
-        case 13:return Register.R13W;
-        case 14:return Register.R14W;
-        case 15:return Register.R15W;
+        case 0: return X86Register.AX;
+        case 1: return X86Register.CX;
+        case 2: return X86Register.DX;
+        case 3: return X86Register.BX;
+        case 4: return X86Register.SP;
+        case 5: return X86Register.BP;
+        case 6: return X86Register.SI;
+        case 7: return X86Register.DI;
+        case 8: return X86Register.R8W;
+        case 9: return X86Register.R9W;
+        case 10:return X86Register.R10W;
+        case 11:return X86Register.R11W;
+        case 12:return X86Register.R12W;
+        case 13:return X86Register.R13W;
+        case 14:return X86Register.R14W;
+        case 15:return X86Register.R15W;
         default:
             throw new UnsupportedOperationException("invalid generic 16 bit register: " + id);
         }
     }
 
-    private static Register getGenericRegister32(short id) {
+    private static X86Register getGenericRegister32(short id) {
         switch(id) {
-        case 0: return Register.EAX;
-        case 1: return Register.ECX;
-        case 2: return Register.EDX;
-        case 3: return Register.EBX;
-        case 4: return Register.ESP;
-        case 5: return Register.EBP;
-        case 6: return Register.ESI;
-        case 7: return Register.EDI;
-        case 8: return Register.R8D;
-        case 9: return Register.R9D;
-        case 10:return Register.R10D;
-        case 11:return Register.R11D;
-        case 12:return Register.R12D;
-        case 13:return Register.R13D;
-        case 14:return Register.R14D;
-        case 15:return Register.R15D;
+        case 0: return X86Register.EAX;
+        case 1: return X86Register.ECX;
+        case 2: return X86Register.EDX;
+        case 3: return X86Register.EBX;
+        case 4: return X86Register.ESP;
+        case 5: return X86Register.EBP;
+        case 6: return X86Register.ESI;
+        case 7: return X86Register.EDI;
+        case 8: return X86Register.R8D;
+        case 9: return X86Register.R9D;
+        case 10:return X86Register.R10D;
+        case 11:return X86Register.R11D;
+        case 12:return X86Register.R12D;
+        case 13:return X86Register.R13D;
+        case 14:return X86Register.R14D;
+        case 15:return X86Register.R15D;
         default:
             throw new UnsupportedOperationException("invalid generic 32 bit register: " + id);
         }
     }
 
-    private static Register getGenericRegister64(short id) {
+    private static X86Register getGenericRegister64(short id) {
         switch(id) {
-        case 0: return Register.RAX;
-        case 1: return Register.RCX;
-        case 2: return Register.RDX;
-        case 3: return Register.RBX;
-        case 4: return Register.RSP;
-        case 5: return Register.RBP;
-        case 6: return Register.RSI;
-        case 7: return Register.RDI;
-        case 8: return Register.R8;
-        case 9: return Register.R9;
-        case 10:return Register.R10;
-        case 11:return Register.R11;
-        case 12:return Register.R12;
-        case 13:return Register.R13;
-        case 14:return Register.R14;
-        case 15:return Register.R15;
+        case 0: return X86Register.RAX;
+        case 1: return X86Register.RCX;
+        case 2: return X86Register.RDX;
+        case 3: return X86Register.RBX;
+        case 4: return X86Register.RSP;
+        case 5: return X86Register.RBP;
+        case 6: return X86Register.RSI;
+        case 7: return X86Register.RDI;
+        case 8: return X86Register.R8;
+        case 9: return X86Register.R9;
+        case 10:return X86Register.R10;
+        case 11:return X86Register.R11;
+        case 12:return X86Register.R12;
+        case 13:return X86Register.R13;
+        case 14:return X86Register.R14;
+        case 15:return X86Register.R15;
         default:
             throw new UnsupportedOperationException("invalid generic 64 bit register: " + id);
         }
     }
 
-    private static Register getSegmentRegister(short id) {
+    private static X86Register getSegmentRegister(short id) {
         switch(id & 0x7) {
-        case 0: return Register.ES;
-        case 1: return Register.CS;
-        case 2: return Register.SS;
-        case 3: return Register.DS;
-        case 4: return Register.FS;
-        case 5: return Register.GS;
+        case 0: return X86Register.ES;
+        case 1: return X86Register.CS;
+        case 2: return X86Register.SS;
+        case 3: return X86Register.DS;
+        case 4: return X86Register.FS;
+        case 5: return X86Register.GS;
         default:
             throw new UnsupportedOperationException("invalid segment register: " + id);
         }
     }
 
-    private static Register getFPURegister(short id) {
+    private static X86Register getFPURegister(short id) {
         switch(id & 0x07) {
-        case 0: return Register.ST0;
-        case 1: return Register.ST1;
-        case 2: return Register.ST2;
-        case 3: return Register.ST3;
-        case 4: return Register.ST4;
-        case 5: return Register.ST5;
-        case 6: return Register.ST6;
-        case 7: return Register.ST7;
+        case 0: return X86Register.ST0;
+        case 1: return X86Register.ST1;
+        case 2: return X86Register.ST2;
+        case 3: return X86Register.ST3;
+        case 4: return X86Register.ST4;
+        case 5: return X86Register.ST5;
+        case 6: return X86Register.ST6;
+        case 7: return X86Register.ST7;
         default:
             throw new UnsupportedOperationException("invalid FPU register: " + id);
         }
     }
 
-    private static Register getMMXRegister(short id) {
+    private static X86Register getMMXRegister(short id) {
         switch(id & 0x07) {
-        case 0: return Register.MM0;
-        case 1: return Register.MM1;
-        case 2: return Register.MM2;
-        case 3: return Register.MM3;
-        case 4: return Register.MM4;
-        case 5: return Register.MM5;
-        case 6: return Register.MM6;
-        case 7: return Register.MM7;
+        case 0: return X86Register.MM0;
+        case 1: return X86Register.MM1;
+        case 2: return X86Register.MM2;
+        case 3: return X86Register.MM3;
+        case 4: return X86Register.MM4;
+        case 5: return X86Register.MM5;
+        case 6: return X86Register.MM6;
+        case 7: return X86Register.MM7;
         default:
             throw new UnsupportedOperationException("invalid MMX register: " + id);
         }
     }
 
-    private static Register getXMMRegister(short id) {
+    private static X86Register getXMMRegister(short id) {
         switch(id) {
-        case 0: return Register.XMM0;
-        case 1: return Register.XMM1;
-        case 2: return Register.XMM2;
-        case 3: return Register.XMM3;
-        case 4: return Register.XMM4;
-        case 5: return Register.XMM5;
-        case 6: return Register.XMM6;
-        case 7: return Register.XMM7;
-        case 8: return Register.XMM8;
-        case 9: return Register.XMM9;
-        case 10: return Register.XMM10;
-        case 11: return Register.XMM11;
-        case 12: return Register.XMM12;
-        case 13: return Register.XMM13;
-        case 14: return Register.XMM14;
-        case 15: return Register.XMM15;
+        case 0: return X86Register.XMM0;
+        case 1: return X86Register.XMM1;
+        case 2: return X86Register.XMM2;
+        case 3: return X86Register.XMM3;
+        case 4: return X86Register.XMM4;
+        case 5: return X86Register.XMM5;
+        case 6: return X86Register.XMM6;
+        case 7: return X86Register.XMM7;
+        case 8: return X86Register.XMM8;
+        case 9: return X86Register.XMM9;
+        case 10: return X86Register.XMM10;
+        case 11: return X86Register.XMM11;
+        case 12: return X86Register.XMM12;
+        case 13: return X86Register.XMM13;
+        case 14: return X86Register.XMM14;
+        case 15: return X86Register.XMM15;
         default:
             throw new UnsupportedOperationException("invalid XMM register: " + id);
         }
     }
 
-    private static Register getControlRegister(short id) {
+    private static X86Register getControlRegister(short id) {
         switch(id) {
-        case 0: return Register.CR0;
-        case 2: return Register.CR2;
-        case 3: return Register.CR3;
-        case 4: return Register.CR4;
+        case 0: return X86Register.CR0;
+        case 2: return X86Register.CR2;
+        case 3: return X86Register.CR3;
+        case 4: return X86Register.CR4;
         default:
             throw new UnsupportedOperationException("invalid control register: " + id);
         }
     }
 
-    private static Register getDebugRegister(short id) {
+    private static X86Register getDebugRegister(short id) {
         switch(id) {
-        case 0: return Register.DR0;
-        case 1: return Register.DR1;
-        case 2: return Register.DR2;
-        case 3: return Register.DR3;
-        case 4: return Register.DR4;
-        case 5: return Register.DR5;
-        case 6: return Register.DR6;
-        case 7: return Register.DR7;
+        case 0: return X86Register.DR0;
+        case 1: return X86Register.DR1;
+        case 2: return X86Register.DR2;
+        case 3: return X86Register.DR3;
+        case 4: return X86Register.DR4;
+        case 5: return X86Register.DR5;
+        case 6: return X86Register.DR6;
+        case 7: return X86Register.DR7;
         default:
             throw new UnsupportedOperationException("invalid debug register: " + id);
         }
     }
 
-    private static Register getTestRegister(short id) {
+    private static X86Register getTestRegister(short id) {
         switch(id) {
-        case 0: return Register.TR0;
-        case 1: return Register.TR1;
-        case 2: return Register.TR2;
-        case 3: return Register.TR3;
-        case 4: return Register.TR4;
-        case 5: return Register.TR5;
-        case 6: return Register.TR6;
-        case 7: return Register.TR7;
+        case 0: return X86Register.TR0;
+        case 1: return X86Register.TR1;
+        case 2: return X86Register.TR2;
+        case 3: return X86Register.TR3;
+        case 4: return X86Register.TR4;
+        case 5: return X86Register.TR5;
+        case 6: return X86Register.TR6;
+        case 7: return X86Register.TR7;
         default:
             throw new UnsupportedOperationException("invalid test register: " + id);
         }
     }
 
-    public static Register getGenericAddressRegister(X86Context ctx, short id) {
+    public static X86Register getGenericAddressRegister(X86Context ctx, short id) {
         if(ctx.getExecMode() != ExecutionMode.LONG && id > 7) {
             throw new UnsupportedOperationException("used 64 bit register id in 32 bit mode");
         }
@@ -409,7 +410,7 @@ public final class X86CPU {
         }
     }
 
-    private static Register getOperandRegisterGeneral(OperandDesc op, X86Context ctx, short id) {
+    private static X86Register getOperandRegisterGeneral(OperandDesc op, X86Context ctx, short id) {
         if(ctx.getExecMode() != ExecutionMode.LONG && id > 7) {
             throw new UnsupportedOperationException("used 64 bit register id in 32 bit mode");
         }
@@ -423,7 +424,7 @@ public final class X86CPU {
         }
     }
 
-    public static Register getOperandRegister(OperandDesc op, X86Context ctx, short id) {
+    public static X86Register getOperandRegister(OperandDesc op, X86Context ctx, short id) {
         switch(op.adrType) {
         case MOD_RM_R:
         case MOD_RM_M:
