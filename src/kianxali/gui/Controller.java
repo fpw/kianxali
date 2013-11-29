@@ -1,7 +1,6 @@
 package kianxali.gui;
 
 import java.nio.file.Path;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kianxali.decoder.Data;
@@ -30,6 +29,7 @@ public class Controller implements DisassemblyListener, DataListener {
 
     public Controller() {
         this.formatter = new OutputFormatter();
+        formatter.setIncludeRawBytes(true);
     }
 
     public void showGUI() {
@@ -44,7 +44,6 @@ public class Controller implements DisassemblyListener, DataListener {
 
     public void onFileOpened(Path path) {
         try {
-            // TODO: add more file types and decide somehow
             imageFile = new PEFile(path);
 
             imageDoc = new ImageDocument(formatter);
@@ -58,8 +57,9 @@ public class Controller implements DisassemblyListener, DataListener {
 
             disassembler.startAnalyzer();
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Couldn't load image: " + e.getMessage(), e);
-            gui.showError("Couldn't load file", e.getMessage());
+            // TODO: add more file types and decide somehow
+            LOG.warning("Couldn't load image: " + e.getMessage());
+            gui.showError("Couldn't load file", e.getMessage() + "\nCurrently, only PE files (.exe) are supported.");
         }
     }
 
@@ -90,8 +90,10 @@ public class Controller implements DisassemblyListener, DataListener {
     @Override
     public void onAnalyzeStop() {
         double duration = (System.currentTimeMillis() - beginDisassembleTime) / 1000.0;
-        LOG.info(String.format("Initial auto-analysis finished after %.2f seconds, got %d entities",
-                duration, disassemblyData.getEntityCount()));
+        LOG.info(String.format(
+                    "Initial auto-analysis finished after %.2f seconds, got %d entities",
+                    duration, disassemblyData.getEntityCount())
+                );
         gui.getImageView().setDocument(imageDoc);
     }
 }

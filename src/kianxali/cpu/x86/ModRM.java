@@ -56,7 +56,7 @@ public class ModRM {
         }
     }
 
-    public Operand getMem16(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
+    private Operand getMem16(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
         if(isRMReg()) {
             // encoding specifies register (or user forced so)
             if(!allowRegister) {
@@ -113,7 +113,7 @@ public class ModRM {
         }
     }
 
-    public Operand getMem32(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
+    private Operand getMem32(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
         if(isRMReg()) {
             // encoding specifies register (or user forced so)
             if(!allowRegister) {

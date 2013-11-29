@@ -1,17 +1,27 @@
 package kianxali.util;
 
 public class OutputFormatter {
-    private boolean includePrefixBytes;
+    private boolean includeRawBytes;
 
     public OutputFormatter() {
     }
 
-    public void setIncludePrefixBytes(boolean includePrefixBytes) {
-        this.includePrefixBytes = includePrefixBytes;
+    public static String formatByteString(short[] bytes) {
+        StringBuilder res = new StringBuilder();
+
+        for(short b : bytes) {
+            res.append(String.format("%02X", b));
+        }
+
+        return res.toString();
     }
 
-    public boolean shouldIncludePrefixBytes() {
-        return includePrefixBytes;
+    public void setIncludeRawBytes(boolean includeRawBytes) {
+        this.includeRawBytes = includeRawBytes;
+    }
+
+    public boolean shouldIncludeRawBytes() {
+        return includeRawBytes;
     }
 
     public String formatRegister(String name) {

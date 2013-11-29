@@ -33,6 +33,5 @@ public class ImageView extends JPanel {
 
     public void setDocument(ImageDocument document) {
         editor.setDocument(document);
-        // document.dump(System.out);
     }
 }

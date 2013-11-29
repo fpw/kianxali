@@ -199,6 +199,10 @@ public class ImageDocument extends DefaultStyledDocument {
         if(entity instanceof Instruction) {
             Instruction inst = (Instruction) entity;
             List<Operand> operands = inst.getOperands();
+            if(formatter.shouldIncludeRawBytes()) {
+                String raw = String.format("%-30s ", OutputFormatter.formatByteString(inst.getRawBytes()));
+                specs.add(contentTag(mnemonicAttributes, raw, ElementSpec.OriginateDirection));
+            }
             String mnemo = inst.getMnemonicString(formatter) + ((operands.size() > 0) ? " " : "");
             specs.add(contentTag(mnemonicAttributes, mnemo, ElementSpec.OriginateDirection));
             for(int i = 0; i < operands.size(); i++) {

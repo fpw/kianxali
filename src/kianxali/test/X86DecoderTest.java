@@ -579,6 +579,9 @@ public class X86DecoderTest {
 
         // check that REX prefix is ignored / encoded as normal op
         checkOpcode32(new short[] {0x45}, "inc ebp");
+
+        // check 16 bit address prefix
+        checkOpcode32(new short[] {0x64, 0x67, 0xA3, 0x00, 0x00}, "mov dword ptr fs:[0], eax");
     }
 
     private void testModRM64() {

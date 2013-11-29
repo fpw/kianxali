@@ -22,8 +22,9 @@ public class X86Instruction implements Instruction {
     private final List<OpcodeSyntax> syntaxes;
     private OpcodeSyntax syntax;
     private final List<Operand> operands;
-    private Prefix prefix;
     private Short parsedExtension;
+    private String prefixString;
+    private short[] rawData;
     // the size is not known during while decoding operands, so this will cause a (desired) NullPointerException
     private Integer size;
 
@@ -47,7 +48,8 @@ public class X86Instruction implements Instruction {
 
     // the prefix has been read from seq already
     public boolean tryDecode(ByteSequence seq, X86Context ctx) {
-        prefix = ctx.getPrefix();
+        Prefix prefix = ctx.getPrefix();
+        prefixString = prefix.toString();
         if(syntax.isExtended()) {
             if(parsedExtension == null) {
                 if(syntax.getOpcodeEntry().secondOpcode != null) {
@@ -98,6 +100,14 @@ public class X86Instruction implements Instruction {
                 operands.set(i, ((RelativeOp) op).toImmediateOp(size));
             }
         }
+
+        // finally, retrieve the raw bytes
+        rawData = new short[size];
+        seq.skip(-size);
+        for(int i = 0; i < size; i++) {
+            rawData[i] = seq.readUByte();
+        }
+
         return true;
     }
 
@@ -286,23 +296,11 @@ public class X86Instruction implements Instruction {
 
     private Operand decodeOffset(ByteSequence seq, OperandDesc op, X86Context ctx) {
         long offset;
-        switch(op.operType) {
-        case BYTE:
-            offset = seq.readUDword();
-            break;
-        case WORD_DWORD_64:
-            if(prefix.rexWPrefix) {
-                offset = seq.readSQword();
-            } else {
-                if(prefix.opSizePrefix) {
-                    offset = seq.readUDword();
-                } else {
-                    offset = seq.readUDword();
-                }
-            }
-            break;
-        default:
-            throw new UnsupportedOperationException("unsupported offset type: " + op.operType);
+        switch(X86CPU.getAddressSize(ctx)) {
+        case A16: offset = seq.readUWord(); break;
+        case A32: offset = seq.readUDword(); break;
+        case A64: offset = seq.readSQword(); break;
+        default: throw new UnsupportedOperationException("invalid address size: " + X86CPU.getAddressSize(ctx));
         }
         PointerOp res = new PointerOp(ctx, offset);
         res.setOpType(op.operType);
@@ -310,8 +308,8 @@ public class X86Instruction implements Instruction {
     }
 
     private Operand decodeLeastReg(OperandDesc op, X86Context ctx) {
-        int regIndex = prefix.prefixBytes.size() - 1 - syntax.getEncodedRegisterRelativeIndex();
-        short regId = (short) (prefix.prefixBytes.get(regIndex) & 0x7);
+        int regIndex = ctx.getPrefix().prefixBytes.size() - 1 - syntax.getEncodedRegisterRelativeIndex();
+        short regId = (short) (ctx.getPrefix().prefixBytes.get(regIndex) & 0x7);
         Register reg = X86CPU.getOperandRegister(op, ctx, regId);
         return new RegisterOp(op.usageType, reg);
     }
@@ -343,13 +341,11 @@ public class X86Instruction implements Instruction {
     @Override
     public String asString(OutputFormatter options) {
         StringBuilder res = new StringBuilder();
-        if(options.shouldIncludePrefixBytes()) {
-            for(Short b : prefix.prefixBytes) {
-                res.append(String.format("%02X", b));
-            }
+        if(options.shouldIncludeRawBytes()) {
+            res.append(OutputFormatter.formatByteString(rawData));
             res.append("\t");
         }
-        res.append(prefix.toString());
+        res.append(prefixString);
         if(syntax.getMnemonic() == null) {
             res.append("NO_MNEM");
         } else {
@@ -371,7 +367,7 @@ public class X86Instruction implements Instruction {
     public String toString() {
         StringBuilder res = new StringBuilder();
         res.append(syntax.getMnemonic().toString().toLowerCase() + ":\t");
-        for(Short b : prefix.prefixBytes) {
+        for(Short b : rawData) {
             res.append(String.format("%02X", b));
         }
         return res.toString();
@@ -435,6 +431,11 @@ public class X86Instruction implements Instruction {
     @Override
     public String getMnemonicString(OutputFormatter formatter) {
         return formatter.formatMnemonic(syntax.getMnemonic().toString());
+    }
+
+    @Override
+    public short[] getRawBytes() {
+        return rawData;
     }
 }
 
