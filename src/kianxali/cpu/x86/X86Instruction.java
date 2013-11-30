@@ -437,6 +437,15 @@ public class X86Instruction implements Instruction {
     public short[] getRawBytes() {
         return rawData;
     }
+
+    @Override
+    public boolean isFunctionCall() {
+        X86Mnemonic mnem = syntax.getMnemonic();
+        if(mnem == X86Mnemonic.CALL || mnem == X86Mnemonic.CALLF) {
+            return true;
+        }
+        return false;
+    }
 }
 
 // lives only temporarily, will be converted to ImmediateOp

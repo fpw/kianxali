@@ -1,11 +1,16 @@
 package kianxali.disassembler;
 
 public class Function {
-    private final long startAddress, endAddress;
+    private final long startAddress;
+    private long endAddress;
 
-    public Function(long startAddr, long endAddr) {
+    public Function(long startAddr) {
         this.startAddress = startAddr;
-        this.endAddress = endAddr;
+        this.endAddress = startAddr;
+    }
+
+    public void setEndAddress(long endAddress) {
+        this.endAddress = endAddress;
     }
 
     public long getStartAddress() {

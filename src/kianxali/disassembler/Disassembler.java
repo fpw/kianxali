@@ -2,11 +2,13 @@ package kianxali.disassembler;
 
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +29,7 @@ public class Disassembler {
 
     private final Queue<Entry<Long, DecodedEntity>> workQueue;
     private final Set<DisassemblyListener> listeners;
+    private final Map<Long, Function> functionInfo; // stores which trace start belongs to which function
     private final DisassemblyData disassemblyData;
     private final ImageFile imageFile;
     private final Context ctx;
@@ -36,6 +39,7 @@ public class Disassembler {
     public Disassembler(ImageFile imageFile, DisassemblyData data) {
         this.imageFile = imageFile;
         this.disassemblyData = data;
+        this.functionInfo = new TreeMap<Long, Function>();
         this.listeners = new CopyOnWriteArraySet<>();
         this.workQueue = new PriorityQueue<>(100, new Comparator<Entry<Long, DecodedEntity>>() {
             @Override
@@ -48,7 +52,9 @@ public class Disassembler {
 
         disassemblyData.insertImageFileWithSections(imageFile);
 
-        addCodeWork(imageFile.getCodeEntryPointMem());
+        long entry = imageFile.getCodeEntryPointMem();
+        functionInfo.put(entry, new Function(entry));
+        addCodeWork(entry);
     }
 
     public void addListener(DisassemblyListener listener) {
@@ -103,6 +109,11 @@ public class Disassembler {
                 analyzeData(data);
             }
         }
+
+        for(Function fun : functionInfo.values()) {
+            disassemblyData.insertFunction(fun);
+        }
+
         stopAnalyzer();
     }
 
@@ -119,6 +130,7 @@ public class Disassembler {
     }
 
     private void disassembleTrace(long memAddr) {
+        Function function = functionInfo.get(memAddr);
         while(true) {
             DecodedEntity old = disassemblyData.getEntityOnExactAddress(memAddr);
             if(old instanceof Instruction) {
@@ -158,13 +170,16 @@ public class Disassembler {
 
             disassemblyData.insertEntity(inst);
 
-            examineInstruction(inst);
+            examineInstruction(inst, function);
 
             if(inst.stopsTrace()) {
                 break;
             }
-
             memAddr += inst.getSize();
+        }
+
+        if(function != null && function.getEndAddress() < memAddr) {
+            function.setEndAddress(memAddr);
         }
     }
 
@@ -198,10 +213,17 @@ public class Disassembler {
     }
 
     // checks whether the instruction's operands could start a new trace or data
-    private void examineInstruction(Instruction inst) {
+    private void examineInstruction(Instruction inst, Function function) {
         // check if we have branch addresses to be analyzed later
         for(long addr : inst.getBranchAddresses()) {
             if(imageFile.isValidAddress(addr)) {
+                if(inst.isFunctionCall()) {
+                    if(!functionInfo.containsKey(addr)) {
+                        functionInfo.put(addr, new Function(addr));
+                    }
+                } else if(function != null) {
+                    functionInfo.put(addr, function);
+                }
                 addCodeWork(addr);
             } else {
                 // TODO: Issue warning event about invalid code address

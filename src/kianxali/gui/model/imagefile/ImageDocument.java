@@ -15,6 +15,7 @@ import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Instruction;
 import kianxali.decoder.Operand;
 import kianxali.disassembler.DataEntry;
+import kianxali.disassembler.Function;
 import kianxali.image.ImageFile;
 import kianxali.image.Section;
 import kianxali.util.OutputFormatter;
@@ -123,7 +124,9 @@ public class ImageDocument extends DefaultStyledDocument {
             addImageStart(memAddr, data.getStartImageFile(), specs);
             addSectionEnd(memAddr, data.getEndSection(), specs);
             addSectionStart(memAddr, data.getStartSection(), specs);
+            addFunctionStart(memAddr, data.getStartFunction(), specs);
             addEntity(memAddr, data.getEntity(), data.getComment(), specs);
+            addFunctionEnd(memAddr, data.getEndFunction(), specs);
 
             if(specs.size() == startSize) {
                 // nothing was actually added
@@ -185,6 +188,26 @@ public class ImageDocument extends DefaultStyledDocument {
         }
         startLine(memAddr, specs);
         String line = String.format("; Section '%s' ends", endSection.getName());
+        specs.add(contentTag(infoAttributes, line, ElementSpec.OriginateDirection));
+        endLine(specs);
+    }
+
+    private void addFunctionStart(long memAddr, Function fun, List<ElementSpec> specs) {
+        if(fun == null) {
+            return;
+        }
+        startLine(memAddr, specs);
+        String line = String.format("; Function %08X starts", fun.getStartAddress());
+        specs.add(contentTag(infoAttributes, line, ElementSpec.OriginateDirection));
+        endLine(specs);
+    }
+
+    private void addFunctionEnd(long memAddr, Function fun, List<ElementSpec> specs) {
+        if(fun == null) {
+            return;
+        }
+        startLine(memAddr, specs);
+        String line = String.format("; Function %08X ends", fun.getStartAddress());
         specs.add(contentTag(infoAttributes, line, ElementSpec.OriginateDirection));
         endLine(specs);
     }

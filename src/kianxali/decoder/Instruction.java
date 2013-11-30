@@ -6,6 +6,7 @@ import kianxali.util.OutputFormatter;
 
 public interface Instruction extends DecodedEntity {
     boolean stopsTrace();
+    boolean isFunctionCall();
     String getMnemonicString(OutputFormatter formatter);
     List<Operand> getOperands();
     List<Long> getBranchAddresses();

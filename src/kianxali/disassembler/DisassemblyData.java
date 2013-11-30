@@ -93,6 +93,19 @@ public class DisassemblyData {
         }
     }
 
+    public void insertFunction(Function function) {
+        long start = function.getStartAddress();
+        long end = function.getEndAddress();
+
+        DataEntry entry = getInfoOnExactAddress(start);
+        entry.setStartFunction(function);
+        tellListeners(start);
+
+        entry = getInfoOnExactAddress(end);
+        entry.setEndFunction(function);
+        tellListeners(end);
+    }
+
     public synchronized DataEntry getInfoOnExactAddress(long memAddr) {
         DataEntry entry = memoryMap.get(memAddr);
         return entry;
