@@ -56,7 +56,6 @@ public class ImageDocument extends DefaultStyledDocument {
 
     private void setupStyles() {
         StyleConstants.setFontFamily(addressAttributes, "Courier");
-        StyleConstants.setForeground(lineAttributes, new Color(0x00, 0x99, 0x00));
         StyleConstants.setForeground(infoAttributes, new Color(0x00, 0x00, 0xFF));
         StyleConstants.setForeground(mnemonicAttributes, new Color(0x00, 0x00, 0xCC));
     }
@@ -155,7 +154,10 @@ public class ImageDocument extends DefaultStyledDocument {
     private void startLine(long memAddr, List<ElementSpec> specs) {
         String address = String.format("%08X\t", memAddr);
         specs.add(startTag(lineAttributes, ElementSpec.OriginateDirection));
-        specs.add(contentTag(infoAttributes, address, ElementSpec.OriginateDirection));
+
+        SimpleAttributeSet attr = new SimpleAttributeSet(infoAttributes);
+        StyleConstants.setForeground(attr, new Color(0x00, 0x99, 0x00));
+        specs.add(contentTag(attr, address, ElementSpec.OriginateDirection));
     }
 
     private void endLine(List<ElementSpec> specs) {
@@ -221,8 +223,10 @@ public class ImageDocument extends DefaultStyledDocument {
             Instruction inst = (Instruction) entity;
             List<Operand> operands = inst.getOperands();
             if(formatter.shouldIncludeRawBytes()) {
-                String raw = String.format("%-30s ", OutputFormatter.formatByteString(inst.getRawBytes()));
-                specs.add(contentTag(mnemonicAttributes, raw, ElementSpec.OriginateDirection));
+                String raw = String.format("%-20s ", OutputFormatter.formatByteString(inst.getRawBytes()));
+                SimpleAttributeSet attr = new SimpleAttributeSet(mnemonicAttributes);
+                StyleConstants.setForeground(attr, new Color(0x40, 0x40, 0x40));
+                specs.add(contentTag(attr, raw, ElementSpec.OriginateDirection));
             }
             String mnemo = inst.getMnemonicString(formatter) + ((operands.size() > 0) ? " " : "");
             specs.add(contentTag(mnemonicAttributes, mnemo, ElementSpec.OriginateDirection));
