@@ -102,7 +102,11 @@ public class DisassemblyData {
         tellListeners(start);
 
         entry = getInfoOnExactAddress(end);
-        entry.setEndFunction(function);
+        if(entry != null) {
+            entry.setEndFunction(function);
+        } else {
+            // TODO
+        }
         tellListeners(end);
     }
 

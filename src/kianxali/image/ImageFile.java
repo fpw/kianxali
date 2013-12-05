@@ -25,7 +25,12 @@ public abstract class ImageFile {
         if(locked) {
             imageFile.lock();
         }
-        imageFile.seek(toFileAddress(memAddress));
+        try {
+            imageFile.seek(toFileAddress(memAddress));
+        } catch(Exception e) {
+            imageFile.unlock();
+            throw e;
+        }
         return imageFile;
     }
 

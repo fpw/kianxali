@@ -148,15 +148,18 @@ public class Disassembler {
 
             ctx.setInstructionPointer(memAddr);
             Instruction inst = null;
-            ByteSequence seq = imageFile.getByteSequence(memAddr, true);
+            ByteSequence seq = null;
             try {
+                seq = imageFile.getByteSequence(memAddr, true);
                 inst = decoder.decodeOpcode(ctx, seq);
             } catch(Exception e) {
                 LOG.log(Level.WARNING, String.format("Disassemble error (%s) at %08X: %s", e, memAddr, inst), e);
-                // TODO: signal error instead of throw
-                throw e;
+                // TODO: signal error
+                break;
             } finally {
-                seq.unlock();
+                if(seq != null) {
+                    seq.unlock();
+                }
             }
 
             if(inst == null) {
