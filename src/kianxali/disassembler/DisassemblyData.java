@@ -40,6 +40,9 @@ public class DisassemblyData {
 
     public synchronized void insertImageFileWithSections(ImageFile file) {
         long imageAddress = 0L;
+        if(file.getSections().size() > 0) {
+            imageAddress = file.getSections().get(0).getStartAddress();
+        }
         DataEntry old = getInfoOnExactAddress(imageAddress);
         if(old != null) {
             old.setStartImageFile(file);

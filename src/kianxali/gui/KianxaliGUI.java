@@ -34,7 +34,7 @@ public class KianxaliGUI extends JFrame {
         setupMenu();
 
         setLayout(new BorderLayout());
-        imageView = new ImageView();
+        imageView = new ImageView(controller);
         add(imageView, BorderLayout.CENTER);
 
         pack();

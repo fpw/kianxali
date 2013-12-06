@@ -13,6 +13,7 @@ public class StatusView extends JComponent {
     private enum DecodeType { UNKNOWN, CODE, DATA };
     private final DecodeType[] decodeStatus;
     private long dataLength;
+    private int cursorIndex;
 
     public StatusView() {
         this.decodeStatus = new DecodeType[NUM_STRIPES + 1];
@@ -52,11 +53,18 @@ public class StatusView extends JComponent {
         }
     }
 
+    public void setCursorAddress(long offset) {
+        int index = (int) (offset * NUM_STRIPES / dataLength);
+        cursorIndex = index;
+        repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        int stripeWidth = (int) Math.max(1, Math.ceil((double) getWidth() / NUM_STRIPES));
+        int stripeWidth = (int) Math.max(1, Math.floor((double) getWidth() / NUM_STRIPES));
         int stripeHeight = getHeight();
+
         int x = 0;
         for(int i = 0; i < NUM_STRIPES; i++) {
             switch(decodeStatus[i]) {
@@ -65,6 +73,10 @@ public class StatusView extends JComponent {
             default:    g.setColor(Color.black);
             }
             g.fillRect(x, 0, stripeWidth, stripeHeight);
+            if(i == cursorIndex) {
+                g.setColor(Color.green);
+                g.fillRect(x, 0, 2, stripeHeight);
+            }
             x += stripeWidth;
         }
     }

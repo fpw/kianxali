@@ -94,6 +94,23 @@ public class ImageDocument extends DefaultStyledDocument {
         return res;
     }
 
+    public Integer getOffsetForAddress(long memAddr) {
+        Element floorElem = findFloorElement(memAddr);
+        if(floorElem != null) {
+            return floorElem.getStartOffset();
+        } else {
+            return null;
+        }
+    }
+
+    public Long getAddressForOffset(int offset) {
+        Element root = getDefaultRootElement();
+        int idx = root.getElementIndex(offset);
+        Element elem = root.getElement(idx);
+        Long addr = (Long) elem.getAttributes().getAttribute(MemAddressKey);
+        return addr;
+    }
+
     public synchronized void updateDataEntry(long memAddr, DataEntry data) {
         Element floorElem = findFloorElement(memAddr);
         boolean isRoot = (floorElem == getDefaultRootElement());
@@ -112,9 +129,6 @@ public class ImageDocument extends DefaultStyledDocument {
         try {
             List<ElementSpec> specs = new LinkedList<>();
             specs.add(endTag());
-            if(getLength() > 0) {
-                specs.add(endTag());
-            }
             MutableAttributeSet adrAttributes = new SimpleAttributeSet(addressAttributes);
             adrAttributes.addAttribute(MemAddressKey, memAddr);
             specs.add(startTag(adrAttributes, ElementSpec.OriginateDirection));
@@ -133,9 +147,9 @@ public class ImageDocument extends DefaultStyledDocument {
             }
             specs.add(endTag());
 
-            ElementSpec[] specArr = new ElementSpec[specs.size()];
-            specs.toArray(specArr);
             if(isRoot) {
+                ElementSpec[] specArr = new ElementSpec[specs.size()];
+                specs.toArray(specArr);
                 insert(0, specArr);
             } else {
                 long addr = (long) floorElem.getAttributes().getAttribute(MemAddressKey);
@@ -144,6 +158,12 @@ public class ImageDocument extends DefaultStyledDocument {
                     offset = floorElem.getStartOffset();
                     removeElement(floorElem);
                 }
+                if(getLength() > 0) {
+                    // end current section if there was content
+                    specs.add(0, endTag());
+                }
+                ElementSpec[] specArr = new ElementSpec[specs.size()];
+                specs.toArray(specArr);
                 insert(offset, specArr);
             }
         } catch (BadLocationException e) {

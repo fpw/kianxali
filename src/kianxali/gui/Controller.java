@@ -3,6 +3,9 @@ package kianxali.gui;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+
 import kianxali.decoder.Data;
 import kianxali.decoder.Instruction;
 import kianxali.disassembler.DataEntry;
@@ -59,7 +62,15 @@ public class Controller implements DisassemblyListener, DataListener {
         } catch (Exception e) {
             // TODO: add more file types and decide somehow
             LOG.warning("Couldn't load image: " + e.getMessage());
+            e.printStackTrace();
             gui.showError("Couldn't load file", e.getMessage() + "\nCurrently, only PE files (.exe) are supported.");
+        }
+    }
+
+    public void onScrollChange(long memAddr) {
+        if(imageFile.isValidAddress(memAddr)) {
+            long offset = imageFile.toFileAddress(memAddr);
+            gui.getImageView().getStatusView().setCursorAddress(offset);
         }
     }
 
@@ -94,6 +105,17 @@ public class Controller implements DisassemblyListener, DataListener {
                     "Initial auto-analysis finished after %.2f seconds, got %d entities",
                     duration, disassemblyData.getEntityCount())
                 );
-        gui.getImageView().setDocument(imageDoc);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                gui.getImageView().setDocument(imageDoc);
+                try {
+                    gui.getImageView().scrollTo(imageFile.getCodeEntryPointMem());
+                } catch (BadLocationException e) {
+                    // scrolling didn't work, but this is not severe
+                    LOG.warning("Couldn't scroll to code entry point");
+                }
+            }
+        });
     }
 }
