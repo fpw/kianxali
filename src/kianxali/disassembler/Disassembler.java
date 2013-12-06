@@ -53,7 +53,6 @@ public class Disassembler {
         disassemblyData.insertImageFileWithSections(imageFile);
 
         long entry = imageFile.getCodeEntryPointMem();
-        functionInfo.put(entry, new Function(entry));
         addCodeWork(entry);
     }
 
