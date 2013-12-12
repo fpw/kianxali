@@ -93,11 +93,16 @@ public class X86Instruction implements Instruction {
         }
         size = (int) (prefix.prefixBytes.size() + seq.getPosition() - operandPos);
 
-        // now that the size is known, convert RelativeOps to ImmediateOps
+        // now that the size is known, convert RelativeOps to ImmediateOps etc.
         for(int i = 0; i < operands.size(); i++) {
             Operand op = operands.get(i);
             if(op instanceof RelativeOp) {
                 operands.set(i, ((RelativeOp) op).toImmediateOp(size));
+            } else if(op instanceof PointerOp) {
+                PointerOp res = (PointerOp) op;
+                if(res.needsSizeFix()) {
+                    res.setOffset(res.getOffset() + size);
+                }
             }
         }
 

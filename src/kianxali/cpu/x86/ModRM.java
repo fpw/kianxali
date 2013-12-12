@@ -50,8 +50,8 @@ public class ModRM {
         AddressSize addrSize = X86CPU.getAddressSize(ctx);
         switch(addrSize) {
         case A16:   return getMem16(op, allowRegister, mustBeRegister);
-        case A32:   return getMem32(op, allowRegister, mustBeRegister);
-        case A64:   return getMem32(op, allowRegister, mustBeRegister);
+        case A32:   return getMem32or64(false, op, allowRegister, mustBeRegister);
+        case A64:   return getMem32or64(true, op, allowRegister, mustBeRegister);
         default:    throw new UnsupportedOperationException("invalid address size: " + addrSize);
         }
     }
@@ -113,7 +113,7 @@ public class ModRM {
         }
     }
 
-    private Operand getMem32(OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
+    private Operand getMem32or64(boolean is64, OperandDesc op, boolean allowRegister, boolean mustBeRegister) {
         if(isRMReg()) {
             // encoding specifies register (or user forced so)
             if(!allowRegister) {
@@ -131,7 +131,13 @@ public class ModRM {
                 return sib.getOp();
             } else if(codedMem == 5 || codedMem == 13) {
                 long disp = seq.readUDword();
+                if(is64) {
+                    disp += ctx.getInstructionPointer();
+                }
                 PointerOp res = new PointerOp(ctx, disp);
+                if(is64) {
+                    res.setNeedSizeFix(true);
+                }
                 res.setOpType(op.operType);
                 res.setUsage(op.usageType);
                 return res;

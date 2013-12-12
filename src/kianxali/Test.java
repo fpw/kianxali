@@ -22,7 +22,7 @@ import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblyData;
 import kianxali.disassembler.DisassemblyListener;
 import kianxali.image.ImageFile;
-import kianxali.image.pe.PEFile;
+import kianxali.image.mach_o.MachOFile;
 import kianxali.util.OutputFormatter;
 
 public final class Test implements DisassemblyListener, DataListener {
@@ -60,8 +60,8 @@ public final class Test implements DisassemblyListener, DataListener {
     }
 
     private void testDisassembler() throws IOException {
-        Path path = FileSystems.getDefault().getPath(".", "targets", "client.exe");
-        ImageFile image = new PEFile(path);
+        Path path = FileSystems.getDefault().getPath(".", "targets", "mach-o-32");
+        ImageFile image = new MachOFile(path);
         data = new DisassemblyData();
         data.addListener(this);
         dasm = new Disassembler(image, data);

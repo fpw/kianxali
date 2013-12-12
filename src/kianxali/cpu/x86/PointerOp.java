@@ -18,6 +18,7 @@ public class PointerOp implements Operand {
     private X86Register baseRegister, indexRegister;
     private Integer indexScale;
     private Long offset;
+    private boolean needSizeFix;
 
     // ptr [address]
     public PointerOp(X86Context ctx, long offset) {
@@ -196,5 +197,13 @@ public class PointerOp implements Operand {
     @Override
     public UsageType getUsage() {
         return usage;
+    }
+
+    public void setNeedSizeFix(boolean b) {
+        needSizeFix = b;
+    }
+
+    public boolean needsSizeFix() {
+        return needSizeFix;
     }
 }

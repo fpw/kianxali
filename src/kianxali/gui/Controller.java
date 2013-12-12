@@ -16,6 +16,7 @@ import kianxali.disassembler.DisassemblyListener;
 import kianxali.gui.model.imagefile.ImageDocument;
 import kianxali.gui.model.imagefile.StatusView;
 import kianxali.image.ImageFile;
+import kianxali.image.mach_o.MachOFile;
 import kianxali.image.pe.PEFile;
 import kianxali.util.OutputFormatter;
 
@@ -47,7 +48,25 @@ public class Controller implements DisassemblyListener, DataListener {
 
     public void onFileOpened(Path path) {
         try {
-            imageFile = new PEFile(path);
+            try {
+                imageFile = new PEFile(path);
+                LOG.fine("Loaded as PE file");
+            } catch(Exception e) {
+                LOG.fine("Not a PE file: " + e.getMessage());
+            }
+
+            if(imageFile == null) {
+                try {
+                    imageFile = new MachOFile(path);
+                    LOG.fine("Loaded as Mach-O file");
+                } catch(Exception e) {
+                    LOG.fine("Not a Mach-O file: " + e.getMessage());
+                }
+            }
+
+            if(imageFile == null) {
+                throw new UnsupportedOperationException("Unknown file type.");
+            }
 
             imageDoc = new ImageDocument(formatter);
             gui.getImageView().getStatusView().initNewData(imageFile.getFileSize());
@@ -63,7 +82,7 @@ public class Controller implements DisassemblyListener, DataListener {
             // TODO: add more file types and decide somehow
             LOG.warning("Couldn't load image: " + e.getMessage());
             e.printStackTrace();
-            gui.showError("Couldn't load file", e.getMessage() + "\nCurrently, only PE files (.exe) are supported.");
+            gui.showError("Couldn't load file", e.getMessage() + "\nCurrently, only PE (.exe) and Mach-O files are supported.");
         }
     }
 

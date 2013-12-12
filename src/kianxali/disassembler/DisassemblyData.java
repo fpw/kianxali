@@ -107,9 +107,8 @@ public class DisassemblyData {
         entry = getInfoOnExactAddress(end);
         if(entry != null) {
             entry.setEndFunction(function);
-        } else {
-            // TODO
         }
+        // TODO: add an else case
         tellListeners(end);
     }
 
