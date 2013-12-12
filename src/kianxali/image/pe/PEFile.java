@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import kianxali.cpu.x86.X86Context;
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
@@ -105,7 +106,6 @@ public class PEFile extends ImageFile implements AddressConverter {
         } else {
             // no imports
             imports = new Imports();
-            imports.getDLLName(0); // XXX: remove
         }
     }
 
@@ -131,5 +131,10 @@ public class PEFile extends ImageFile implements AddressConverter {
     @Override
     public long getCodeEntryPointMem() {
         return rvaToMemory(optionalHeader.getEntryPointRVA());
+    }
+
+    @Override
+    public Map<Long, String> getImports() {
+        return imports.getAllImports();
     }
 }

@@ -451,6 +451,15 @@ public class X86Instruction implements Instruction {
         }
         return false;
     }
+
+    @Override
+    public boolean isJump() {
+        X86Mnemonic mnem = syntax.getMnemonic();
+        if(mnem == X86Mnemonic.JMP || mnem == X86Mnemonic.JMPE || mnem == X86Mnemonic.JMPF) {
+            return true;
+        }
+        return false;
+    }
 }
 
 // lives only temporarily, will be converted to ImmediateOp

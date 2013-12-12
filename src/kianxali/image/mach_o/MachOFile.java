@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import kianxali.cpu.x86.X86Context;
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
@@ -69,5 +71,10 @@ public class MachOFile extends ImageFile {
             }
         }
         throw new UnsupportedOperationException("invalid file offset: " + fileOffset);
+    }
+
+    @Override
+    public Map<Long, String> getImports() {
+        return new HashMap<Long, String>();
     }
 }

@@ -51,6 +51,13 @@ public class Disassembler {
         this.decoder = ctx.createInstructionDecoder();
 
         disassemblyData.insertImageFileWithSections(imageFile);
+        Map<Long, String> imports = imageFile.getImports();
+        for(Long memAddr : imports.keySet()) {
+            Function imp = new Function(memAddr);
+            imp.setName(imports.get(memAddr));
+            functionInfo.put(memAddr, imp);
+            disassemblyData.insertFunction(imp);
+        }
 
         long entry = imageFile.getCodeEntryPointMem();
         addCodeWork(entry);
@@ -95,6 +102,7 @@ public class Disassembler {
     }
 
     private void analyze() {
+        // 1st pass: Analyze code and data
         while(!Thread.interrupted()) {
             Entry<Long, DecodedEntity> entry = workQueue.poll();
             if(entry == null) {
@@ -109,8 +117,26 @@ public class Disassembler {
             }
         }
 
+        // 2nd pass: propagate function information
         for(Function fun : functionInfo.values()) {
             disassemblyData.insertFunction(fun);
+
+            // identify trampoline functions
+            long start = fun.getStartAddress();
+            DataEntry entry = disassemblyData.getInfoOnExactAddress(start);
+            if(entry != null && entry.getEntity() instanceof Instruction) {
+                Instruction inst = (Instruction) entry.getEntity();
+                if(inst.isJump() && inst.getAssociatedData().size() == 1) {
+                    // the function immediately jumps somewhere else, take name from there
+                    Data data = inst.getAssociatedData().get(0);
+                    long branch = data.getMemAddress();
+                    Function realFun = functionInfo.get(branch);
+                    if(realFun != null) {
+                        fun.setName("!" + realFun.getName());
+                        disassemblyData.insertFunction(fun);
+                    }
+                }
+            }
         }
 
         stopAnalyzer();
@@ -142,6 +168,11 @@ public class Disassembler {
             if(covering != null) {
                 LOG.warning(String.format("%08X already covered", memAddr));
                 // TODO: covers other instruction or data
+                break;
+            }
+
+            if(!imageFile.isValidAddress(memAddr)) {
+                // TODO: Signal this somehow?
                 break;
             }
 

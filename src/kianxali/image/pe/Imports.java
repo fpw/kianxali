@@ -113,6 +113,16 @@ public class Imports {
         }
     }
 
+    public Map<Long, String> getAllImports() {
+        Map<Long, String> res = new HashMap<>();
+
+        for(Long mem : memToFunc.keySet()) {
+            res.put(mem, memToFunc.get(mem));
+        }
+
+        return res;
+    }
+
     @Override
     public String toString() {
         StringBuilder res = new StringBuilder();

@@ -101,6 +101,9 @@ public class DisassemblyData {
         long end = function.getEndAddress();
 
         DataEntry entry = getInfoOnExactAddress(start);
+        if(entry == null) {
+            entry = new DataEntry();
+        }
         entry.setStartFunction(function);
         tellListeners(start);
 

@@ -3,6 +3,7 @@ package kianxali.image;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import kianxali.decoder.Context;
 
@@ -20,6 +21,7 @@ public abstract class ImageFile {
     public abstract long getCodeEntryPointMem();
     public abstract long toFileAddress(long memAddress);
     public abstract long toMemAddress(long fileOffset);
+    public abstract Map<Long, String> getImports();
 
     public ByteSequence getByteSequence(long memAddress, boolean locked) {
         if(locked) {
@@ -36,7 +38,7 @@ public abstract class ImageFile {
 
     public Section getSectionForMemAddress(long memAddress) {
         for(Section sec : getSections()) {
-            if(memAddress >= sec.getStartAddress() && memAddress < sec.getEndAddress()) {
+            if(memAddress >= sec.getStartAddress() && memAddress <= sec.getEndAddress()) {
                 return sec;
             }
         }

@@ -219,7 +219,7 @@ public class ImageDocument extends DefaultStyledDocument {
             return;
         }
         startLine(memAddr, specs);
-        String line = String.format("; Function %08X starts", fun.getStartAddress());
+        String line = String.format("; Function %s starts", fun.getName());
         specs.add(contentTag(infoAttributes, line, ElementSpec.OriginateDirection));
         endLine(specs);
     }
@@ -229,7 +229,7 @@ public class ImageDocument extends DefaultStyledDocument {
             return;
         }
         startLine(memAddr, specs);
-        String line = String.format("; Function %08X ends", fun.getStartAddress());
+        String line = String.format("; Function %s ends", fun.getName());
         specs.add(contentTag(infoAttributes, line, ElementSpec.OriginateDirection));
         endLine(specs);
     }
