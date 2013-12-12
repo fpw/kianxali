@@ -12,8 +12,7 @@ public class Data implements DecodedEntity {
     }
 
     private final long memAddr;
-    private final DataType type;
-
+    private DataType type;
     private Object content;
 
     public Data(long memAddr, DataType type) {
@@ -22,6 +21,12 @@ public class Data implements DecodedEntity {
     }
 
     public void analyze(ByteSequence seq) {
+        String str = checkForString(seq);
+        if(str != null) {
+            content = str;
+            return;
+        }
+
         switch(type) {
         case BYTE:      content = seq.readUByte(); break;
         case WORD:      content = seq.readUWord(); break;
@@ -34,6 +39,30 @@ public class Data implements DecodedEntity {
         case STRING:    content = seq.readString(); break;
         case UNKNOWN:   content = seq.readUByte(); break;
         default:        content = seq.readUByte();
+        }
+    }
+
+    private String checkForString(ByteSequence seq) {
+        long oldPos = seq.getPosition();
+        StringBuilder res = new StringBuilder();
+        boolean complete = false;
+        do {
+            byte b = seq.readSByte();
+            if(b == 0) {
+                complete = true;
+                break;
+            } else if(b == '\r' || b == '\n' || b >= 32) {
+                res.append((char) b);
+            } else {
+                break;
+            }
+        } while(true);
+        if(res.length() > 0 && complete) {
+            type = DataType.STRING;
+            return res.toString();
+        } else {
+            seq.seek(oldPos);
+            return null;
         }
     }
 

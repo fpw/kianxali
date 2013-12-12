@@ -71,7 +71,7 @@ public final class ByteSequence {
         return (short) (bytes.get() & 0xFF);
     }
 
-    public short readSByte() {
+    public byte readSByte() {
         return bytes.get();
     }
 
