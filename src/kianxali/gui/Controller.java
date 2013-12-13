@@ -14,7 +14,6 @@ import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblyData;
 import kianxali.disassembler.DisassemblyListener;
 import kianxali.gui.model.imagefile.ImageDocument;
-import kianxali.gui.model.imagefile.StatusView;
 import kianxali.image.ImageFile;
 import kianxali.image.mach_o.MachOFile;
 import kianxali.image.pe.PEFile;

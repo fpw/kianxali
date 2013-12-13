@@ -1,4 +1,4 @@
-package kianxali.gui.model.imagefile;
+package kianxali.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Point;
@@ -13,7 +13,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import kianxali.gui.Controller;
+import kianxali.gui.model.imagefile.ImageDocument;
+import kianxali.gui.model.imagefile.ImageEditorKit;
 
 public class ImageView extends JPanel {
     private static final long serialVersionUID = 1L;

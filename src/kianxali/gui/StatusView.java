@@ -1,4 +1,4 @@
-package kianxali.gui.model.imagefile;
+package kianxali.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;

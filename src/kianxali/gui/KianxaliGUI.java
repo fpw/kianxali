@@ -14,8 +14,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
-import kianxali.gui.model.imagefile.ImageView;
-
 public class KianxaliGUI extends JFrame {
     private static final Logger LOG = Logger.getLogger("kianxali.gui");
 
