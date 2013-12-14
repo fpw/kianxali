@@ -119,6 +119,27 @@ public class DisassemblyData {
         tellListeners(end);
     }
 
+    public void updateFunctionEnd(Function function, long newEnd) {
+        long oldEnd = function.getEndAddress();
+
+        function.setEndAddress(newEnd);
+
+        DataEntry oldEntry = getInfoOnExactAddress(oldEnd);
+        if(oldEntry != null) {
+            oldEntry.setEndFunction(null);
+            tellListeners(oldEnd);
+        }
+
+        DataEntry newEntry = getInfoOnExactAddress(newEnd);
+        if(newEntry == null) {
+            newEntry = new DataEntry(newEnd);
+            put(newEnd, newEntry);
+        }
+        newEntry.setEndFunction(function);
+        tellListeners(newEnd);
+    }
+
+
     public void insertReference(DataEntry srcEntry, long dstAddress) {
         DataEntry entry = getInfoOnExactAddress(dstAddress);
         if(entry == null) {

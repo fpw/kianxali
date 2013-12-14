@@ -2,6 +2,7 @@ package kianxali.gui.model.imagefile;
 import java.awt.Color;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -138,6 +139,10 @@ public class ImageDocument extends DefaultStyledDocument {
             addSectionEnd(memAddr, data.getEndSection(), specs);
             addSectionStart(memAddr, data.getStartSection(), specs);
             addFunctionStart(memAddr, data.getStartFunction(), specs);
+            // XXX: Remove this check to display self-modifying code
+            if(data.getStartFunction() != null || !(data.getEntity() instanceof Instruction)) {
+                addReferences(memAddr, data.getReferences(), specs);
+            }
             addEntity(memAddr, data.getEntity(), data.getComment(), specs);
             addFunctionEnd(memAddr, data.getEndFunction(), specs);
 
@@ -221,6 +226,19 @@ public class ImageDocument extends DefaultStyledDocument {
         startLine(memAddr, specs);
         String line = String.format("; Function %s starts", fun.getName());
         specs.add(contentTag(infoAttributes, line));
+        endLine(specs);
+    }
+
+    private void addReferences(long memAddr, Set<DataEntry> references, List<ElementSpec> specs) {
+        if(references.size() == 0) {
+            return;
+        }
+        startLine(memAddr, specs);
+        StringBuilder line = new StringBuilder("; Referenced by: ");
+        for(DataEntry ref : references) {
+            line.append(String.format("%08X ", ref.getAddress()));
+        }
+        specs.add(contentTag(infoAttributes, line.toString()));
         endLine(specs);
     }
 

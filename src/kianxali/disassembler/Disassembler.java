@@ -212,10 +212,17 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 break;
             }
             memAddr += inst.getSize();
-        }
 
+            // Check if we are in a different function now. This can happen
+            // if a function doesn't end with ret but just runs into different function,
+            // e.g. after a call to ExitProcess
+            Function newFunction = functionInfo.get(memAddr);
+            if(newFunction != null) {
+                function = newFunction;
+            }
+        }
         if(function != null && function.getEndAddress() < memAddr) {
-            function.setEndAddress(memAddr);
+            disassemblyData.updateFunctionEnd(function, memAddr);
         }
     }
 
@@ -250,11 +257,12 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
 
     // checks whether the instruction's operands could start a new trace or data
     private void examineInstruction(Instruction inst, Function function) {
+        DataEntry srcEntry = disassemblyData.getInfoCoveringAddress(inst.getMemAddress());
+
         // check if we have branch addresses to be analyzed later
         for(long addr : inst.getBranchAddresses()) {
             if(imageFile.isValidAddress(addr)) {
                 if(inst.isFunctionCall()) {
-                    DataEntry srcEntry = disassemblyData.getInfoCoveringAddress(inst.getMemAddress());
                     disassemblyData.insertReference(srcEntry, addr);
                     if(!functionInfo.containsKey(addr)) {
                         Function fun = new Function(addr, this);
@@ -282,6 +290,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             if(!imageFile.isValidAddress(addr)) {
                 continue;
             }
+            disassemblyData.insertReference(srcEntry, addr);
             addDataWork(data);
         }
     }
