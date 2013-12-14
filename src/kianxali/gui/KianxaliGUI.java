@@ -2,38 +2,66 @@ package kianxali.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Logger;
 
+import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
 public class KianxaliGUI extends JFrame {
     private static final Logger LOG = Logger.getLogger("kianxali.gui");
 
     private static final long serialVersionUID = 1L;
+    private final JDesktopPane desktop;
     private final ImageView imageView;
+    private final FunctionListView functionView;
+    private final StringListView stringView;
     private final Controller controller;
 
     public KianxaliGUI(Controller controller) {
         super("Kianxali");
         this.controller = controller;
 
+        desktop = new JDesktopPane();
+        add(desktop);
+
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(640, 480));
+        setPreferredSize(new Dimension(1000, 500));
 
         setupLookAndFeel();
         setupMenu();
 
-        setLayout(new BorderLayout());
+        JTabbedPane tabPane = new JTabbedPane();
+        functionView = new FunctionListView(controller);
+        tabPane.addTab("Functions", functionView);
+        stringView = new StringListView(controller);
+        tabPane.addTab("Strings", stringView);
+
+        JInternalFrame functionFrame = new JInternalFrame("Entities", true, false, true, true);
+        functionFrame.setLocation(new Point(0, 0));
+        functionFrame.setSize(new Dimension(200, 480));
+        functionFrame.add(tabPane);
+        functionFrame.setVisible(true);
+        desktop.add(functionFrame);
+
+        JInternalFrame imageFrame = new JInternalFrame("Disassembly", true, false, true, true);
+        imageFrame.setLayout(new BorderLayout());
+        imageFrame.setLocation(new Point(200, 0));
+        imageFrame.setSize(new Dimension(640, 480));
         imageView = new ImageView(controller);
-        add(imageView, BorderLayout.CENTER);
+        imageFrame.add(imageView, BorderLayout.CENTER);
+        imageFrame.setVisible(true);
+        desktop.add(imageFrame);
 
         pack();
     }
@@ -81,5 +109,13 @@ public class KianxaliGUI extends JFrame {
 
     public ImageView getImageView() {
         return imageView;
+    }
+
+    public FunctionListView getFunctionListView() {
+        return functionView;
+    }
+
+    public StringListView getStringListView() {
+        return stringView;
     }
 }

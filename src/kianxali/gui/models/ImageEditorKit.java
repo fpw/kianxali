@@ -1,4 +1,4 @@
-package kianxali.gui.model.imagefile;
+package kianxali.gui.models;
 
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.ViewFactory;

@@ -13,7 +13,10 @@ import kianxali.disassembler.DataListener;
 import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblyData;
 import kianxali.disassembler.DisassemblyListener;
-import kianxali.gui.model.imagefile.ImageDocument;
+import kianxali.disassembler.Function;
+import kianxali.gui.models.FunctionList;
+import kianxali.gui.models.ImageDocument;
+import kianxali.gui.models.StringList;
 import kianxali.image.ImageFile;
 import kianxali.image.mach_o.MachOFile;
 import kianxali.image.pe.PEFile;
@@ -27,12 +30,24 @@ public class Controller implements DisassemblyListener, DataListener {
     private DisassemblyData disassemblyData;
     private long beginDisassembleTime;
     private ImageFile imageFile;
+    private final FunctionList functionList;
+    private final StringList stringList;
     private final OutputFormatter formatter;
     private KianxaliGUI gui;
 
     public Controller() {
         this.formatter = new OutputFormatter();
+        this.functionList = new FunctionList();
+        this.stringList = new StringList();
         formatter.setIncludeRawBytes(true);
+    }
+
+    public FunctionList getFunctionList() {
+        return functionList;
+    }
+
+    public StringList getStringList() {
+        return stringList;
     }
 
     public void showGUI() {
@@ -66,12 +81,16 @@ public class Controller implements DisassemblyListener, DataListener {
             if(imageFile == null) {
                 throw new UnsupportedOperationException("Unknown file type.");
             }
+            functionList.clear();
+            stringList.clear();
 
             imageDoc = new ImageDocument(formatter);
             gui.getImageView().getStatusView().initNewData(imageFile.getFileSize());
 
             disassemblyData = new DisassemblyData();
             disassemblyData.addListener(this);
+            disassemblyData.addListener(functionList);
+            disassemblyData.addListener(stringList);
 
             disassembler = new Disassembler(imageFile, disassemblyData);
             disassembler.addListener(this);
@@ -99,8 +118,7 @@ public class Controller implements DisassemblyListener, DataListener {
     }
 
     @Override
-    public void onAnalyzeChange(long memAddr) {
-        DataEntry entry = disassemblyData.getInfoOnExactAddress(memAddr);
+    public void onAnalyzeChange(long memAddr, DataEntry entry) {
         imageDoc.updateDataEntry(memAddr, entry);
         if(entry != null && entry.getEntity() != null) {
             StatusView sv = gui.getImageView().getStatusView();
@@ -128,6 +146,8 @@ public class Controller implements DisassemblyListener, DataListener {
             @Override
             public void run() {
                 gui.getImageView().setDocument(imageDoc);
+                gui.getFunctionListView().setModel(functionList);
+                gui.getStringListView().setModel(stringList);
                 try {
                     gui.getImageView().scrollTo(imageFile.getCodeEntryPointMem());
                 } catch (BadLocationException e) {
@@ -136,5 +156,21 @@ public class Controller implements DisassemblyListener, DataListener {
                 }
             }
         });
+    }
+
+    public void onFunctionDoubleClick(Function fun) {
+        try {
+            gui.getImageView().scrollTo(fun.getStartAddress());
+        } catch (BadLocationException e) {
+            LOG.warning("Invalid scroll location when double clicking function");
+        }
+    }
+
+    public void onStringDoubleClicked(Data data) {
+        try {
+            gui.getImageView().scrollTo(data.getMemAddress());
+        } catch (BadLocationException e) {
+            LOG.warning("Invalid scroll location when double clicking string");
+        }
     }
 }

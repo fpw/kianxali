@@ -76,8 +76,7 @@ public final class Test implements DisassemblyListener, DataListener {
     }
 
     @Override
-    public void onAnalyzeChange(long memAddr) {
-        DataEntry info = data.getInfoOnExactAddress(memAddr);
+    public void onAnalyzeChange(long memAddr, DataEntry info) {
         if(info == null) {
             return;
         }

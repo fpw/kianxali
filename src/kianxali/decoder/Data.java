@@ -92,6 +92,10 @@ public class Data implements DecodedEntity {
         return type;
     }
 
+    public Object getRawContent() {
+        return content;
+    }
+
     @Override
     public String asString(OutputFormatter format) {
         if(content instanceof Number) {

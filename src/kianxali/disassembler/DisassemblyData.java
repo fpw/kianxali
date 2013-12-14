@@ -28,8 +28,9 @@ public class DisassemblyData {
     }
 
     void tellListeners(long memAddr) {
+        DataEntry entry = getInfoOnExactAddress(memAddr);
         for(DataListener listener : listeners) {
-            listener.onAnalyzeChange(memAddr);
+            listener.onAnalyzeChange(memAddr, entry);
         }
     }
 

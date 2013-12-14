@@ -13,8 +13,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import kianxali.gui.model.imagefile.ImageDocument;
-import kianxali.gui.model.imagefile.ImageEditorKit;
+import kianxali.gui.models.ImageDocument;
+import kianxali.gui.models.ImageEditorKit;
 
 public class ImageView extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -52,6 +52,8 @@ public class ImageView extends JPanel {
             if(pos != null) {
                 Rectangle rect = editor.modelToView(pos);
                 rect.y += viewport.getExtentSize().height - rect.height;
+                // TODO: Hack or supposed to be like this?
+                editor.scrollRectToVisible(new Rectangle(0, 0, 0, 0));
                 editor.scrollRectToVisible(rect);
             }
         }
