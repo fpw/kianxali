@@ -176,6 +176,7 @@ public final class X86CPU {
         case DWORD:
             return OperandSize.O32;
         case QWORD:
+        case QWORD_MMX:
             return OperandSize.O64;
         case QWORD_WORD:
             if(ctx.getPrefix().opSizePrefix) {

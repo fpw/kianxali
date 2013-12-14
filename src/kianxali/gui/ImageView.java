@@ -67,7 +67,6 @@ public class ImageView extends JPanel {
                 controller.onScrollChange(addr);
             }
         }
-
     }
 
     public StatusView getStatusView() {
