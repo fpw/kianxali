@@ -242,7 +242,11 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         ByteSequence seq = imageFile.getByteSequence(memAddr, true);
         try {
             data.analyze(seq);
-            disassemblyData.insertEntity(data);
+            DataEntry entry = disassemblyData.insertEntity(data);
+            for(DataEntry ref : entry.getReferences()) {
+                ref.attachData(data);
+                disassemblyData.tellListeners(ref.getAddress());
+            }
         } catch(Exception e) {
             LOG.log(Level.WARNING, String.format("Data decode error (%s) at %08X", e, data.getMemAddress()), e);
             // TODO: change to raw data

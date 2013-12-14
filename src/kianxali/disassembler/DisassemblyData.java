@@ -78,13 +78,14 @@ public class DisassemblyData {
         }
     }
 
-    public synchronized void insertEntity(DecodedEntity entity) {
+    public synchronized DataEntry insertEntity(DecodedEntity entity) {
         long memAddr = entity.getMemAddress();
         DataEntry old = getInfoOnExactAddress(memAddr);
         if(old != null) {
             // already got info for this address, add entity
             old.setEntity(entity);
             tellListeners(memAddr);
+            return old;
         } else {
             // check if another entry covers this address, i.e. there is data or an opcode that starts before
             DecodedEntity covering = findEntityOnAddress(memAddr);
@@ -95,6 +96,7 @@ public class DisassemblyData {
                 DataEntry entry = new DataEntry(memAddr);
                 entry.setEntity(entity);
                 put(memAddr, entry);
+                return entry;
             }
         }
     }

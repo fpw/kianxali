@@ -59,6 +59,7 @@ public class ImageDocument extends DefaultStyledDocument {
         StyleConstants.setFontFamily(addressAttributes, "Courier");
         StyleConstants.setForeground(infoAttributes, new Color(0x00, 0x00, 0xFF));
         StyleConstants.setForeground(mnemonicAttributes, new Color(0x00, 0x00, 0xCC));
+        StyleConstants.setForeground(commentAttributes, new Color(0xAA, 0xAA, 0xAA));
     }
 
     private Element findFloorElement(long memAddr) {
@@ -143,7 +144,7 @@ public class ImageDocument extends DefaultStyledDocument {
             if(data.getStartFunction() != null || !(data.getEntity() instanceof Instruction)) {
                 addReferences(memAddr, data.getReferences(), specs);
             }
-            addEntity(memAddr, data.getEntity(), data.getComment(), specs);
+            addEntity(memAddr, data.getEntity(), data.getComment(), data.getAttachedData(), specs);
             addFunctionEnd(memAddr, data.getEndFunction(), specs);
 
             if(specs.size() == startSize) {
@@ -252,7 +253,7 @@ public class ImageDocument extends DefaultStyledDocument {
         endLine(specs);
     }
 
-    private void addEntity(long memAddr, DecodedEntity entity, String comment, List<ElementSpec> specs) {
+    private void addEntity(long memAddr, DecodedEntity entity, String comment, Data dataRef, List<ElementSpec> specs) {
         if(entity == null) {
             return;
         }
@@ -279,6 +280,9 @@ public class ImageDocument extends DefaultStyledDocument {
         }
         if(comment != null) {
             specs.add(contentTag(commentAttributes, comment));
+        }
+        if(dataRef != null) {
+            specs.add(contentTag(commentAttributes, " ; " + dataRef.asString(formatter)));
         }
         endLine(specs);
     }

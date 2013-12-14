@@ -16,7 +16,8 @@ import kianxali.image.Section;
 //  * start of segment, end of segment
 //  * start of function, end of function
 //  * instruction or data
-//  * comment
+//  * user comment
+//  * data comment
 
 public class DataEntry {
     private final long address;
@@ -24,6 +25,7 @@ public class DataEntry {
     private Section startSection, endSection;
     private Function startFunction, endFunction;
     private DecodedEntity entity;
+    private Data attachedData;
     private String comment;
     private final Set<DataEntry> references;
 
@@ -34,6 +36,14 @@ public class DataEntry {
 
     public long getAddress() {
         return address;
+    }
+
+    public void attachData(Data data) {
+        this.attachedData = data;
+    }
+
+    public Data getAttachedData() {
+        return attachedData;
     }
 
     public void addReferenceFrom(DataEntry src) {
