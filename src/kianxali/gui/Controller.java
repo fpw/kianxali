@@ -75,6 +75,7 @@ public class Controller implements DisassemblyListener, DataListener {
 
             disassembler = new Disassembler(imageFile, disassemblyData);
             disassembler.addListener(this);
+            formatter.setAddressNameResolve(disassembler);
 
             disassembler.startAnalyzer();
         } catch (Exception e) {

@@ -21,7 +21,7 @@ import kianxali.decoder.Instruction;
 import kianxali.image.ByteSequence;
 import kianxali.image.ImageFile;
 
-public class Disassembler {
+public class Disassembler implements AddressNameResolver, AddressNameListener {
     private static final Logger LOG = Logger.getLogger("kianxali.disassembler");
 
     // TODO: start at first address of the code segment, walking linear to the end
@@ -52,11 +52,14 @@ public class Disassembler {
 
         disassemblyData.insertImageFileWithSections(imageFile);
         Map<Long, String> imports = imageFile.getImports();
+
+        // add imports as functions
         for(Long memAddr : imports.keySet()) {
-            Function imp = new Function(memAddr);
-            imp.setName(imports.get(memAddr));
+            Function imp = new Function(memAddr, this);
             functionInfo.put(memAddr, imp);
             disassemblyData.insertFunction(imp);
+            imp.setName(imports.get(memAddr));
+            onFunctionNameChange(imp);
         }
 
         long entry = imageFile.getCodeEntryPointMem();
@@ -133,7 +136,7 @@ public class Disassembler {
                     Function realFun = functionInfo.get(branch);
                     if(realFun != null) {
                         fun.setName("!" + realFun.getName());
-                        disassemblyData.insertFunction(fun);
+                        disassemblyData.tellListeners(branch);
                     }
                 }
             }
@@ -251,10 +254,16 @@ public class Disassembler {
         for(long addr : inst.getBranchAddresses()) {
             if(imageFile.isValidAddress(addr)) {
                 if(inst.isFunctionCall()) {
+                    DataEntry srcEntry = disassemblyData.getInfoCoveringAddress(inst.getMemAddress());
+                    disassemblyData.insertReference(srcEntry, addr);
                     if(!functionInfo.containsKey(addr)) {
-                        functionInfo.put(addr, new Function(addr));
+                        Function fun = new Function(addr, this);
+                        functionInfo.put(addr, new Function(addr, this));
+                        disassemblyData.insertFunction(fun);
+                        onFunctionNameChange(fun);
                     }
                 } else if(function != null) {
+                    // if the branch is not a function call, it should belong to the current function
                     functionInfo.put(addr, function);
                 }
                 addCodeWork(addr);
@@ -274,6 +283,29 @@ public class Disassembler {
                 continue;
             }
             addDataWork(data);
+        }
+    }
+
+    @Override
+    public String resolveAddress(long memAddr) {
+        Function fun;
+        if((fun = functionInfo.get(memAddr)) != null) {
+            if(fun.getStartAddress() == memAddr) {
+                return functionInfo.get(memAddr).getName();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void onFunctionNameChange(Function fun) {
+        DataEntry entry = disassemblyData.getInfoOnExactAddress(fun.getStartAddress());
+        if(entry == null) {
+            LOG.warning("Unkown function renamed: " + fun.getName());
+            return;
+        }
+        for(DataEntry ref : entry.getReferences()) {
+            disassemblyData.tellListeners(ref.getAddress());
         }
     }
 }

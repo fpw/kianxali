@@ -27,7 +27,7 @@ public class DisassemblyData {
         listeners.remove(listener);
     }
 
-    private void tellListeners(long memAddr) {
+    void tellListeners(long memAddr) {
         for(DataListener listener : listeners) {
             listener.onAnalyzeChange(memAddr);
         }
@@ -48,7 +48,8 @@ public class DisassemblyData {
             old.setStartImageFile(file);
             tellListeners(imageAddress);
         } else {
-            DataEntry entry = new DataEntry(file);
+            DataEntry entry = new DataEntry(imageAddress);
+            entry.setStartImageFile(file);
             put(imageAddress, entry);
         }
 
@@ -60,7 +61,8 @@ public class DisassemblyData {
                 old.setStartSection(section);
                 tellListeners(memAddrStart);
             } else {
-                DataEntry entry = new DataEntry(section);
+                DataEntry entry = new DataEntry(memAddrStart);
+                entry.setStartSection(section);
                 put(memAddrStart, entry);
             }
 
@@ -69,7 +71,7 @@ public class DisassemblyData {
                 old.setEndSection(section);
                 tellListeners(memAddrEnd);
             } else {
-                DataEntry entry = new DataEntry();
+                DataEntry entry = new DataEntry(memAddrEnd);
                 entry.setEndSection(section);
                 put(memAddrEnd, entry);
             }
@@ -90,7 +92,8 @@ public class DisassemblyData {
                 throw new IllegalArgumentException("address covered by other entity");
             } else {
                 // new entity entry as nothing covered the address
-                DataEntry entry = new DataEntry(entity);
+                DataEntry entry = new DataEntry(memAddr);
+                entry.setEntity(entity);
                 put(memAddr, entry);
             }
         }
@@ -102,7 +105,8 @@ public class DisassemblyData {
 
         DataEntry entry = getInfoOnExactAddress(start);
         if(entry == null) {
-            entry = new DataEntry();
+            entry = new DataEntry(start);
+            put(start, entry);
         }
         entry.setStartFunction(function);
         tellListeners(start);
@@ -113,6 +117,16 @@ public class DisassemblyData {
         }
         // TODO: add an else case
         tellListeners(end);
+    }
+
+    public void insertReference(DataEntry srcEntry, long dstAddress) {
+        DataEntry entry = getInfoOnExactAddress(dstAddress);
+        if(entry == null) {
+            entry = new DataEntry(dstAddress);
+            put(dstAddress, entry);
+        }
+        entry.addReferenceFrom(srcEntry);
+        tellListeners(dstAddress);
     }
 
     public synchronized DataEntry getInfoOnExactAddress(long memAddr) {

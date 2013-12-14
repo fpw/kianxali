@@ -131,7 +131,7 @@ public class ImageDocument extends DefaultStyledDocument {
             specs.add(endTag());
             MutableAttributeSet adrAttributes = new SimpleAttributeSet(addressAttributes);
             adrAttributes.addAttribute(MemAddressKey, memAddr);
-            specs.add(startTag(adrAttributes, ElementSpec.OriginateDirection));
+            specs.add(startTag(adrAttributes));
 
             int startSize = specs.size();
             addImageStart(memAddr, data.getStartImageFile(), specs);
@@ -173,15 +173,15 @@ public class ImageDocument extends DefaultStyledDocument {
 
     private void startLine(long memAddr, List<ElementSpec> specs) {
         String address = String.format("%08X\t", memAddr);
-        specs.add(startTag(lineAttributes, ElementSpec.OriginateDirection));
+        specs.add(startTag(lineAttributes));
 
         SimpleAttributeSet attr = new SimpleAttributeSet(infoAttributes);
         StyleConstants.setForeground(attr, new Color(0x00, 0x99, 0x00));
-        specs.add(contentTag(attr, address, ElementSpec.OriginateDirection));
+        specs.add(contentTag(attr, address));
     }
 
     private void endLine(List<ElementSpec> specs) {
-        specs.add(contentTag(infoAttributes, "\n", ElementSpec.OriginateDirection));
+        specs.add(contentTag(infoAttributes, "\n"));
         specs.add(endTag());
     }
 
@@ -190,7 +190,7 @@ public class ImageDocument extends DefaultStyledDocument {
             return;
         }
         startLine(memAddr, specs);
-        specs.add(contentTag(infoAttributes, "; Image file start", ElementSpec.OriginateDirection));
+        specs.add(contentTag(infoAttributes, "; Image file start"));
         endLine(specs);
     }
 
@@ -200,7 +200,7 @@ public class ImageDocument extends DefaultStyledDocument {
         }
         startLine(memAddr, specs);
         String line = String.format("; Section '%s' starts", startSection.getName());
-        specs.add(contentTag(infoAttributes, line, ElementSpec.OriginateDirection));
+        specs.add(contentTag(infoAttributes, line));
         endLine(specs);
     }
 
@@ -210,7 +210,7 @@ public class ImageDocument extends DefaultStyledDocument {
         }
         startLine(memAddr, specs);
         String line = String.format("; Section '%s' ends", endSection.getName());
-        specs.add(contentTag(infoAttributes, line, ElementSpec.OriginateDirection));
+        specs.add(contentTag(infoAttributes, line));
         endLine(specs);
     }
 
@@ -220,7 +220,7 @@ public class ImageDocument extends DefaultStyledDocument {
         }
         startLine(memAddr, specs);
         String line = String.format("; Function %s starts", fun.getName());
-        specs.add(contentTag(infoAttributes, line, ElementSpec.OriginateDirection));
+        specs.add(contentTag(infoAttributes, line));
         endLine(specs);
     }
 
@@ -230,7 +230,7 @@ public class ImageDocument extends DefaultStyledDocument {
         }
         startLine(memAddr, specs);
         String line = String.format("; Function %s ends", fun.getName());
-        specs.add(contentTag(infoAttributes, line, ElementSpec.OriginateDirection));
+        specs.add(contentTag(infoAttributes, line));
         endLine(specs);
     }
 
@@ -246,35 +246,35 @@ public class ImageDocument extends DefaultStyledDocument {
                 String raw = String.format("%-20s ", OutputFormatter.formatByteString(inst.getRawBytes()));
                 SimpleAttributeSet attr = new SimpleAttributeSet(mnemonicAttributes);
                 StyleConstants.setForeground(attr, new Color(0x40, 0x40, 0x40));
-                specs.add(contentTag(attr, raw, ElementSpec.OriginateDirection));
+                specs.add(contentTag(attr, raw));
             }
             String mnemo = inst.getMnemonicString(formatter) + ((operands.size() > 0) ? " " : "");
-            specs.add(contentTag(mnemonicAttributes, mnemo, ElementSpec.OriginateDirection));
+            specs.add(contentTag(mnemonicAttributes, mnemo));
             for(int i = 0; i < operands.size(); i++) {
                 Operand op = operands.get(i);
                 String opString = op.asString(formatter) + ((i < operands.size() - 1) ? ", " : "");
-                specs.add(contentTag(mnemonicAttributes, opString, ElementSpec.OriginateDirection));
+                specs.add(contentTag(mnemonicAttributes, opString));
             }
         } else if(entity instanceof Data) {
             String dataLine = entity.asString(formatter);
-            specs.add(contentTag(operandAttributes, dataLine, ElementSpec.OriginateDirection));
+            specs.add(contentTag(operandAttributes, dataLine));
         }
         if(comment != null) {
-            specs.add(contentTag(commentAttributes, comment, ElementSpec.OriginateDirection));
+            specs.add(contentTag(commentAttributes, comment));
         }
         endLine(specs);
     }
 
-    private ElementSpec startTag(MutableAttributeSet attr, short direction) {
+    private ElementSpec startTag(MutableAttributeSet attr) {
         ElementSpec res = new ElementSpec(attr, ElementSpec.StartTagType);
-        res.setDirection(direction);
+        res.setDirection(ElementSpec.OriginateDirection);
         return res;
     }
 
-    private ElementSpec contentTag(MutableAttributeSet attr, String str, short direction) {
+    private ElementSpec contentTag(MutableAttributeSet attr, String str) {
         char[] line = str.toCharArray();
         ElementSpec res = new ElementSpec(attr, ElementSpec.ContentType, line, 0, line.length);
-        res.setDirection(direction);
+        res.setDirection(ElementSpec.OriginateDirection);
         return res;
     }
 
