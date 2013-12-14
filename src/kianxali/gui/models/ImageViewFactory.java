@@ -17,11 +17,12 @@ public class ImageViewFactory implements ViewFactory {
     @Override
     public View create(Element e) {
         String kind = e.getName();
-        if(kind == ImageDocument.AddressElementName) {
+        switch(kind) {
+        case ImageDocument.AddressElementName:
             return new BoxView(e, BoxView.Y_AXIS);
-        } else if(kind == ImageDocument.LineElementName) {
+        case ImageDocument.LineElementName:
             return new ParagraphView(e);
-        } else {
+        default:
             return delegate.create(e);
         }
     }

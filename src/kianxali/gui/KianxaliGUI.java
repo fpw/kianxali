@@ -57,7 +57,7 @@ public class KianxaliGUI extends JFrame {
         JInternalFrame imageFrame = new JInternalFrame("Disassembly", true, false, true, true);
         imageFrame.setLayout(new BorderLayout());
         imageFrame.setLocation(new Point(200, 0));
-        imageFrame.setSize(new Dimension(640, 480));
+        imageFrame.setSize(new Dimension(800, 480));
         imageView = new ImageView(controller);
         imageFrame.add(imageView, BorderLayout.CENTER);
         imageFrame.setVisible(true);

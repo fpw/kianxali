@@ -1,5 +1,6 @@
 package kianxali.gui.models;
 import java.awt.Color;
+import java.awt.Font;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -23,43 +24,56 @@ import kianxali.util.OutputFormatter;
 
 public class ImageDocument extends DefaultStyledDocument {
     private static final long serialVersionUID = 1L;
-    public static final String AddressElementName = "address";
-    public static final String LineElementName = "line";
-    public static final String MnemonicElementName = "mnemonic";
-    public static final String OperandElementName = "operand";
-    public static final String InfoElementName = "info";
-    public static final String CommentElementName = "comment";
-    public static final String MemAddressKey = "memAddress";
 
-    private final MutableAttributeSet addressAttributes;
-    private final MutableAttributeSet lineAttributes, mnemonicAttributes, operandAttributes, infoAttributes, commentAttributes;
+    public static final String LineElementName          = "line";
+    public static final String ReferenceElementName     = "reference";
+    public static final String AddressElementName       = "address";
+    public static final String RawBytesElementName      = "rawBytes";
+    public static final String MnemonicElementName      = "mnemonic";
+    public static final String OperandElementName       = "operand";
+    public static final String InfoElementName          = "info";
+    public static final String CommentElementName       = "comment";
+
+    public static final String MemAddressKey            = "memAddress";
+    public static final String RefAddressKey            = "refAddress";
+
+    private final MutableAttributeSet addressAttributes, lineAttributes, referenceAttributes;
+    private final MutableAttributeSet rawBytesAttributes, mnemonicAttributes, operandAttributes;
+    private final MutableAttributeSet infoAttributes, commentAttributes;
     private final OutputFormatter formatter;
 
     public ImageDocument(OutputFormatter formatter) {
         this.formatter = formatter;
         this.lineAttributes         = new SimpleAttributeSet();
+        this.referenceAttributes    = new SimpleAttributeSet();
+        this.addressAttributes      = new SimpleAttributeSet();
+        this.rawBytesAttributes     = new SimpleAttributeSet();
         this.mnemonicAttributes     = new SimpleAttributeSet();
         this.operandAttributes      = new SimpleAttributeSet();
-        this.addressAttributes      = new SimpleAttributeSet();
         this.infoAttributes         = new SimpleAttributeSet();
         this.commentAttributes      = new SimpleAttributeSet();
 
         // root -> {address} -> {line}
 
-        addressAttributes.addAttribute(ElementNameAttribute, AddressElementName);
-        lineAttributes.addAttribute(ElementNameAttribute, LineElementName);
-        mnemonicAttributes.addAttribute(ElementNameAttribute, MnemonicElementName);
-        operandAttributes.addAttribute(ElementNameAttribute, OperandElementName);
-        infoAttributes.addAttribute(ElementNameAttribute, InfoElementName);
-        commentAttributes.addAttribute(ElementNameAttribute, CommentElementName);
+        lineAttributes.addAttribute(ElementNameAttribute,       LineElementName);
+        referenceAttributes.addAttribute(ElementNameAttribute,  ReferenceElementName);
+        rawBytesAttributes.addAttribute(ElementNameAttribute,   RawBytesElementName);
+        addressAttributes.addAttribute(ElementNameAttribute,    AddressElementName);
+        mnemonicAttributes.addAttribute(ElementNameAttribute,   MnemonicElementName);
+        operandAttributes.addAttribute(ElementNameAttribute,    OperandElementName);
+        infoAttributes.addAttribute(ElementNameAttribute,       InfoElementName);
+        commentAttributes.addAttribute(ElementNameAttribute,    CommentElementName);
         setupStyles();
     }
 
     private void setupStyles() {
-        StyleConstants.setFontFamily(addressAttributes, "Courier");
-        StyleConstants.setForeground(infoAttributes, new Color(0x00, 0x00, 0xFF));
-        StyleConstants.setForeground(mnemonicAttributes, new Color(0x00, 0x00, 0xCC));
-        StyleConstants.setForeground(commentAttributes, new Color(0xAA, 0xAA, 0xAA));
+        StyleConstants.setFontFamily(addressAttributes,     Font.MONOSPACED);
+        StyleConstants.setForeground(referenceAttributes,   new Color(0x00, 0x64, 0x00));
+        StyleConstants.setForeground(infoAttributes,        new Color(0x00, 0x00, 0xFF));
+        StyleConstants.setForeground(rawBytesAttributes,    new Color(0x40, 0x40, 0x40));
+        StyleConstants.setForeground(mnemonicAttributes,    new Color(0x00, 0x00, 0xCC));
+        StyleConstants.setForeground(operandAttributes,     new Color(0x00, 0x00, 0xCC));
+        StyleConstants.setForeground(commentAttributes,     new Color(0xAA, 0xAA, 0xAA));
     }
 
     private Element findFloorElement(long memAddr) {
@@ -235,11 +249,12 @@ public class ImageDocument extends DefaultStyledDocument {
             return;
         }
         startLine(memAddr, specs);
-        StringBuilder line = new StringBuilder("; Referenced by: ");
+        specs.add(contentTag(referenceAttributes, "; Referenced by: "));
         for(DataEntry ref : references) {
-            line.append(String.format("%08X ", ref.getAddress()));
+            MutableAttributeSet attr = new SimpleAttributeSet(referenceAttributes);
+            attr.addAttribute(RefAddressKey, ref.getAddress());
+            specs.add(contentTag(attr, String.format("%08X ", ref.getAddress())));
         }
-        specs.add(contentTag(infoAttributes, line.toString()));
         endLine(specs);
     }
 
@@ -263,16 +278,14 @@ public class ImageDocument extends DefaultStyledDocument {
             List<Operand> operands = inst.getOperands();
             if(formatter.shouldIncludeRawBytes()) {
                 String raw = String.format("%-20s ", OutputFormatter.formatByteString(inst.getRawBytes()));
-                SimpleAttributeSet attr = new SimpleAttributeSet(mnemonicAttributes);
-                StyleConstants.setForeground(attr, new Color(0x40, 0x40, 0x40));
-                specs.add(contentTag(attr, raw));
+                specs.add(contentTag(rawBytesAttributes, raw));
             }
             String mnemo = inst.getMnemonicString(formatter) + ((operands.size() > 0) ? " " : "");
             specs.add(contentTag(mnemonicAttributes, mnemo));
             for(int i = 0; i < operands.size(); i++) {
                 Operand op = operands.get(i);
                 String opString = op.asString(formatter) + ((i < operands.size() - 1) ? ", " : "");
-                specs.add(contentTag(mnemonicAttributes, opString));
+                specs.add(contentTag(operandAttributes, opString));
             }
         } else if(entity instanceof Data) {
             String dataLine = entity.asString(formatter);

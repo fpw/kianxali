@@ -1,17 +1,23 @@
 package kianxali.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 
 import kianxali.gui.models.ImageDocument;
 import kianxali.gui.models.ImageEditorKit;
@@ -23,7 +29,7 @@ public class ImageView extends JPanel {
     private final StatusView statusView;
     private final JScrollPane scrollPane;
 
-    public ImageView(Controller controller) {
+    public ImageView(final Controller controller) {
         this.controller = controller;
         setLayout(new BorderLayout());
 
@@ -33,6 +39,23 @@ public class ImageView extends JPanel {
         editor = new JEditorPane();
         editor.setEditable(false);
         editor.setEditorKit(new ImageEditorKit());
+        editor.addMouseMotionListener(new MouseMotionListener() {
+            public void mouseDragged(MouseEvent e) { }
+
+            public void mouseMoved(MouseEvent e) {
+                int index = editor.viewToModel(e.getPoint());
+                mouseOverIndex(index);
+            }
+        });
+        editor.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(SwingUtilities.isLeftMouseButton(e)) {
+                    int index = editor.viewToModel(e.getPoint());
+                    controller.onDisassemblyLeftClick(index);
+                }
+            }
+        });
 
         scrollPane = new JScrollPane(editor);
         scrollPane.getViewport().addChangeListener(new ChangeListener() {
@@ -68,6 +91,25 @@ public class ImageView extends JPanel {
             if(addr != null) {
                 controller.onScrollChange(addr);
             }
+        }
+    }
+
+    private void mouseOverIndex(int index) {
+        Document doc = editor.getDocument();
+        if(index < 0 || !(doc instanceof ImageDocument)) {
+            return;
+        }
+        ImageDocument imageDoc = (ImageDocument) doc;
+
+        Element elem = imageDoc.getCharacterElement(index);
+        if(elem == null) {
+            return;
+        }
+
+        if(elem.getAttributes().getAttribute(ImageDocument.RefAddressKey) != null) {
+            editor.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else {
+            editor.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
 

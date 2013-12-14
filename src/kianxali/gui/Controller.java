@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 
 import kianxali.decoder.Data;
 import kianxali.decoder.Instruction;
@@ -148,12 +149,6 @@ public class Controller implements DisassemblyListener, DataListener {
                 gui.getImageView().setDocument(imageDoc);
                 gui.getFunctionListView().setModel(functionList);
                 gui.getStringListView().setModel(stringList);
-                try {
-                    gui.getImageView().scrollTo(imageFile.getCodeEntryPointMem());
-                } catch (BadLocationException e) {
-                    // scrolling didn't work, but this is not severe
-                    LOG.warning("Couldn't scroll to code entry point");
-                }
             }
         });
     }
@@ -172,5 +167,30 @@ public class Controller implements DisassemblyListener, DataListener {
         } catch (BadLocationException e) {
             LOG.warning("Invalid scroll location when double clicking string");
         }
+    }
+
+    public void onDisassemblyLeftClick(int index) {
+        if(index < 0) {
+            return;
+        }
+        Element elem = imageDoc.getCharacterElement(index);
+        if(elem == null) {
+            return;
+        }
+
+        // for now, only handle left clicks on references
+        if(elem.getName() != ImageDocument.ReferenceElementName) {
+            return;
+        }
+        Object ref = elem.getAttributes().getAttribute(ImageDocument.RefAddressKey);
+        if(ref instanceof Long) {
+            long refAddr = (Long) ref;
+            try {
+                gui.getImageView().scrollTo(refAddr);
+            } catch (BadLocationException e) {
+                LOG.warning("Invalid scroll location when left clicking refrence");
+            }
+        }
+
     }
 }
