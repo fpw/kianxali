@@ -173,6 +173,7 @@ public class Controller implements DisassemblyListener, DataListener {
         if(index < 0) {
             return;
         }
+
         Element elem = imageDoc.getCharacterElement(index);
         if(elem == null) {
             return;

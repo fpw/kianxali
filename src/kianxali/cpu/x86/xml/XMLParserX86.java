@@ -38,7 +38,7 @@ public class XMLParserX86 {
     private Model inheritProcStart;
     private boolean inOneByte, inTwoByte, inSyntax, inMnem;
     private boolean inSrc, inDst, inA, inT, inOpcdExt, inGroup, inInstrExt;
-    private boolean inProcStart, inProcEnd, in2ndOpcode, inPref;
+    private boolean inProcStart, inProcEnd, in2ndOpcode, inPref, inBrief;
 
     public XMLParserX86() {
         syntaxes = new LinkedList<>();
@@ -178,6 +178,9 @@ public class XMLParserX86 {
         case "pref":
             inPref = true;
             break;
+        case "brief":
+            inBrief = true;
+            break;
         case "def_f":
         case "f_vals":
         case "test_f":
@@ -191,7 +194,6 @@ public class XMLParserX86 {
             break;
         case "note":
         case "det":
-        case "brief":
         case "gen_note":
         case "gen_notes":
         case "ring_note":
@@ -242,6 +244,8 @@ public class XMLParserX86 {
             currentEntry.secondOpcode = Short.parseShort(val, 16);
         } else if(inPref) {
             currentEntry.prefix = Short.parseShort(val, 16);
+        } else if(inBrief) {
+            currentEntry.briefDescription = val;
         }
     }
 
@@ -320,6 +324,9 @@ public class XMLParserX86 {
             break;
         case "instr_ext":
             inInstrExt = false;
+            break;
+        case "brief":
+            inBrief = false;
             break;
         default:
             break;

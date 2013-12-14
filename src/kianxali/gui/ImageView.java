@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
@@ -56,6 +57,8 @@ public class ImageView extends JPanel {
                 }
             }
         });
+
+        ToolTipManager.sharedInstance().registerComponent(editor);
 
         scrollPane = new JScrollPane(editor);
         scrollPane.getViewport().addChangeListener(new ChangeListener() {

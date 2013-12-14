@@ -36,6 +36,7 @@ public class ImageDocument extends DefaultStyledDocument {
 
     public static final String MemAddressKey            = "memAddress";
     public static final String RefAddressKey            = "refAddress";
+    public static final String InstructionKey           = "instruction";
 
     private final MutableAttributeSet addressAttributes, lineAttributes, referenceAttributes;
     private final MutableAttributeSet rawBytesAttributes, mnemonicAttributes, operandAttributes;
@@ -272,6 +273,7 @@ public class ImageDocument extends DefaultStyledDocument {
         if(entity == null) {
             return;
         }
+
         startLine(memAddr, specs);
         if(entity instanceof Instruction) {
             Instruction inst = (Instruction) entity;
@@ -280,8 +282,11 @@ public class ImageDocument extends DefaultStyledDocument {
                 String raw = String.format("%-20s ", OutputFormatter.formatByteString(inst.getRawBytes()));
                 specs.add(contentTag(rawBytesAttributes, raw));
             }
+
             String mnemo = inst.getMnemonicString(formatter) + ((operands.size() > 0) ? " " : "");
-            specs.add(contentTag(mnemonicAttributes, mnemo));
+            SimpleAttributeSet attr = new SimpleAttributeSet(mnemonicAttributes);
+            attr.addAttribute(InstructionKey, inst);
+            specs.add(contentTag(attr, mnemo));
             for(int i = 0; i < operands.size(); i++) {
                 Operand op = operands.get(i);
                 String opString = op.asString(formatter) + ((i < operands.size() - 1) ? ", " : "");

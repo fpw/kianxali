@@ -7,6 +7,8 @@ import javax.swing.text.StyledEditorKit;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
+import kianxali.gui.MnemonicView;
+
 public class ImageViewFactory implements ViewFactory {
     private final ViewFactory delegate;
 
@@ -22,6 +24,8 @@ public class ImageViewFactory implements ViewFactory {
             return new BoxView(e, BoxView.Y_AXIS);
         case ImageDocument.LineElementName:
             return new ParagraphView(e);
+        case ImageDocument.MnemonicElementName:
+            return new MnemonicView(e);
         default:
             return delegate.create(e);
         }

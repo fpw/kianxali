@@ -460,6 +460,11 @@ public class X86Instruction implements Instruction {
         }
         return false;
     }
+
+    @Override
+    public String getDescription() {
+        return syntax.getOpcodeEntry().briefDescription;
+    }
 }
 
 // lives only temporarily, will be converted to ImmediateOp

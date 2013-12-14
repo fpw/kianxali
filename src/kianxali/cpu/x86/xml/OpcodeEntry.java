@@ -22,6 +22,7 @@ public class OpcodeEntry {
     public boolean lock;
     public boolean particular;
     public byte tttn;
+    public String briefDescription;
 
     public Short prefix; // prefix that must be present for this opcode
     public Short secondOpcode; // mandatory byte after opcode
