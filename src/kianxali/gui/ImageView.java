@@ -4,12 +4,15 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
@@ -51,9 +54,11 @@ public class ImageView extends JPanel {
         editor.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                int index = editor.viewToModel(e.getPoint());
                 if(SwingUtilities.isLeftMouseButton(e)) {
-                    int index = editor.viewToModel(e.getPoint());
                     controller.onDisassemblyLeftClick(index);
+                } else if(SwingUtilities.isRightMouseButton(e)) {
+                    onRightClick(index, e.getPoint());
                 }
             }
         });
@@ -114,6 +119,35 @@ public class ImageView extends JPanel {
         } else {
             editor.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
+    }
+
+    private void onRightClick(final int index, Point p) {
+        if(index < 0) {
+            return;
+        }
+        Document doc = editor.getDocument();
+        if(!(doc instanceof ImageDocument)) {
+            return;
+        }
+
+        ImageDocument imageDoc = (ImageDocument) doc;
+
+        Element elem = imageDoc.getCharacterElement(index);
+        if(elem == null) {
+            return;
+        }
+
+        // for now, only handle right clicks on mnemonics
+        if(elem.getName() != ImageDocument.MnemonicElementName) {
+            return;
+        }
+        JPopupMenu menu = new JPopupMenu("Actions");
+        menu.add("Convert to NOP").addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                controller.onConvertToNOP(index);
+            }
+        });
+        menu.show(editor, p.x, p.y);
     }
 
     public StatusView getStatusView() {

@@ -90,6 +90,15 @@ public class KianxaliGUI extends JFrame {
             }
         });
         fileMenu.add(fileOpen);
+
+        JMenuItem fileSave = new JMenuItem("Save patched version");
+        fileSave.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                controller.onSavePatchedRequest();
+            }
+        });
+        fileMenu.add(fileSave);
+
         menuBar.add(fileMenu);
 
         setJMenuBar(menuBar);
@@ -104,6 +113,14 @@ public class KianxaliGUI extends JFrame {
         int res = chooser.showOpenDialog(this);
         if(res == JFileChooser.APPROVE_OPTION) {
             controller.onFileOpened(chooser.getSelectedFile().toPath());
+        }
+    }
+
+    public void showSavePatchedDialog() {
+        JFileChooser chooser = new JFileChooser("./");
+        int res = chooser.showSaveDialog(this);
+        if(res == JFileChooser.APPROVE_OPTION) {
+            controller.onPatchedSave(chooser.getSelectedFile().toPath());
         }
     }
 

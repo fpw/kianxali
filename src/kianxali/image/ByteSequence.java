@@ -2,21 +2,30 @@ package kianxali.image;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Path;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public final class ByteSequence {
     private final ByteBuffer bytes;
     private final ReentrantLock lock;
+    private final NavigableMap<Integer, Byte> patches;
 
     private ByteSequence(ByteBuffer buffer) {
         this.bytes = buffer;
         this.bytes.order(ByteOrder.LITTLE_ENDIAN);
+        this.patches = new TreeMap<>();
         this.lock = new ReentrantLock();
+    }
+
+    public void patch(long offset, byte b) {
+        patches.put((int) offset, b);
     }
 
     public static ByteSequence fromFile(Path path) throws IOException {
@@ -67,12 +76,22 @@ public final class ByteSequence {
         return bytes.remaining();
     }
 
+    private byte getPatchedByte() {
+        Byte patch = patches.get(bytes.position());
+        if(patch != null) {
+            skip(1);
+            return patch;
+        } else {
+            return bytes.get();
+        }
+    }
+
     public short readUByte() {
-        return (short) (bytes.get() & 0xFF);
+        return (short) (getPatchedByte() & 0xFF);
     }
 
     public byte readSByte() {
-        return bytes.get();
+        return getPatchedByte();
     }
 
     public int readUWord() {
@@ -126,5 +145,22 @@ public final class ByteSequence {
             }
         }
         return res.toString();
+    }
+
+    public void savePatched(Path path) throws IOException {
+        RandomAccessFile file = new RandomAccessFile(path.toFile(), "rws");
+        FileChannel channel = file.getChannel();
+
+        bytes.rewind();
+        channel.write(bytes);
+
+        for(int patchOffset : patches.keySet()) {
+            byte b = patches.get(patchOffset);
+            file.seek(patchOffset);
+            file.writeByte(b);
+        }
+
+        channel.close();
+        file.close();
     }
 }

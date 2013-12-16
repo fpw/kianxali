@@ -35,15 +35,22 @@ public class X86Instruction implements Instruction {
     }
 
     public boolean decode(ByteSequence seq, X86Context ctx) {
+        OpcodeSyntax selected = null;
+
         for(OpcodeSyntax syn : syntaxes) {
             this.syntax = syn;
             if(tryDecode(seq, ctx)) {
-                this.syntax = syn;
-                return true;
+                selected = syn;
+                // FIXME: find some other way..
+                if(selected.getOpcodeEntry().opcode == 0x90) {
+                    continue;
+                } else {
+                    break;
+                }
             }
         }
-        this.syntax = null;
-        return false;
+        this.syntax = selected;
+        return this.syntax != null;
     }
 
     // the prefix has been read from seq already
@@ -428,6 +435,17 @@ public class X86Instruction implements Instruction {
                 if(data != null) {
                     res.add(data);
                 }
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public List<Long> getProbableDataPointers() {
+        List<Long> res = new ArrayList<Long>(3);
+        for(Operand op : operands) {
+            if(op instanceof ImmediateOp) {
+                res.add(((ImmediateOp) op).getImmediate());
             }
         }
         return res;

@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 import kianxali.decoder.Context;
 import kianxali.decoder.Data;
+import kianxali.decoder.Data.DataType;
 import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Decoder;
 import kianxali.decoder.Instruction;
@@ -102,6 +103,12 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             }
             LOG.fine("Stopped analyzer");
         }
+    }
+
+    public void reanalyze(long addr) {
+        disassemblyData.clear(addr);
+        addCodeWork(addr);
+        startAnalyzer();
     }
 
     private void analyze() {
@@ -279,6 +286,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                     functionInfo.put(addr, function);
                 }
                 addCodeWork(addr);
+                return;
             } else {
                 // TODO: Issue warning event about invalid code address
                 LOG.warning(String.format("Code at %08X references invalid address %08X", inst.getMemAddress(), addr));
@@ -296,6 +304,24 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             }
             disassemblyData.insertReference(srcEntry, addr);
             addDataWork(data);
+        }
+
+        // Check for probable pointers
+        for(long addr : inst.getProbableDataPointers()) {
+            if(imageFile.isValidAddress(addr)) {
+                if(disassemblyData.getEntityOnExactAddress(addr) != null) {
+                    continue;
+                }
+                disassemblyData.insertReference(srcEntry, addr);
+
+                // TODO: improve heuristics
+                if(imageFile.getSectionForMemAddress(addr) == imageFile.getSectionForMemAddress(inst.getMemAddress())) {
+                    addCodeWork(addr);
+                } else {
+                    Data data = new Data(addr, DataType.UNKNOWN);
+                    addDataWork(data);
+                }
+            }
         }
     }
 

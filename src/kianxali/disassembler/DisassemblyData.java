@@ -39,6 +39,11 @@ public class DisassemblyData {
         tellListeners(memAddr);
     }
 
+    public void clear(long addr) {
+        memoryMap.remove(addr);
+        tellListeners(addr);
+    }
+
     public synchronized void insertImageFileWithSections(ImageFile file) {
         long imageAddress = 0L;
         if(file.getSections().size() > 0) {

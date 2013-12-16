@@ -12,6 +12,7 @@ public interface Instruction extends DecodedEntity {
     List<Operand> getOperands();
     List<Long> getBranchAddresses();
     List<Data> getAssociatedData();
+    List<Long> getProbableDataPointers();
     short[] getRawBytes();
     String getDescription();
 }

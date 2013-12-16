@@ -1,5 +1,6 @@
 package kianxali.gui;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
@@ -8,6 +9,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 
 import kianxali.decoder.Data;
+import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Instruction;
 import kianxali.disassembler.DataEntry;
 import kianxali.disassembler.DataListener;
@@ -18,6 +20,7 @@ import kianxali.disassembler.Function;
 import kianxali.gui.models.FunctionList;
 import kianxali.gui.models.ImageDocument;
 import kianxali.gui.models.StringList;
+import kianxali.image.ByteSequence;
 import kianxali.image.ImageFile;
 import kianxali.image.mach_o.MachOFile;
 import kianxali.image.pe.PEFile;
@@ -35,6 +38,7 @@ public class Controller implements DisassemblyListener, DataListener {
     private final StringList stringList;
     private final OutputFormatter formatter;
     private KianxaliGUI gui;
+    private boolean initialAnalyzeDone;
 
     public Controller() {
         this.formatter = new OutputFormatter();
@@ -61,6 +65,14 @@ public class Controller implements DisassemblyListener, DataListener {
         gui.showFileOpenDialog();
     }
 
+    public void onSavePatchedRequest() {
+        if(imageFile != null) {
+            gui.showSavePatchedDialog();
+        } else {
+            gui.showError("Nothing to patch", "No image loaded");
+        }
+    }
+
     public void onFileOpened(Path path) {
         try {
             try {
@@ -82,6 +94,7 @@ public class Controller implements DisassemblyListener, DataListener {
             if(imageFile == null) {
                 throw new UnsupportedOperationException("Unknown file type.");
             }
+            initialAnalyzeDone = false;
             functionList.clear();
             stringList.clear();
 
@@ -143,6 +156,11 @@ public class Controller implements DisassemblyListener, DataListener {
                     "Initial auto-analysis finished after %.2f seconds, got %d entities",
                     duration, disassemblyData.getEntityCount())
                 );
+
+        if(initialAnalyzeDone) {
+            return;
+        }
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -151,6 +169,7 @@ public class Controller implements DisassemblyListener, DataListener {
                 gui.getStringListView().setModel(stringList);
             }
         });
+        initialAnalyzeDone = true;
     }
 
     public void onFunctionDoubleClick(Function fun) {
@@ -170,7 +189,7 @@ public class Controller implements DisassemblyListener, DataListener {
     }
 
     public void onDisassemblyLeftClick(int index) {
-        if(index < 0) {
+        if(index < 0 || imageDoc == null) {
             return;
         }
 
@@ -192,6 +211,35 @@ public class Controller implements DisassemblyListener, DataListener {
                 LOG.warning("Invalid scroll location when left clicking refrence");
             }
         }
+    }
 
+    public void onConvertToNOP(int index) {
+        Long addr = imageDoc.getAddressForOffset(index);
+        if(addr == null) {
+            return;
+        }
+        DecodedEntity entity = disassemblyData.getEntityOnExactAddress(addr);
+        if(!(entity instanceof Instruction)) {
+            return;
+        }
+        Instruction inst = (Instruction) entity;
+        ByteSequence seq = imageFile.getByteSequence(addr, true);
+        for(int i = 0; i < inst.getSize(); i++) {
+            // TODO: 0x90 is x86 only
+            seq.patch(imageFile.toFileAddress(addr + i), (byte) 0x90);
+        }
+        seq.unlock();
+        disassembler.reanalyze(inst.getMemAddress());
+    }
+
+    public void onPatchedSave(Path path) {
+        ByteSequence seq = imageFile.getByteSequence(imageFile.getCodeEntryPointMem(), true);
+        try {
+            seq.savePatched(path);
+        } catch (IOException e) {
+            gui.showError("Couldn't save file", e.getMessage());
+        } finally {
+            seq.unlock();
+        }
     }
 }
