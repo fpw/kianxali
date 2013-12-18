@@ -69,6 +69,7 @@ public class ImageDocument extends DefaultStyledDocument {
 
     private void setupStyles() {
         StyleConstants.setFontFamily(addressAttributes,     Font.MONOSPACED);
+        StyleConstants.setFontSize(addressAttributes,       14);
         StyleConstants.setForeground(referenceAttributes,   new Color(0x00, 0x64, 0x00));
         StyleConstants.setForeground(infoAttributes,        new Color(0x00, 0x00, 0xFF));
         StyleConstants.setForeground(rawBytesAttributes,    new Color(0x40, 0x40, 0x40));
