@@ -26,6 +26,8 @@ public class KianxaliGUI extends JFrame {
     private final ImageView imageView;
     private final FunctionListView functionView;
     private final StringListView stringView;
+    private final ScriptView scriptView;
+    private final LogView logView;
     private final Controller controller;
 
     public KianxaliGUI(Controller controller) {
@@ -36,7 +38,7 @@ public class KianxaliGUI extends JFrame {
         add(desktop);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setPreferredSize(new Dimension(1000, 500));
+        setPreferredSize(new Dimension(1100, 725));
 
         setupLookAndFeel();
         setupMenu();
@@ -46,22 +48,33 @@ public class KianxaliGUI extends JFrame {
         tabPane.addTab("Functions", functionView);
         stringView = new StringListView(controller);
         tabPane.addTab("Strings", stringView);
+        scriptView = new ScriptView(controller);
+        tabPane.addTab("Script", scriptView);
 
         JInternalFrame functionFrame = new JInternalFrame("Entities", true, false, true, true);
         functionFrame.setLocation(new Point(0, 0));
-        functionFrame.setSize(new Dimension(200, 480));
+        functionFrame.setSize(new Dimension(300, 680));
         functionFrame.add(tabPane);
         functionFrame.setVisible(true);
         desktop.add(functionFrame);
 
         JInternalFrame imageFrame = new JInternalFrame("Disassembly", true, false, true, true);
         imageFrame.setLayout(new BorderLayout());
-        imageFrame.setLocation(new Point(200, 0));
+        imageFrame.setLocation(new Point(300, 0));
         imageFrame.setSize(new Dimension(800, 480));
         imageView = new ImageView(controller);
         imageFrame.add(imageView, BorderLayout.CENTER);
         imageFrame.setVisible(true);
         desktop.add(imageFrame);
+
+        JInternalFrame logFrame = new JInternalFrame("Log", true, false, true, true);
+        logFrame.setLayout(new BorderLayout());
+        logFrame.setLocation(new Point(300, 480));
+        logFrame.setSize(new Dimension(800, 200));
+        logView = new LogView(controller);
+        logFrame.add(logView, BorderLayout.CENTER);
+        logFrame.setVisible(true);
+        desktop.add(logFrame);
 
         pack();
     }
@@ -128,11 +141,19 @@ public class KianxaliGUI extends JFrame {
         return imageView;
     }
 
+    public ScriptView getScriptView() {
+        return scriptView;
+    }
+
     public FunctionListView getFunctionListView() {
         return functionView;
     }
 
     public StringListView getStringListView() {
         return stringView;
+    }
+
+    public LogView getLogView() {
+        return logView;
     }
 }

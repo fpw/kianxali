@@ -23,6 +23,7 @@ import kianxali.disassembler.DisassemblyData;
 import kianxali.disassembler.DisassemblyListener;
 import kianxali.image.ImageFile;
 import kianxali.image.mach_o.MachOFile;
+import kianxali.util.LogFormatter;
 import kianxali.util.OutputFormatter;
 
 public final class Test implements DisassemblyListener, DataListener {

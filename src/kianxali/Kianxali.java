@@ -6,14 +6,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kianxali.gui.Controller;
+import kianxali.util.LogFormatter;
 
 public final class Kianxali {
     private static final Logger LOG = Logger.getLogger("kianxali");
     private final Controller controller;
 
     public Kianxali(Level logLevel) {
-        controller = new Controller();
-
         // setup logging
         Handler consoleHandler = new ConsoleHandler();
         consoleHandler.setLevel(logLevel);
@@ -23,6 +22,8 @@ public final class Kianxali {
         LOG.setLevel(logLevel);
 
         LOG.info("Kianxali starting");
+
+        controller = new Controller();
     }
 
     public void start() {

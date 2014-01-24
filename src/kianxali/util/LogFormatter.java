@@ -1,11 +1,11 @@
-package kianxali;
+package kianxali.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 // based on http://stackoverflow.com/questions/2950704/java-util-logging-how-to-suppress-date-line
-class LogFormatter extends Formatter {
+public class LogFormatter extends Formatter {
     @Override
     public String format(final LogRecord r) {
         StringBuilder sb = new StringBuilder();

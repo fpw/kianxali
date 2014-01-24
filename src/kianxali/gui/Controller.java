@@ -1,6 +1,7 @@
 package kianxali.gui;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
@@ -24,6 +25,7 @@ import kianxali.image.ByteSequence;
 import kianxali.image.ImageFile;
 import kianxali.image.mach_o.MachOFile;
 import kianxali.image.pe.PEFile;
+import kianxali.scripting.ScriptManager;
 import kianxali.util.OutputFormatter;
 
 public class Controller implements DisassemblyListener, DataListener {
@@ -38,12 +40,14 @@ public class Controller implements DisassemblyListener, DataListener {
     private final StringList stringList;
     private final OutputFormatter formatter;
     private KianxaliGUI gui;
+    private final ScriptManager scripts;
     private boolean initialAnalyzeDone;
 
     public Controller() {
         this.formatter = new OutputFormatter();
         this.functionList = new FunctionList();
         this.stringList = new StringList();
+        this.scripts = new ScriptManager(this);
         formatter.setIncludeRawBytes(true);
     }
 
@@ -59,6 +63,7 @@ public class Controller implements DisassemblyListener, DataListener {
         gui = new KianxaliGUI(this);
         gui.setLocationRelativeTo(null);
         gui.setVisible(true);
+        Logger.getLogger("kianxali").addHandler(gui.getLogView().getLogHandler());
     }
 
     public void onOpenFileRequest() {
@@ -241,5 +246,32 @@ public class Controller implements DisassemblyListener, DataListener {
         } finally {
             seq.unlock();
         }
+    }
+
+    public void onRunScriptRequest() {
+        String script = gui.getScriptView().getScript();
+        scripts.runScript(script);
+    }
+
+    public Writer getLogWindowWriter() {
+        return new Writer() {
+            @Override
+            public void write(char[] cbuf, int off, int len) throws IOException {
+                String msg = new String(cbuf, off, len);
+                gui.getLogView().addLine(msg);
+            }
+
+            @Override
+            public void flush() throws IOException {
+            }
+
+            @Override
+            public void close() throws IOException {
+            }
+        };
+    }
+
+    public void showError(String msg) {
+        gui.showError("Error", msg);
     }
 }

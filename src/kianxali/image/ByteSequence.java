@@ -24,6 +24,7 @@ public final class ByteSequence {
         this.lock = new ReentrantLock();
     }
 
+    // TODO: support word, dword etc.
     public void patch(long offset, byte b) {
         patches.put((int) offset, b);
     }
