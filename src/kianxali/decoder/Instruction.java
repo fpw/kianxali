@@ -10,6 +10,7 @@ public interface Instruction extends DecodedEntity {
     boolean isJump();
     String getMnemonicString(OutputFormatter formatter);
     List<Operand> getOperands();
+    List<Operand> getDestOperands();
     List<Long> getBranchAddresses();
     List<Data> getAssociatedData();
     List<Long> getProbableDataPointers();

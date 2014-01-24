@@ -401,6 +401,17 @@ public class X86Instruction implements Instruction {
     }
 
     @Override
+    public List<Operand> getDestOperands() {
+        List<Operand> res = new ArrayList<>();
+        for(Operand op : operands) {
+            if(op.getUsage() == UsageType.DEST) {
+                res.add(op);
+            }
+        }
+        return res;
+    }
+
+    @Override
     public List<Long> getBranchAddresses() {
         List<Long> res = new ArrayList<>(3);
 

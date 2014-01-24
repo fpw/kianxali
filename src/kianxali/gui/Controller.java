@@ -274,4 +274,8 @@ public class Controller implements DisassemblyListener, DataListener {
     public void showError(String msg) {
         gui.showError("Error", msg);
     }
+
+    public DisassemblyData getDisassemblyData() {
+        return disassemblyData;
+    }
 }

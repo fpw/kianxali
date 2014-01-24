@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import kianxali.decoder.DecodedEntity;
+import kianxali.decoder.Instruction;
 import kianxali.image.ImageFile;
 import kianxali.image.Section;
 
@@ -199,5 +200,15 @@ public class DisassemblyData {
 
     public synchronized int getEntityCount() {
         return memoryMap.size();
+    }
+
+    public void visitInstructions(InstructionVisitor visitor) {
+        for(long addr : memoryMap.keySet()) {
+            DataEntry entry = memoryMap.get(addr);
+            DecodedEntity entity = entry.getEntity();
+            if(entity instanceof Instruction) {
+                visitor.onVisit((Instruction) entity);
+            }
+        }
     }
 }

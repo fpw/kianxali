@@ -12,13 +12,15 @@ public class ScriptManager {
     private static final Logger LOG = Logger.getLogger("kianxali.scripting");
     private final Controller controller;
     private final ScriptingContainer ruby;
+    private final ScriptAPI api;
 
     public ScriptManager(Controller controller) {
         this.controller = controller;
-
         this.ruby = new ScriptingContainer();
+        this.api = new ScriptAPIImpl(ruby, controller);
         Ruby.setThreadLocalRuntime(ruby.getProvider().getRuntime());
         ruby.setWriter(controller.getLogWindowWriter());
+        ruby.put("$api", api);
 
         LOG.config("Using Ruby version: " + ruby.getCompatVersion());
     }

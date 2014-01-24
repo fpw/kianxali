@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -30,7 +31,7 @@ public class LogView extends JPanel {
 
         this.logPane = new JTextPane();
         logPane.setEditable(false);
-        add(logPane, BorderLayout.CENTER);
+        add(new JScrollPane(logPane), BorderLayout.CENTER);
     }
 
     public Handler getLogHandler() {
