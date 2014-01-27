@@ -376,16 +376,6 @@ public class X86Instruction implements Instruction {
     }
 
     @Override
-    public String toString() {
-        StringBuilder res = new StringBuilder();
-        res.append(syntax.getMnemonic().toString().toLowerCase() + ":\t");
-        for(Short b : rawData) {
-            res.append(String.format("%02X", b));
-        }
-        return res.toString();
-    }
-
-    @Override
     public long getMemAddress() {
         return memAddr;
     }
@@ -405,6 +395,17 @@ public class X86Instruction implements Instruction {
         List<Operand> res = new ArrayList<>();
         for(Operand op : operands) {
             if(op.getUsage() == UsageType.DEST) {
+                res.add(op);
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public List<Operand> getSrcOperands() {
+        List<Operand> res = new ArrayList<>();
+        for(Operand op : operands) {
+            if(op.getUsage() == UsageType.SOURCE) {
                 res.add(op);
             }
         }
@@ -463,8 +464,8 @@ public class X86Instruction implements Instruction {
     }
 
     @Override
-    public String getMnemonicString(OutputFormatter formatter) {
-        return formatter.formatMnemonic(syntax.getMnemonic().toString());
+    public String getMnemonic() {
+        return syntax.getMnemonic().toString();
     }
 
     @Override

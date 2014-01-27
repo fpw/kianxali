@@ -69,7 +69,7 @@ public class ImageDocument extends DefaultStyledDocument {
 
     private void setupStyles() {
         StyleConstants.setFontFamily(addressAttributes,     Font.MONOSPACED);
-        StyleConstants.setFontSize(addressAttributes,       14);
+        StyleConstants.setFontSize(addressAttributes,       12);
         StyleConstants.setForeground(referenceAttributes,   new Color(0x00, 0x64, 0x00));
         StyleConstants.setForeground(infoAttributes,        new Color(0x00, 0x00, 0xFF));
         StyleConstants.setForeground(rawBytesAttributes,    new Color(0x40, 0x40, 0x40));
@@ -284,7 +284,7 @@ public class ImageDocument extends DefaultStyledDocument {
                 specs.add(contentTag(rawBytesAttributes, raw));
             }
 
-            String mnemo = inst.getMnemonicString(formatter) + ((operands.size() > 0) ? " " : "");
+            String mnemo = formatter.formatMnemonic(inst.getMnemonic()) + ((operands.size() > 0) ? " " : "");
             SimpleAttributeSet attr = new SimpleAttributeSet(mnemonicAttributes);
             attr.addAttribute(InstructionKey, inst);
             specs.add(contentTag(attr, mnemo));

@@ -2,14 +2,13 @@ package kianxali.decoder;
 
 import java.util.List;
 
-import kianxali.util.OutputFormatter;
-
 public interface Instruction extends DecodedEntity {
     boolean stopsTrace();
     boolean isFunctionCall();
     boolean isJump();
-    String getMnemonicString(OutputFormatter formatter);
+    String getMnemonic();
     List<Operand> getOperands();
+    List<Operand> getSrcOperands();
     List<Operand> getDestOperands();
     List<Long> getBranchAddresses();
     List<Data> getAssociatedData();
