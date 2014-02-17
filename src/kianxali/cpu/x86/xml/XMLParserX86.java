@@ -165,7 +165,7 @@ public class XMLParserX86 {
             inInstrExt = true;
             break;
         case "proc_start":
-            // TODO atts post, lat_step: unknown purpose
+            // attributes "post" and "lat_step": unknown purpose
             inProcStart = true;
             break;
         case "proc_end":

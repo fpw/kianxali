@@ -7,24 +7,24 @@ public class OperandDesc {
         DIRECT,             // absolute address of adressType coded after opcode
         MOD_RM_M,           // modRM.mem
         MOD_RM_M_FPU,       // modRM.mem but use FPU registers when not mem
-        MOD_RM_M_FPU_REG,   // modRM.mem must be mode 3 with FPU reg TODO
+        MOD_RM_M_FPU_REG,   // modRM.mem must be mode 3 with FPU reg
         MOD_RM_R,           // modRM.reg
         MOD_RM_R_CTRL,      // modRM.reg selects control register
         MOD_RM_R_DEBUG,     // modRM.reg selects debug register
         MOD_RM_R_TEST,      // modRM.reg selects test register
         MOD_RM_R_SEG,       // modRM.reg as segment register
-        MOD_RM_M_FORCE_GEN, // to be checked: modRM.mem regardless of mode TODO
-        MOD_RM_MUST_M,      // to be checked: modRM.mem regardless of mode TODO
-        MOD_RM_R_FORCE_GEN, // to be checked: modRM.reg regardless of mode TODO
+        MOD_RM_M_FORCE_GEN, // to be checked: modRM.mem regardless of mode (implementation not checked yet)
+        MOD_RM_MUST_M,      // to be checked: modRM.mem regardless of mode (implementation not checked yet)
+        MOD_RM_R_FORCE_GEN, // to be checked: modRM.reg regardless of mode (implementation not checked yet)
         MOD_RM_XMM,         // modRM as XMM
         MOD_RM_R_XMM,       // modRM.reg as XMM
         MOD_RM_M_XMM_REG,   // modRM.mem as XMM
         IMMEDIATE,          // immediate coded after opcode
         RELATIVE,           // relative address coded after opcode
-        MOD_RM_MMX,         // modRM.reg or modRM.mem as MMX TODO
+        MOD_RM_MMX,         // modRM.reg or modRM.mem as MMX (implementation not checked yet)
         MOD_RM_R_MMX,       // modRM.reg as MMX register
         MOD_RM_M_MMX,       // modRM.mem pointing to MMX qword / reg
-        OFFSET,             // offset coded after opcode, TODO check difference to DIRECT
+        OFFSET,             // offset coded after opcode
         LEAST_REG,          // least 3 bits of opcode (!) select general register
         GROUP,              // indirectly given by instruction -> look at DirectGroup
         STACK,              // by group so it fits on stack
@@ -53,14 +53,14 @@ public class OperandDesc {
     }
 
     public enum OperandType {
-        TWO_INDICES,        // TODO for bound instruction
+        TWO_INDICES,        // two memory operands, adheres operand size attribute
         BYTE,               // byte regardless of operand size
         BCD,                // packed BCD
         BYTE_SGN,           // byte, sign-extended to operand size
         BYTE_STACK,         // byte, sign-extended to size of stack pointer
         DWORD,              // dword, regardless of operand size
-        DWORD_OPS,          // dword according to opsize TODO
-        DWORD_ADR,          // dword according to address size TODO
+        DWORD_OPS,          // dword according to opsize (implementation unchecked)
+        DWORD_ADR,          // dword according to address size (implementation unchecked)
         DWORD_INT_FPU,      // dword integer for FPU
         DWORD_QWORD,        // dword or qword depending on REX.W
         DWORD_QWORD_ADR,    // dword or qword depending on address size
@@ -89,7 +89,7 @@ public class OperandDesc {
         WORD,               // word, regardless of operand size
         WORD_STACK,         // word according to stack operand size
         WORD_ADR,           // word according to address size
-        WORD_OPS,           // word according to operand size TODO
+        WORD_OPS,           // word according to operand size (implementation unchecked)
         WORD_FPU,           // word integer for FPU
         WORD_DWORD,         // word or dword (default) depending on opsize
         WORD_DWORD_ADR,     // word or dword (default) depending on address size

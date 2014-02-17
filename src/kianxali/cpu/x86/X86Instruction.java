@@ -41,7 +41,7 @@ public class X86Instruction implements Instruction {
             this.syntax = syn;
             if(tryDecode(seq, ctx)) {
                 selected = syn;
-                // FIXME: find some other way..
+                // let 0x90 decode as NOP instead of XCHG EAX, EAX.
                 if(selected.getOpcodeEntry().opcode == 0x90) {
                     continue;
                 } else {

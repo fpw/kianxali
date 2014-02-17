@@ -484,6 +484,7 @@ public class X86DecoderTest {
     }
 
     private void testMisc() {
+        checkOpcode32(new short[] {0x90}, "nop");
         checkOpcode32(new short[] {0x98}, "cwde");
         // checkOpcode32(new short[] {0x66, 0x98}, "cbw");
         checkOpcode32(new short[] {0x99}, "cdq");
@@ -573,6 +574,11 @@ public class X86DecoderTest {
     }
 
     private void testSpecials() {
+        // Special encodings
+        checkOpcode32(new short[] {0x0F, 0x13, 0x00}, "movlps qword ptr [eax], xmm0");
+        checkOpcode32(new short[] {0xA2, 0x00, 0x00, 0x00, 0x00}, "mov byte ptr [0], al");
+        checkOpcode32(new short[] {0x62, 0x03}, "bound eax, qword ptr [ebx]");
+
         // Prefixes
         checkOpcode32(new short[] {0x66,  0xD1, 0xEF}, "shr di, 1h");
         checkOpcode64(new short[] {0x40, 0x53}, "push rbx");
@@ -582,6 +588,7 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0x66, 0x0F, 0xA4, 0x01, 0x02}, "shld word ptr [ecx], ax, 2h");
 
         // FPU
+        checkOpcode32(new short[] {0xDF,  0xC3}, "ffreep st3");
         checkOpcode32(new short[] {0xDF,  0xE0}, "fnstsw ax");
         checkOpcode32(new short[] {0xDB,  0x29}, "fld tbyte ptr [ecx]");
         checkOpcode32(new short[] {0xDD,  0xC5}, "ffree st5");

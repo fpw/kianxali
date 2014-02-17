@@ -161,6 +161,12 @@ public final class X86CPU {
             } else {
                 return OperandSize.O32;
             }
+        case TWO_INDICES:
+            if(ctx.getPrefix().opSizePrefix) {
+                return OperandSize.O32;
+            } else {
+                return OperandSize.O64;
+            }
         case POINTER:
             if(ctx.getPrefix().opSizePrefix) {
                 return OperandSize.O16;
