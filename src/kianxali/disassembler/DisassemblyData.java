@@ -112,17 +112,22 @@ public class DisassemblyData {
         long start = function.getStartAddress();
         long end = function.getEndAddress();
 
-        DataEntry entry = getInfoOnExactAddress(start);
-        if(entry == null) {
-            entry = new DataEntry(start);
-            put(start, entry);
+        DataEntry startEntry = getInfoOnExactAddress(start);
+        DataEntry endEntry = getInfoOnExactAddress(end);
+        if(startEntry != null && startEntry.getStartFunction() == function && endEntry != null && endEntry.getEndFunction() == function) {
+            // nothing changed
+            return;
         }
-        entry.setStartFunction(function);
+
+        if(startEntry == null) {
+            startEntry = new DataEntry(start);
+            put(start, startEntry);
+        }
+        startEntry.setStartFunction(function);
         tellListeners(start);
 
-        entry = getInfoOnExactAddress(end);
-        if(entry != null) {
-            entry.setEndFunction(function);
+        if(endEntry != null) {
+            endEntry.setEndFunction(function);
         }
         // TODO: add an else case
         tellListeners(end);

@@ -213,7 +213,7 @@ public class Controller implements DisassemblyListener, DataListener {
             try {
                 gui.getImageView().scrollTo(refAddr);
             } catch (BadLocationException e) {
-                LOG.warning("Invalid scroll location when left clicking refrence");
+                LOG.warning("Invalid scroll location when left clicking reference");
             }
         }
     }
