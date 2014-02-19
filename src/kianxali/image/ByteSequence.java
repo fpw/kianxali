@@ -46,6 +46,10 @@ public final class ByteSequence {
         data[(int) offset] = b;
     }
 
+    public void patch(byte b) {
+        data[(int) getPosition()] = b;
+    }
+
     public void lock() {
         lock.lock();
     }

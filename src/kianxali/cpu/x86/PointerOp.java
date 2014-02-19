@@ -112,6 +112,15 @@ public class PointerOp implements Operand {
         this.segment = segment;
     }
 
+    @Override
+    public Number asNumber() {
+        if(offset != null && baseRegister == null && indexRegister == null) {
+            // only this combination is deterministic
+            return offset;
+        }
+        return null;
+    }
+
     public Data getProbableData() {
         DataType type;
         if(offset == null) {

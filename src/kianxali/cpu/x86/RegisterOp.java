@@ -23,4 +23,9 @@ public class RegisterOp implements Operand {
     public String asString(OutputFormatter formatter) {
         return formatter.formatRegister(register.toString());
     }
+
+    @Override
+    public Number asNumber() {
+        return null;
+    }
 }

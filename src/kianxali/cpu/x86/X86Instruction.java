@@ -521,5 +521,10 @@ class RelativeOp implements Operand {
     public String asString(OutputFormatter options) {
         return null;
     }
+
+    @Override
+    public Number asNumber() {
+        return null;
+    }
 }
 

@@ -42,4 +42,9 @@ public class ImmediateOp implements Operand {
             return options.formatImmediate(immediate);
         }
     }
+
+    @Override
+    public Number asNumber() {
+        return immediate;
+    }
 }

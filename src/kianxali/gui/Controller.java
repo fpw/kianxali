@@ -278,4 +278,12 @@ public class Controller implements DisassemblyListener, DataListener {
     public DisassemblyData getDisassemblyData() {
         return disassemblyData;
     }
+
+    public ImageFile getImageFile() {
+        return imageFile;
+    }
+
+    public Disassembler getDisassembler() {
+        return disassembler;
+    }
 }

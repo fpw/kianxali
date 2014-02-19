@@ -5,9 +5,13 @@ import java.util.logging.Logger;
 
 import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Instruction;
+import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblyData;
 import kianxali.disassembler.InstructionVisitor;
 import kianxali.gui.Controller;
+import kianxali.image.ByteSequence;
+import kianxali.image.ImageFile;
+import kianxali.image.Section;
 
 import org.jruby.Ruby;
 import org.jruby.RubyProc;
@@ -63,11 +67,71 @@ public class ScriptManager implements ScriptAPI {
     }
 
     @Override
-    public DecodedEntity getEntityAt(long addr) {
+    public DecodedEntity getEntityAt(Long addr) {
         DisassemblyData data = controller.getDisassemblyData();
-        if(data == null) {
+        if(data == null || addr == null) {
             return null;
         }
         return data.getEntityOnExactAddress(addr);
+    }
+
+    @Override
+    public boolean isCodeAddress(Long addr) {
+        ImageFile image = controller.getImageFile();
+        if(image == null || addr == null) {
+            return false;
+        }
+        Section sect = image.getSectionForMemAddress(addr);
+        if(sect == null || !sect.isExecutable()) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void patchByte(Long addr, Short b) {
+        if(addr == null || b == null) {
+            throw new IllegalArgumentException("null-address or byte");
+        }
+
+        ImageFile image = controller.getImageFile();
+        if(image == null) {
+            throw new IllegalStateException("no image loaded");
+        }
+
+        ByteSequence seq = image.getByteSequence(addr, true);
+        seq.patch((byte) (b & 0xFF));
+        seq.unlock();
+    }
+
+    @Override
+    public void reanalyze(Long addr) {
+        if(addr == null) {
+            throw new IllegalArgumentException("null-address passed");
+        }
+
+        Disassembler dasm = controller.getDisassembler();
+        if(dasm == null) {
+            throw new IllegalStateException("no disassembler loaded");
+        }
+
+        dasm.reanalyze(addr);
+    }
+
+    @Override
+    public Short readByte(Long addr) {
+        if(addr == null) {
+            throw new IllegalArgumentException("null-address");
+        }
+
+        ImageFile image = controller.getImageFile();
+        if(image == null) {
+            throw new IllegalStateException("no image loaded");
+        }
+
+        ByteSequence seq = image.getByteSequence(addr, true);
+        Short res = seq.readUByte();
+        seq.unlock();
+        return res;
     }
 }

@@ -66,4 +66,9 @@ public class PESection implements Section {
     public long getEndAddress() {
         return addrConv.rvaToMemory(virtualAddressRVA + rawSize);
     }
+
+    @Override
+    public boolean isExecutable() {
+        return isCode();
+    }
 }
