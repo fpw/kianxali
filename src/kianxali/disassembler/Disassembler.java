@@ -114,7 +114,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
     }
 
     private void analyze() {
-        // 1st pass: Analyze code and data
+        // Analyze code and data
         while(!Thread.interrupted()) {
             Entry<Long, DecodedEntity> entry = workQueue.poll();
             if(entry == null) {
@@ -129,7 +129,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             }
         }
 
-        // 2nd pass: propagate function information
+        // Propagate function information
         for(Function fun : functionInfo.values()) {
             disassemblyData.insertFunction(fun);
 

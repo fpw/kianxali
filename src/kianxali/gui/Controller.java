@@ -158,7 +158,7 @@ public class Controller implements DisassemblyListener, DataListener {
     public void onAnalyzeStop() {
         double duration = (System.currentTimeMillis() - beginDisassembleTime) / 1000.0;
         LOG.info(String.format(
-                    "Initial auto-analysis finished after %.2f seconds, got %d entities",
+                    "Analysis finished after %.2f seconds, got %d entities",
                     duration, disassemblyData.getEntityCount())
                 );
 
