@@ -105,10 +105,12 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         }
     }
 
-    public void reanalyze(long addr) {
+    public synchronized void reanalyze(long addr) {
         disassemblyData.clear(addr);
         addCodeWork(addr);
-        startAnalyzer();
+        if(analyzeThread == null) {
+            startAnalyzer();
+        }
     }
 
     private void analyze() {

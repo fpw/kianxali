@@ -45,7 +45,7 @@ public class PEFile extends ImageFile implements AddressConverter {
     public long rvaToFile(long rva) {
         for(PESection header : sections) {
             long memOffset = header.getVirtualAddressRVA();
-            if(rva >= memOffset && rva < memOffset + header.getRawSize()) {
+            if(rva >= memOffset && rva <= memOffset + header.getRawSize()) {
                 return rva - memOffset + header.getFilePosition();
             }
         }
