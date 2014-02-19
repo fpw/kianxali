@@ -1,48 +1,49 @@
 package kianxali.image;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Path;
-import java.util.NavigableMap;
-import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+// Not using memory mapped I/O because we want to store the full file inside the Kianxali data file
+// so the user needn't store the original file along with the Kianxali file
 public final class ByteSequence {
+    private final byte[] data;
     private final ByteBuffer bytes;
     private final ReentrantLock lock;
-    private final NavigableMap<Integer, Byte> patches;
 
-    private ByteSequence(ByteBuffer buffer) {
-        this.bytes = buffer;
+    private ByteSequence(byte[] input, boolean doCopy) {
+        if(doCopy) {
+            this.data = new byte[input.length];
+            System.arraycopy(input, 0, data, 0, input.length);
+        } else {
+            this.data = input;
+        }
+        this.bytes = ByteBuffer.wrap(data);
         this.bytes.order(ByteOrder.LITTLE_ENDIAN);
-        this.patches = new TreeMap<>();
         this.lock = new ReentrantLock();
     }
 
-    // TODO: support word, dword etc.
-    public void patch(long offset, byte b) {
-        patches.put((int) offset, b);
-    }
-
     public static ByteSequence fromFile(Path path) throws IOException {
-        FileInputStream fileStream = new FileInputStream(path.toFile());
-        FileChannel chan = fileStream.getChannel();
-        ByteBuffer imageBuffer = chan.map(MapMode.READ_ONLY, 0, fileStream.available());
-        chan.close();
+        File file = path.toFile();
+        FileInputStream fileStream = new FileInputStream(file);
+        byte[] input = new byte[(int) file.length()];
+        fileStream.read(input);
         fileStream.close();
-        return new ByteSequence(imageBuffer);
+        return new ByteSequence(input, false);
     }
 
     public static ByteSequence fromBytes(byte[] bytes) {
-        ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
-        buffer.put(bytes);
-        buffer.rewind();
-        return new ByteSequence(buffer);
+        return new ByteSequence(bytes, true);
+    }
+
+    public void patch(long offset, byte b) {
+        data[(int) offset] = b;
     }
 
     public void lock() {
@@ -77,22 +78,12 @@ public final class ByteSequence {
         return bytes.remaining();
     }
 
-    private byte getPatchedByte() {
-        Byte patch = patches.get(bytes.position());
-        if(patch != null) {
-            skip(1);
-            return patch;
-        } else {
-            return bytes.get();
-        }
-    }
-
     public short readUByte() {
-        return (short) (getPatchedByte() & 0xFF);
+        return (short) (bytes.get() & 0xFF);
     }
 
     public byte readSByte() {
-        return getPatchedByte();
+        return bytes.get();
     }
 
     public int readUWord() {
@@ -154,12 +145,6 @@ public final class ByteSequence {
 
         bytes.rewind();
         channel.write(bytes);
-
-        for(int patchOffset : patches.keySet()) {
-            byte b = patches.get(patchOffset);
-            file.seek(patchOffset);
-            file.writeByte(b);
-        }
 
         channel.close();
         file.close();
