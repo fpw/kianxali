@@ -316,8 +316,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 }
                 disassemblyData.insertReference(srcEntry, addr);
 
-                // TODO: improve heuristics
-                if(imageFile.getSectionForMemAddress(addr) == imageFile.getSectionForMemAddress(inst.getMemAddress())) {
+                if(imageFile.isCodeAddress(addr)) {
                     addCodeWork(addr);
                 } else {
                     Data data = new Data(addr, DataType.UNKNOWN);

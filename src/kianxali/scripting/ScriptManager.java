@@ -11,8 +11,6 @@ import kianxali.disassembler.InstructionVisitor;
 import kianxali.gui.Controller;
 import kianxali.image.ByteSequence;
 import kianxali.image.ImageFile;
-import kianxali.image.Section;
-
 import org.jruby.Ruby;
 import org.jruby.RubyProc;
 import org.jruby.embed.ScriptingContainer;
@@ -81,11 +79,7 @@ public class ScriptManager implements ScriptAPI {
         if(image == null || addr == null) {
             return false;
         }
-        Section sect = image.getSectionForMemAddress(addr);
-        if(sect == null || !sect.isExecutable()) {
-            return false;
-        }
-        return true;
+        return image.isCodeAddress(addr);
     }
 
     @Override
