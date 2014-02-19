@@ -1,5 +1,5 @@
 # Iterates all instructions and displays write-access to code, i.e. finds self-modifying code
-
+# Also tries to apply the changes statically to aid further analyzation
 
 # Changed addresses will be remembered here in order to reanalyze them later
 changes = []
