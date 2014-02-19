@@ -80,6 +80,7 @@ public class Controller implements DisassemblyListener, DataListener {
 
     public void onFileOpened(Path path) {
         try {
+            // First try as PE image
             try {
                 imageFile = new PEFile(path);
                 LOG.fine("Loaded as PE file");
@@ -87,6 +88,7 @@ public class Controller implements DisassemblyListener, DataListener {
                 LOG.fine("Not a PE file: " + e.getMessage());
             }
 
+            // If that failed, try as Mach-O file
             if(imageFile == null) {
                 try {
                     imageFile = new MachOFile(path);
@@ -102,6 +104,7 @@ public class Controller implements DisassemblyListener, DataListener {
             initialAnalyzeDone = false;
             functionList.clear();
             stringList.clear();
+            gui.getImageView().setDocument(null);
 
             imageDoc = new ImageDocument(formatter);
             gui.getImageView().getStatusView().initNewData(imageFile.getFileSize());
@@ -133,6 +136,7 @@ public class Controller implements DisassemblyListener, DataListener {
 
     @Override
     public void onAnalyzeStart() {
+        LOG.info("Please wait while the file is being analyzed...");
         beginDisassembleTime = System.currentTimeMillis();
     }
 

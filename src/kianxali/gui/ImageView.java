@@ -20,6 +20,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 
@@ -159,7 +160,11 @@ public class ImageView extends JPanel {
     }
 
     public void setDocument(ImageDocument document) {
-        editor.setDocument(document);
+        if(document != null) {
+            editor.setDocument(document);
+        } else {
+            editor.setDocument(new DefaultStyledDocument());
+        }
         editor.getCaret().setVisible(true);
     }
 }
