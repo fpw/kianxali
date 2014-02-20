@@ -158,13 +158,29 @@ public class ImageView extends JPanel {
         Object memAddrObj = elem.getAttributes().getAttribute(ImageDocument.MemAddressKey);
         if(memAddrObj instanceof Long) {
             long memAddr = (Long) memAddrObj;
-            DataEntry data = controller.getDisassemblyData().getInfoOnExactAddress(memAddr);
-            if(data != null && data.getStartFunction() != null) {
-                final Function fun = data.getStartFunction();
-                menu.add("Rename " + fun.getName()).addActionListener(new ActionListener() {
+            final DataEntry data = controller.getDisassemblyData().getInfoOnExactAddress(memAddr);
+            if(data != null) {
+                // Function renaming
+                if(data.getStartFunction() != null) {
+                    final Function fun = data.getStartFunction();
+                    menu.add("Rename " + fun.getName()).addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            String newName = JOptionPane.showInputDialog("New name for " + fun.getName() + ": ");
+                            if(newName != null) {
+                                controller.onFunctionRenameReq(fun, newName);
+                            }
+                        }
+                    });
+                    hasEntries = true;
+                }
+
+                // Commenting
+                menu.add("Change Comment").addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        String newName = JOptionPane.showInputDialog("New name for " + fun.getName() + ": ");
-                        controller.onFunctionRenameReq(fun, newName);
+                        String comment = JOptionPane.showInputDialog("Comment: ", data.getComment());
+                        if(comment != null) {
+                            controller.onCommentChangeReq(data, comment);
+                        }
                     }
                 });
                 hasEntries = true;

@@ -298,12 +298,15 @@ public class ImageDocument extends DefaultStyledDocument {
             String dataLine = entity.asString(formatter);
             specs.add(contentTag(operandAttributes, dataLine));
         }
-        if(comment != null) {
-            specs.add(contentTag(commentAttributes, comment));
-        }
+
         if(dataRef != null) {
-            specs.add(contentTag(commentAttributes, " ; " + dataRef.asString(formatter)));
+            specs.add(contentTag(commentAttributes, " -> " + dataRef.asString(formatter)));
         }
+
+        if(comment != null) {
+            specs.add(contentTag(commentAttributes, " ; " + comment));
+        }
+
         endLine(specs);
     }
 

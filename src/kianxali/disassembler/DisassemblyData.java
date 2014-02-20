@@ -176,6 +176,15 @@ public class DisassemblyData {
         tellListeners(dstAddress);
     }
 
+    public void insertComment(long memAddr, String comment) {
+        DataEntry entry = getInfoOnExactAddress(memAddr);
+        if(entry == null) {
+            throw new UnsupportedOperationException("Invalid address: " + memAddr);
+        }
+        entry.setComment(comment);
+        tellListeners(memAddr);
+    }
+
     public synchronized DataEntry getInfoOnExactAddress(long memAddr) {
         DataEntry entry = memoryMap.get(memAddr);
         return entry;

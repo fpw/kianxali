@@ -295,15 +295,15 @@ public class Controller implements DisassemblyListener, DataListener {
     }
 
     public void onFunctionRenameReq(Function fun, String newName) {
-        if(newName == null) {
-            return;
-        }
-
         if(newName.length() == 0) {
             showError("Function name cannot be empty");
             return;
         }
 
         fun.setName(newName);
+    }
+
+    public void onCommentChangeReq(DataEntry data, String comment) {
+        disassemblyData.insertComment(data.getAddress(), comment);
     }
 }
