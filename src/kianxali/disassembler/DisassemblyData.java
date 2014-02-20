@@ -45,6 +45,18 @@ public class DisassemblyData {
         tellListeners(addr);
     }
 
+    // clears instruction or data and attached data, but not function start, image start etc.
+    public void clearDecodedEntity(long addr) {
+        DataEntry entry = getInfoCoveringAddress(addr);
+        if(entry == null) {
+            // nothing to do as there is no code or data
+            return;
+        }
+        entry.setEntity(null);
+        entry.clearAttachedData();
+        tellListeners(addr);
+    }
+
     public synchronized void insertImageFileWithSections(ImageFile file) {
         long imageAddress = 0L;
         if(file.getSections().size() > 0) {

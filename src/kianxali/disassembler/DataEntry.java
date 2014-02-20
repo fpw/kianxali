@@ -46,6 +46,10 @@ public class DataEntry {
         return attachedData;
     }
 
+    public void clearAttachedData() {
+        attachedData = null;
+    }
+
     public void addReferenceFrom(DataEntry src) {
         references.add(src);
     }

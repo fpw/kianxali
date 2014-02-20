@@ -156,7 +156,8 @@ public class ImageDocument extends DefaultStyledDocument {
             addSectionEnd(memAddr, data.getEndSection(), specs);
             addSectionStart(memAddr, data.getStartSection(), specs);
             addFunctionStart(memAddr, data.getStartFunction(), specs);
-            // XXX: Remove this check to display self-modifying code
+
+            // only display references to functions or data
             if(data.getStartFunction() != null || !(data.getEntity() instanceof Instruction)) {
                 addReferences(memAddr, data.getReferences(), specs);
             }

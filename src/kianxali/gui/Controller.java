@@ -142,7 +142,10 @@ public class Controller implements DisassemblyListener, DataListener {
 
     @Override
     public void onAnalyzeChange(long memAddr, DataEntry entry) {
+        // entry can be null if an entry was deleted
         imageDoc.updateDataEntry(memAddr, entry);
+
+        // update status view
         if(entry != null && entry.getEntity() != null) {
             StatusView sv = gui.getImageView().getStatusView();
             long offset = imageFile.toFileAddress(memAddr);
