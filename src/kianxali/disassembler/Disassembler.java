@@ -345,6 +345,9 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             LOG.warning("Unkown function renamed: " + fun.getName());
             return;
         }
+
+        disassemblyData.tellListeners(fun.getStartAddress());
+        disassemblyData.tellListeners(fun.getEndAddress());
         for(DataEntry ref : entry.getReferences()) {
             disassemblyData.tellListeners(ref.getAddress());
         }

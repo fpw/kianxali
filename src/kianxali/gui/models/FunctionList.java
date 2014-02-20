@@ -4,6 +4,7 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 
 import javax.swing.AbstractListModel;
+import javax.swing.SwingUtilities;
 
 import kianxali.disassembler.DataEntry;
 import kianxali.disassembler.DataListener;
@@ -55,30 +56,34 @@ public class FunctionList extends AbstractListModel<Function> implements DataLis
     }
 
     @Override
-    public synchronized void onAnalyzeChange(long memAddr, DataEntry entry) {
-        Integer oldIndex = getIndex(memAddr);
-        if(oldIndex != null) {
-            // update entry
-            if((entry == null || entry.getStartFunction() == null)) {
-                // remove function
-                functions.remove(new FunctionEntry(memAddr));
-                fireIntervalRemoved(this, oldIndex, oldIndex);
-            } else {
-                // changing entry
-                int index = getIndex(memAddr);
-                functions.remove(new FunctionEntry(memAddr));
-                functions.add(new FunctionEntry(memAddr, entry.getStartFunction()));
-                fireContentsChanged(this, index, index);
+    public synchronized void onAnalyzeChange(final long memAddr, final DataEntry entry) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Integer oldIndex = getIndex(memAddr);
+                if(oldIndex != null) {
+                    // update entry
+                    if((entry == null || entry.getStartFunction() == null)) {
+                        // remove function
+                        functions.remove(new FunctionEntry(memAddr));
+                        fireIntervalRemoved(this, oldIndex, oldIndex);
+                    } else {
+                        // changing entry
+                        int index = getIndex(memAddr);
+                        functions.remove(new FunctionEntry(memAddr));
+                        functions.add(new FunctionEntry(memAddr, entry.getStartFunction()));
+                        fireContentsChanged(this, index, index);
+                    }
+                } else {
+                    // add entry
+                    if(entry == null || entry.getStartFunction() == null) {
+                        return;
+                    }
+                    functions.add(new FunctionEntry(memAddr, entry.getStartFunction()));
+                    int index = getIndex(memAddr);
+                    fireIntervalAdded(this, index, index);
+                }
             }
-        } else {
-            // add entry
-            if(entry == null || entry.getStartFunction() == null) {
-                return;
-            }
-            functions.add(new FunctionEntry(memAddr, entry.getStartFunction()));
-            int index = getIndex(memAddr);
-            fireIntervalAdded(this, index, index);
-        }
+        });
     }
 
     @Override

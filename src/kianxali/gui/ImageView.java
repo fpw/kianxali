@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.JEditorPane;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -24,6 +25,8 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 
+import kianxali.disassembler.DataEntry;
+import kianxali.disassembler.Function;
 import kianxali.gui.models.ImageDocument;
 import kianxali.gui.models.ImageEditorKit;
 
@@ -123,6 +126,7 @@ public class ImageView extends JPanel {
     }
 
     private void onRightClick(final int index, Point p) {
+        boolean hasEntries = false;
         if(index < 0) {
             return;
         }
@@ -138,17 +142,38 @@ public class ImageView extends JPanel {
             return;
         }
 
-        // for now, only handle right clicks on mnemonics
-        if(elem.getName() != ImageDocument.MnemonicElementName) {
-            return;
-        }
         JPopupMenu menu = new JPopupMenu("Actions");
-        menu.add("Convert to NOP").addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                controller.onConvertToNOP(index);
+
+        // Right clicking on mnemonic
+        if(elem.getName() == ImageDocument.MnemonicElementName) {
+            menu.add("Convert to NOP").addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    controller.onConvertToNOP(index);
+                }
+            });
+            hasEntries = true;
+        }
+
+        // General right clicking on something that has a memory address
+        Object memAddrObj = elem.getAttributes().getAttribute(ImageDocument.MemAddressKey);
+        if(memAddrObj instanceof Long) {
+            long memAddr = (Long) memAddrObj;
+            DataEntry data = controller.getDisassemblyData().getInfoOnExactAddress(memAddr);
+            if(data != null && data.getStartFunction() != null) {
+                final Function fun = data.getStartFunction();
+                menu.add("Rename " + fun.getName()).addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String newName = JOptionPane.showInputDialog("New name for " + fun.getName() + ": ");
+                        controller.onFunctionRenameReq(fun, newName);
+                    }
+                });
+                hasEntries = true;
             }
-        });
-        menu.show(editor, p.x, p.y);
+        }
+
+        if(hasEntries) {
+            menu.show(editor, p.x, p.y);
+        }
     }
 
     public StatusView getStatusView() {

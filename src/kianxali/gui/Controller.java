@@ -293,4 +293,17 @@ public class Controller implements DisassemblyListener, DataListener {
     public Disassembler getDisassembler() {
         return disassembler;
     }
+
+    public void onFunctionRenameReq(Function fun, String newName) {
+        if(newName == null) {
+            return;
+        }
+
+        if(newName.length() == 0) {
+            showError("Function name cannot be empty");
+            return;
+        }
+
+        fun.setName(newName);
+    }
 }

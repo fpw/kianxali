@@ -4,6 +4,7 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 
 import javax.swing.AbstractListModel;
+import javax.swing.SwingUtilities;
 
 import kianxali.decoder.Data;
 import kianxali.decoder.Data.DataType;
@@ -56,34 +57,38 @@ public class StringList extends AbstractListModel<Data> implements DataListener 
     }
 
     @Override
-    public void onAnalyzeChange(long memAddr, DataEntry entry) {
-        Integer oldIndex = getIndex(memAddr);
-        Data data = null;
-        if(entry != null && entry.getEntity() instanceof Data) {
-            data = (Data) entry.getEntity();
-        }
-        if(oldIndex != null) {
-            // update entry
-            if(data == null || data.getType() != DataType.STRING) {
-                // remove entry
-                strings.remove(new StringEntry(memAddr));
-                fireIntervalRemoved(this, oldIndex, oldIndex);
-            } else {
-                // changing entry
-                int index = getIndex(memAddr);
-                strings.remove(new StringEntry(memAddr));
-                strings.add(new StringEntry(memAddr, data));
-                fireContentsChanged(this, index, index);
+    public void onAnalyzeChange(final long memAddr, final DataEntry entry) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Integer oldIndex = getIndex(memAddr);
+                Data data = null;
+                if(entry != null && entry.getEntity() instanceof Data) {
+                    data = (Data) entry.getEntity();
+                }
+                if(oldIndex != null) {
+                    // update entry
+                    if(data == null || data.getType() != DataType.STRING) {
+                        // remove entry
+                        strings.remove(new StringEntry(memAddr));
+                        fireIntervalRemoved(this, oldIndex, oldIndex);
+                    } else {
+                        // changing entry
+                        int index = getIndex(memAddr);
+                        strings.remove(new StringEntry(memAddr));
+                        strings.add(new StringEntry(memAddr, data));
+                        fireContentsChanged(this, index, index);
+                    }
+                } else {
+                    // add entry
+                    if(data == null || data.getType() != DataType.STRING) {
+                        return;
+                    }
+                    strings.add(new StringEntry(memAddr, data));
+                    int index = getIndex(memAddr);
+                    fireIntervalAdded(this, index, index);
+                }
             }
-        } else {
-            // add entry
-            if(data == null || data.getType() != DataType.STRING) {
-                return;
-            }
-            strings.add(new StringEntry(memAddr, data));
-            int index = getIndex(memAddr);
-            fireIntervalAdded(this, index, index);
-        }
+        });
     }
 
     @Override
