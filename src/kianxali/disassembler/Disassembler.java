@@ -361,8 +361,8 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 continue;
             }
 
-            // searching for signatur 55 8B EC (push ebp; mov ebp, esp)
-            boolean got55 = false, got558B = false;
+            // searching for signature 55 8B EC or 55 89 EF (both are push ebp; mov ebp, esp)
+            boolean got55 = false, got558B = false, got5589 = false;
             long startAddr = section.getStartAddress();
             ByteSequence seq = imageFile.getByteSequence(startAddr, false);
             long size = section.getEndAddress() - startAddr;
@@ -375,13 +375,20 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 if(s == 0x55) {
                     got55 = true;
                     got558B = false;
+                    got5589 = false;
                 } else if(s == 0x8B && got55) {
                     got55 = false;
                     got558B = true;
-                } else if(s == 0xEC && got558B) {
+                    got5589 = false;
+                } else if(s == 0x89 && got55) {
+                    got55 = false;
+                    got558B = false;
+                    got5589 = true;
+                } else if((s == 0xEC && got558B) || (s == 0xEF && got5589)) {
                     // found signature
                     got55 = false;
                     got558B = false;
+                    got5589 = false;
                     long funAddr = startAddr + i - 2;
                     LOG.finer(String.format("Discovered indirect function %08X", funAddr));
                     Function fun = detectFunction(funAddr, null);
