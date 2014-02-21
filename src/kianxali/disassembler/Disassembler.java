@@ -1,7 +1,6 @@
 package kianxali.disassembler;
 
 import java.util.Map;
-import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -34,7 +33,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
     private final Decoder decoder;
     private Thread analyzeThread;
 
-    private class WorkItem {
+    private class WorkItem implements Comparable<WorkItem> {
         // determines whether the work should analyze code (data == null) or data (data has type set)
         public Data data;
         public Long address;
@@ -43,6 +42,11 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             this.address = address;
             this.data = data;
         }
+
+        @Override
+        public int compareTo(WorkItem o) {
+            return address.compareTo(o.address);
+        }
     }
 
     public Disassembler(ImageFile imageFile, DisassemblyData data) {
@@ -50,11 +54,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         this.disassemblyData = data;
         this.functionInfo = new TreeMap<Long, Function>();
         this.listeners = new CopyOnWriteArraySet<>();
-        this.workQueue = new PriorityQueue<>(100, new Comparator<WorkItem>() {
-            public int compare(WorkItem o1, WorkItem o2) {
-                return o1.address.compareTo(o2.address);
-            }
-        });
+        this.workQueue = new PriorityQueue<>();
         this.ctx = imageFile.createContext();
         this.decoder = ctx.createInstructionDecoder();
 
