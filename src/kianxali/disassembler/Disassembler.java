@@ -92,7 +92,6 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         }
 
         analyzeThread = new Thread(new Runnable() {
-            @Override
             public void run() {
                 analyze();
             }
@@ -331,10 +330,10 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
 
     @Override
     public String resolveAddress(long memAddr) {
-        Function fun;
-        if((fun = functionInfo.get(memAddr)) != null) {
+        Function fun = functionInfo.get(memAddr);
+        if(fun != null) {
             if(fun.getStartAddress() == memAddr) {
-                return functionInfo.get(memAddr).getName();
+                return fun.getName();
             }
         }
         return null;
