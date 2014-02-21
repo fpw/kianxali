@@ -122,13 +122,13 @@ public class PointerOp implements Operand {
     }
 
     public Data getProbableData() {
-        DataType type;
         if(offset == null) {
             // only register-based indexing, can't know address
             return null;
         }
 
         if(baseRegister == null && indexRegister == null) {
+            DataType type;
             // only addressed by constant -> great because we know the size then
             // TODO: work on opType directly for more information
             switch(X86CPU.getOperandSize(context, opType)) {
@@ -140,10 +140,14 @@ public class PointerOp implements Operand {
             case O512:  type = DataType.DYWORD; break;
             default:    type = DataType.UNKNOWN;
             }
+            return new Data(offset, type);
         } else {
-            type = DataType.UNKNOWN;
+            Data res = new Data(offset, DataType.UNKNOWN);
+            if(indexScale != null) {
+                res.setTableScaling(indexScale);
+            }
+            return res;
         }
-        return new Data(offset, type);
     }
 
     @Override

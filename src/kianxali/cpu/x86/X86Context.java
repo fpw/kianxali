@@ -2,6 +2,7 @@ package kianxali.cpu.x86;
 
 import java.io.IOException;
 
+import kianxali.cpu.x86.X86CPU.AddressSize;
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
 import kianxali.cpu.x86.X86CPU.Model;
 import kianxali.cpu.x86.X86CPU.Segment;
@@ -138,6 +139,17 @@ public class X86Context implements Context {
             System.err.println("Couldn't create X86 decoder: " + e.getMessage());
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @Override
+    public int getDefaultAddressSize() {
+        AddressSize size = X86CPU.getAddressSize(this);
+        switch(size) {
+        case A16: return 2;
+        case A32: return 4;
+        case A64: return 8;
+        default:  throw new UnsupportedOperationException("invalid address size: " + size);
         }
     }
 }

@@ -179,7 +179,8 @@ public class DisassemblyData {
     public void insertComment(long memAddr, String comment) {
         DataEntry entry = getInfoOnExactAddress(memAddr);
         if(entry == null) {
-            throw new UnsupportedOperationException("Invalid address: " + memAddr);
+            entry = new DataEntry(memAddr);
+            put(memAddr, entry);
         }
         entry.setComment(comment);
         tellListeners(memAddr);

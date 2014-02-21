@@ -15,6 +15,7 @@ import kianxali.decoder.Data.DataType;
 import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Decoder;
 import kianxali.decoder.Instruction;
+import kianxali.decoder.JumpTable;
 import kianxali.image.ByteSequence;
 import kianxali.image.ImageFile;
 import kianxali.image.Section;
@@ -268,9 +269,17 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         }
 
         ByteSequence seq = imageFile.getByteSequence(memAddr, true);
+
         try {
-            data.analyze(seq);
+            // jump tables are a special case: need to guess the number of entries
+            if(data instanceof JumpTable) {
+                analyzeJumpTable(seq, (JumpTable) data);
+            } else {
+                data.analyze(seq);
+            }
             DataEntry entry = disassemblyData.insertEntity(data);
+
+            // attach data information to entries that point to this data
             for(DataEntry ref : entry.getReferences()) {
                 ref.attachData(data);
                 disassemblyData.tellListeners(ref.getAddress());
@@ -285,6 +294,44 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         } finally {
             seq.unlock();
         }
+    }
+
+    private void analyzeJumpTable(ByteSequence seq, JumpTable table) {
+        // strategy: evaluate entries until either an invalid memory address is found
+        // or something that is already covered by code but not the start of an instruction
+        int entrySize = table.getTableScaling();
+        boolean badEntry = false;
+        int i = 0;
+        do {
+            long entryAddr;
+            switch(entrySize) {
+            case 1: entryAddr = seq.readUByte(); break;
+            case 2: entryAddr = seq.readUWord(); break;
+            case 4: entryAddr = seq.readUDword(); break;
+            case 8: entryAddr = seq.readSDword(); break; // FIXME
+            default: throw new UnsupportedOperationException("invalid jump table entry size: " + entrySize);
+            }
+
+            if(!imageFile.isCodeAddress(entryAddr)) {
+                // invalid address -> can't be a valid entry, i.e. table ended
+                badEntry = true;
+            } else {
+                DataEntry entry = disassemblyData.getInfoCoveringAddress(entryAddr);
+                if(entry != null) {
+                    DecodedEntity entity = entry.getEntity();
+                    if((entity instanceof Instruction && entry.getAddress() != entryAddr) || entity instanceof Data) {
+                        // the entry points to a code location but not to a start of an instruction -> bad entry
+                        badEntry = true;
+                    }
+                }
+            }
+            if(!badEntry) {
+                table.addEntry(entryAddr);
+                disassemblyData.insertComment(entryAddr, String.format("Entry %d of jump table %08X", i, table.getMemAddress()));
+                addCodeWork(entryAddr, true);
+                i++;
+            }
+        } while(!badEntry);
     }
 
     private Function detectFunction(long addr, String name) {
@@ -332,8 +379,24 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             if(!imageFile.isValidAddress(addr)) {
                 continue;
             }
-            disassemblyData.insertReference(srcEntry, addr);
-            addDataWork(data);
+
+            if(inst.isJump()) {
+                // a jump into a dereferenced data pointer means that the data is a table with jump destinations
+                LOG.finer(String.format("Probable jump table: %08X into %08X", inst.getMemAddress(), addr));
+
+                // contents of the jump table will be evaluated in the data analyze pass
+                JumpTable table = new JumpTable(addr);
+                if(data.getTableScaling() == 0) {
+                    table.setTableScaling(ctx.getDefaultAddressSize());
+                } else {
+                    table.setTableScaling(data.getTableScaling());
+                }
+                disassemblyData.insertReference(srcEntry, addr);
+                addDataWork(table);
+            } else {
+                disassemblyData.insertReference(srcEntry, addr);
+                addDataWork(data);
+            }
         }
 
         // Check for probable pointers

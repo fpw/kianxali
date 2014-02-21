@@ -8,16 +8,29 @@ public class Data implements DecodedEntity {
         BYTE, WORD, DWORD, QWORD, DQWORD, DYWORD,
         FLOAT, DOUBLE,
         STRING,
-        FUN_PTR, UNKNOWN;
+        FUN_PTR, UNKNOWN, JUMP_TABLE;
     }
 
     private final long memAddr;
     private DataType type;
     private Object content;
+    private int tableScaling; // for data arrays
 
     public Data(long memAddr, DataType type) {
         this.memAddr = memAddr;
         this.type = type;
+    }
+
+    public void setType(DataType type) {
+        this.type = type;
+    }
+
+    public void setTableScaling(int tableScaling) {
+        this.tableScaling = tableScaling;
+    }
+
+    public int getTableScaling() {
+        return tableScaling;
     }
 
     public void analyze(ByteSequence seq) {
@@ -28,17 +41,18 @@ public class Data implements DecodedEntity {
         }
 
         switch(type) {
-        case BYTE:      content = seq.readUByte(); break;
-        case WORD:      content = seq.readUWord(); break;
-        case DWORD:     content = seq.readUDword(); break;
-        case QWORD:     content = seq.readSQword(); break;
-        case DQWORD:    content = seq.readSQword(); break; // FIXME
-        case FLOAT:     content = seq.readFloat(); break;
-        case DOUBLE:    content = seq.readDouble(); break;
-        case FUN_PTR:   content = seq.readUDword(); break; // FIXME -> 32 || 64
-        case STRING:    content = seq.readString(); break;
-        case UNKNOWN:   content = seq.readUByte(); break;
-        default:        content = seq.readUByte();
+        case BYTE:          content = seq.readUByte(); break;
+        case WORD:          content = seq.readUWord(); break;
+        case DWORD:         content = seq.readUDword(); break;
+        case QWORD:         content = seq.readSQword(); break;
+        case DQWORD:        content = seq.readSQword(); break; // FIXME
+        case FLOAT:         content = seq.readFloat(); break;
+        case DOUBLE:        content = seq.readDouble(); break;
+        case FUN_PTR:       content = seq.readUDword(); break; // FIXME -> 32 || 64
+        case STRING:        content = seq.readString(); break;
+        case UNKNOWN:       content = seq.readUByte(); break;
+        case DYWORD:        content = seq.readSDword(); break;
+        default:            content = seq.readUByte(); break;
         }
     }
 
@@ -74,18 +88,18 @@ public class Data implements DecodedEntity {
     @Override
     public int getSize() {
         switch(type) {
-        case BYTE:      return 1;
-        case WORD:      return 2;
-        case DWORD:     return 4;
-        case QWORD:     return 8;
-        case DQWORD:    return 16;
-        case DYWORD:    return 64;
-        case FLOAT:     return 4;
-        case DOUBLE:    return 8;
-        case FUN_PTR:   return 4; // FIXME
-        case STRING:    return 1; // FIXME
-        case UNKNOWN:   return 1;
-        default:        return 1;
+        case BYTE:          return 1;
+        case WORD:          return 2;
+        case DWORD:         return 4;
+        case QWORD:         return 8;
+        case DQWORD:        return 16;
+        case DYWORD:        return 64;
+        case FLOAT:         return 4;
+        case DOUBLE:        return 8;
+        case FUN_PTR:       return 4; // FIXME
+        case STRING:        return 1; // FIXME
+        case UNKNOWN:       return 1;
+        default:            return 1;
         }
     }
 
