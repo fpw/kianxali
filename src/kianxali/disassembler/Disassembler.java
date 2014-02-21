@@ -1,9 +1,6 @@
 package kianxali.disassembler;
 
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -28,7 +25,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
     // TODO: start at first address of the code segment, walking linear to the end
     //       while building the queue. Then iterate again until queue is empty
 
-    private final Queue<Entry<Long, DecodedEntity>> workQueue;
+    private final Queue<WorkItem> workQueue;
     private final Set<DisassemblyListener> listeners;
     private final Map<Long, Function> functionInfo; // stores which trace start belongs to which function
     private final DisassemblyData disassemblyData;
@@ -37,15 +34,25 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
     private final Decoder decoder;
     private Thread analyzeThread;
 
+    private class WorkItem {
+        // determines whether the work should analyze code (data == null) or data (data has type set)
+        public Data data;
+        public Long address;
+
+        public WorkItem(Long address, Data data) {
+            this.address = address;
+            this.data = data;
+        }
+    }
+
     public Disassembler(ImageFile imageFile, DisassemblyData data) {
         this.imageFile = imageFile;
         this.disassemblyData = data;
         this.functionInfo = new TreeMap<Long, Function>();
         this.listeners = new CopyOnWriteArraySet<>();
-        this.workQueue = new PriorityQueue<>(100, new Comparator<Entry<Long, DecodedEntity>>() {
-            @Override
-            public int compare(Entry<Long, DecodedEntity> o1, Entry<Long, DecodedEntity> o2) {
-                return o1.getKey().compareTo(o2.getKey());
+        this.workQueue = new PriorityQueue<>(100, new Comparator<WorkItem>() {
+            public int compare(WorkItem o1, WorkItem o2) {
+                return o1.address.compareTo(o2.address);
             }
         });
         this.ctx = imageFile.createContext();
@@ -117,16 +124,15 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
     private void analyze() {
         // Analyze code and data
         while(!Thread.interrupted()) {
-            Entry<Long, DecodedEntity> entry = workQueue.poll();
-            if(entry == null) {
+            WorkItem item = workQueue.poll();
+            if(item == null) {
                 // no more work
                 break;
             }
-            if(entry.getValue() == null) {
-                disassembleTrace(entry.getKey());
-            } else if(entry.getValue() instanceof Data) {
-                Data data = (Data) entry.getValue();
-                analyzeData(data);
+            if(item.data == null) {
+                disassembleTrace(item.address);
+            } else {
+                analyzeData(item.data);
             }
         }
 
@@ -156,15 +162,11 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
     }
 
     private void addCodeWork(long address) {
-        SimpleEntry<Long, DecodedEntity> entry;
-        entry = new AbstractMap.SimpleEntry<Long, DecodedEntity>(address, null);
-        workQueue.add(entry);
+        workQueue.add(new WorkItem(address, null));
     }
 
     private void addDataWork(Data data) {
-        SimpleEntry<Long, DecodedEntity> entry;
-        entry = new AbstractMap.SimpleEntry<Long, DecodedEntity>(data.getMemAddress(), data);
-        workQueue.add(entry);
+        workQueue.add(new WorkItem(data.getMemAddress(), data));
     }
 
     private void disassembleTrace(long memAddr) {
