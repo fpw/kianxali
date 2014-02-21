@@ -137,6 +137,7 @@ public class PointerOp implements Operand {
             case O32:   type = DataType.DWORD; break;
             case O64:   type = DataType.QWORD; break;
             case O128:  type = DataType.DQWORD; break;
+            case O512:  type = DataType.DYWORD; break;
             default:    type = DataType.UNKNOWN;
             }
         } else {
@@ -162,6 +163,7 @@ public class PointerOp implements Operand {
             case O64:   str.append("qword ptr "); break;
             case O80:   str.append("tbyte ptr "); break;
             case O128:  str.append("dqword ptr "); break;
+            case O512:  str.append("dyword ptr "); break;
             default: throw new RuntimeException("invalid operand size: " + opType);
             }
         }

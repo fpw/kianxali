@@ -19,7 +19,7 @@ public final class X86CPU {
     }
 
     public enum OperandSize {
-        O8, O16, O32, O64, O80, O128
+        O8, O16, O32, O64, O80, O128, O512
     }
 
     public enum AddressSize {
@@ -200,6 +200,8 @@ public final class X86CPU {
             return OperandSize.O128;
         case REAL_EXT_FPU:
             return OperandSize.O80;
+        case FPU_SIMD_STATE:
+            return OperandSize.O512;
         default:
             throw new UnsupportedOperationException("invalid operand type: " + opType);
         }

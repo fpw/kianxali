@@ -17,6 +17,7 @@ import kianxali.decoder.Decoder;
 import kianxali.decoder.Instruction;
 import kianxali.image.ByteSequence;
 import kianxali.image.ImageFile;
+import kianxali.image.Section;
 
 public class Disassembler implements AddressNameResolver, AddressNameListener {
     private static final Logger LOG = Logger.getLogger("kianxali.disassembler");
@@ -32,11 +33,14 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
     private final Context ctx;
     private final Decoder decoder;
     private Thread analyzeThread;
+    private boolean unknownDiscoveryRan;
 
     private class WorkItem implements Comparable<WorkItem> {
         // determines whether the work should analyze code (data == null) or data (data has type set)
         public Data data;
         public Long address;
+        // only add trace if it runs without decoder errors; used for unknown function detection etc.
+        public boolean careful;
 
         public WorkItem(Long address, Data data) {
             this.address = address;
@@ -57,21 +61,18 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         this.workQueue = new PriorityQueue<>();
         this.ctx = imageFile.createContext();
         this.decoder = ctx.createInstructionDecoder();
+        this.unknownDiscoveryRan = false;
 
         disassemblyData.insertImageFileWithSections(imageFile);
         Map<Long, String> imports = imageFile.getImports();
 
         // add imports as functions
         for(Long memAddr : imports.keySet()) {
-            Function imp = new Function(memAddr, this);
-            functionInfo.put(memAddr, imp);
-            disassemblyData.insertFunction(imp);
-            imp.setName(imports.get(memAddr));
-            onFunctionNameChange(imp);
+            detectFunction(memAddr, imports.get(memAddr));
         }
 
         long entry = imageFile.getCodeEntryPointMem();
-        addCodeWork(entry);
+        addCodeWork(entry, false);
     }
 
     public void addListener(DisassemblyListener listener) {
@@ -114,14 +115,13 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
     public synchronized void reanalyze(long addr) {
         disassemblyData.clearDecodedEntity(addr);
 
-        addCodeWork(addr);
+        addCodeWork(addr, false);
         if(analyzeThread == null) {
             startAnalyzer();
         }
     }
 
-    private void analyze() {
-        // Analyze code and data
+    private void workOnQueue() {
         while(!Thread.interrupted()) {
             WorkItem item = workQueue.poll();
             if(item == null) {
@@ -129,11 +129,16 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 break;
             }
             if(item.data == null) {
-                disassembleTrace(item.address);
+                disassembleTrace(item);
             } else {
                 analyzeData(item.data);
             }
         }
+    }
+
+    private void analyze() {
+        // Analyze code and data
+        workOnQueue();
 
         // Propagate function information
         for(Function fun : functionInfo.values()) {
@@ -157,18 +162,28 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             }
         }
 
+        // Now try to fill black holes by discovering functions that were not directly called
+        if(!unknownDiscoveryRan) {
+            discoverUncalledFunctions();
+            workOnQueue();
+            unknownDiscoveryRan = true;
+        }
+
         stopAnalyzer();
     }
 
-    private void addCodeWork(long address) {
-        workQueue.add(new WorkItem(address, null));
+    private void addCodeWork(long address, boolean careful) {
+        WorkItem itm = new WorkItem(address, null);
+        itm.careful = careful;
+        workQueue.add(itm);
     }
 
     private void addDataWork(Data data) {
         workQueue.add(new WorkItem(data.getMemAddress(), data));
     }
 
-    private void disassembleTrace(long memAddr) {
+    private void disassembleTrace(WorkItem item) {
+        long memAddr = item.address;
         Function function = functionInfo.get(memAddr);
         while(true) {
             DecodedEntity old = disassemblyData.getEntityOnExactAddress(memAddr);
@@ -198,7 +213,9 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 inst = decoder.decodeOpcode(ctx, seq);
             } catch(Exception e) {
                 LOG.log(Level.WARNING, String.format("Disassemble error (%s) at %08X: %s", e, memAddr, inst), e);
-                // TODO: signal error
+                if(item.careful) {
+                    // TODO: undo everything or something
+                }
                 break;
             } finally {
                 if(seq != null) {
@@ -225,7 +242,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             memAddr += inst.getSize();
 
             // Check if we are in a different function now. This can happen
-            // if a function doesn't end with ret but just runs into different function,
+            // if a function doesn't end with ret but just runs into a different function,
             // e.g. after a call to ExitProcess
             Function newFunction = functionInfo.get(memAddr);
             if(newFunction != null) {
@@ -270,6 +287,20 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         }
     }
 
+    private Function detectFunction(long addr, String name) {
+        if(!functionInfo.containsKey(addr)) {
+            Function fun = new Function(addr, this);
+            functionInfo.put(addr, fun);
+            disassemblyData.insertFunction(fun);
+            if(name != null) {
+                fun.setName(name);
+            }
+            onFunctionNameChange(fun);
+            return fun;
+        }
+        return null;
+    }
+
     // checks whether the instruction's operands could start a new trace or data
     private void examineInstruction(Instruction inst, Function function) {
         DataEntry srcEntry = disassemblyData.getInfoCoveringAddress(inst.getMemAddress());
@@ -279,17 +310,12 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             if(imageFile.isValidAddress(addr)) {
                 if(inst.isFunctionCall()) {
                     disassemblyData.insertReference(srcEntry, addr);
-                    if(!functionInfo.containsKey(addr)) {
-                        Function fun = new Function(addr, this);
-                        functionInfo.put(addr, new Function(addr, this));
-                        disassemblyData.insertFunction(fun);
-                        onFunctionNameChange(fun);
-                    }
+                    detectFunction(addr, null);
                 } else if(function != null) {
                     // if the branch is not a function call, it should belong to the current function
                     functionInfo.put(addr, function);
                 }
-                addCodeWork(addr);
+                addCodeWork(addr, false);
                 return;
             } else {
                 // TODO: Issue warning event about invalid code address
@@ -319,10 +345,53 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 disassemblyData.insertReference(srcEntry, addr);
 
                 if(imageFile.isCodeAddress(addr)) {
-                    addCodeWork(addr);
+                    addCodeWork(addr, true);
                 } else {
                     Data data = new Data(addr, DataType.UNKNOWN);
                     addDataWork(data);
+                }
+            }
+        }
+    }
+
+    private void discoverUncalledFunctions() {
+        LOG.fine("Discovering uncalled functions...");
+        for(Section section : imageFile.getSections()) {
+            if(!section.isExecutable()) {
+                continue;
+            }
+
+            // searching for signatur 55 8B EC (push ebp; mov ebp, esp)
+            boolean got55 = false, got558B = false;
+            long startAddr = section.getStartAddress();
+            ByteSequence seq = imageFile.getByteSequence(startAddr, false);
+            long size = section.getEndAddress() - startAddr;
+            for(long i = 0; i < size; i++) {
+                short s = seq.readUByte();
+                if(disassemblyData.getInfoCoveringAddress(startAddr + i) != null) {
+                    continue;
+                }
+
+                if(s == 0x55) {
+                    got55 = true;
+                    got558B = false;
+                } else if(s == 0x8B && got55) {
+                    got55 = false;
+                    got558B = true;
+                } else if(s == 0xEC && got558B) {
+                    // found signature
+                    got55 = false;
+                    got558B = false;
+                    long funAddr = startAddr + i - 2;
+                    LOG.finer(String.format("Discovered indirect function %08X", funAddr));
+                    Function fun = detectFunction(funAddr, null);
+                    if(fun != null) {
+                        fun.setName(fun.getName() + "_i"); // mark as indirectly called
+                    }
+                    addCodeWork(funAddr, true);
+                } else {
+                    got55 = false;
+                    got558B = false;
                 }
             }
         }

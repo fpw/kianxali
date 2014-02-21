@@ -5,7 +5,7 @@ import kianxali.util.OutputFormatter;
 
 public class Data implements DecodedEntity {
     public enum DataType {
-        BYTE, WORD, DWORD, QWORD, DQWORD,
+        BYTE, WORD, DWORD, QWORD, DQWORD, DYWORD,
         FLOAT, DOUBLE,
         STRING,
         FUN_PTR, UNKNOWN;
@@ -79,6 +79,7 @@ public class Data implements DecodedEntity {
         case DWORD:     return 4;
         case QWORD:     return 8;
         case DQWORD:    return 16;
+        case DYWORD:    return 64;
         case FLOAT:     return 4;
         case DOUBLE:    return 8;
         case FUN_PTR:   return 4; // FIXME

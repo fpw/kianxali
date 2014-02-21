@@ -3,6 +3,7 @@ package kianxali.gui;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
@@ -143,7 +144,13 @@ public class Controller implements DisassemblyListener, DataListener {
     @Override
     public void onAnalyzeChange(long memAddr, DataEntry entry) {
         // entry can be null if an entry was deleted
-        imageDoc.updateDataEntry(memAddr, entry);
+        try {
+            imageDoc.updateDataEntry(memAddr, entry);
+        } catch(Exception e) {
+            // this can fail if the error happens when generating the string representation after decoding
+            LOG.log(Level.WARNING, String.format("Couldn't convert instruction to string at %08X: %s", memAddr, e.getMessage()));
+            e.printStackTrace();
+        }
 
         // update status view
         if(entry != null && entry.getEntity() != null) {

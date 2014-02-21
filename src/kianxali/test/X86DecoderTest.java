@@ -588,6 +588,7 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0x66, 0x0F, 0xA4, 0x01, 0x02}, "shld word ptr [ecx], ax, 2h");
 
         // FPU
+        checkOpcode32(new short[] {0x0F, 0xAE, 0x44, 0x24, 0x10}, "fxsave dyword ptr [esp + 10h]");
         checkOpcode32(new short[] {0xDF,  0xC3}, "ffreep st3");
         checkOpcode32(new short[] {0xDF,  0xE0}, "fnstsw ax");
         checkOpcode32(new short[] {0xDB,  0x29}, "fld tbyte ptr [ecx]");
