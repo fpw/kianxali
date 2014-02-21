@@ -190,6 +190,7 @@ public final class X86CPU {
             } else {
                 return OperandSize.O64;
             }
+        case SINGLE_64:
         case SCALAR_DOUBLE:
             return OperandSize.O64;
         case SCALAR_SINGLE:

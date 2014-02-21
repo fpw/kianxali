@@ -1,5 +1,7 @@
 package kianxali.image.mach_o;
 
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
@@ -21,6 +23,15 @@ public class MachOFile extends ImageFile {
     public MachOFile(Path path) throws IOException {
         super(path);
         loadHeaders();
+    }
+
+    public static boolean isMachOFile(Path path) throws IOException {
+        FileInputStream fileIn = new FileInputStream(path.toFile());
+        DataInputStream dataIn = new DataInputStream(fileIn);
+        int magic = Integer.reverseBytes(dataIn.readInt());
+        dataIn.close();
+        fileIn.close();
+        return magic == MachHeader.MH_MAGIC || magic == MachHeader.MH_MAGIC_64;
     }
 
     private void loadHeaders() {

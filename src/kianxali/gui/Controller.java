@@ -81,27 +81,28 @@ public class Controller implements DisassemblyListener, DataListener {
 
     public void onFileOpened(Path path) {
         try {
-            // First try as PE image
-            try {
-                imageFile = new PEFile(path);
-                LOG.fine("Loaded as PE file");
-            } catch(Exception e) {
-                LOG.fine("Not a PE file: " + e.getMessage());
-            }
-
-            // If that failed, try as Mach-O file
-            if(imageFile == null) {
+            if(PEFile.isPEFile(path)) {
+                LOG.fine("Loading as PE file");
+                try {
+                    imageFile = new PEFile(path);
+                } catch(Exception e) {
+                    LOG.log(Level.SEVERE, "Invalid PE file: " + e.getMessage(), e);
+                    showError("Invalid PE file: " + e.getMessage());
+                    return;
+                }
+            } else if(MachOFile.isMachOFile(path)) {
+                LOG.fine("Loading as Mach-O file");
                 try {
                     imageFile = new MachOFile(path);
-                    LOG.fine("Loaded as Mach-O file");
                 } catch(Exception e) {
-                    LOG.fine("Not a Mach-O file: " + e.getMessage());
+                    LOG.log(Level.SEVERE, "Invalid Mach-O file: " + e.getMessage(), e);
+                    showError("Invalid Mach-O file: " + e.getMessage());
+                    return;
                 }
-            }
-
-            if(imageFile == null) {
+            } else {
                 throw new UnsupportedOperationException("Unknown file type.");
             }
+
             initialAnalyzeDone = false;
             functionList.clear();
             stringList.clear();

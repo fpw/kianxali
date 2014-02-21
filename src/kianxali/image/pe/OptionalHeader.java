@@ -3,8 +3,8 @@ package kianxali.image.pe;
 import kianxali.image.ByteSequence;
 
 public class OptionalHeader {
-    public static final int HEADER_MAGIC_32 = 0x010B;
-    public static final int HEADER_MAGIC_64 = 0x020B;
+    public static final int HEADER_MAGIC_PE32 = 0x010B;
+    public static final int HEADER_MAGIC_PE32PLUS = 0x020B; // means some fields are 64 bit, but doesn't imply 64 bit code
     public enum SubSystem { DLL, CONSOLE, GUI };
     public static final int DATA_DIRECTORY_EXPORT = 0;
     public static final int DATA_DIRECTORY_IMPORT = 1;
@@ -18,7 +18,7 @@ public class OptionalHeader {
     private final long requiredMemory;
     private SubSystem subSystem;
     private final DataDirectory[] dataDirectories;
-    private boolean pe64;
+    private boolean pe32plus;
 
     private class DataDirectory {
         long offset, size;
@@ -26,10 +26,10 @@ public class OptionalHeader {
 
     public OptionalHeader(ByteSequence image) {
         int magic = image.readUWord();
-        if(magic == HEADER_MAGIC_32) {
-            pe64 = false;
-        } else if(magic == HEADER_MAGIC_64) {
-            pe64 = true;
+        if(magic == HEADER_MAGIC_PE32) {
+            pe32plus = false;
+        } else if(magic == HEADER_MAGIC_PE32PLUS) {
+            pe32plus = true;
         } else {
             throw new RuntimeException("invalid optional header magic: " + magic);
         }
@@ -47,7 +47,7 @@ public class OptionalHeader {
         // ignore uninteresting offsets
         image.readUDword();
 
-        if(pe64) {
+        if(pe32plus) {
             imageBase = image.readSQword();
         } else {
             image.readUDword();
@@ -93,7 +93,7 @@ public class OptionalHeader {
         image.readUWord();
 
         // ignore stack sizes
-        if(pe64) {
+        if(pe32plus) {
             image.readSQword();
             image.readSQword();
             image.readSQword();
@@ -115,10 +115,6 @@ public class OptionalHeader {
             dataDirectories[i].offset = image.readUDword();
             dataDirectories[i].size = image.readUDword();
         }
-    }
-
-    public boolean isPE64() {
-        return pe64;
     }
 
     public long getEntryPointRVA() {

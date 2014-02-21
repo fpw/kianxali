@@ -1,5 +1,7 @@
 package kianxali.image.pe;
 
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
@@ -7,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import kianxali.cpu.x86.X86Context;
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
@@ -15,6 +18,7 @@ import kianxali.image.ImageFile;
 import kianxali.image.Section;
 
 public class PEFile extends ImageFile implements AddressConverter {
+    private static final Logger LOG = Logger.getLogger("kianxali.image.pe");
     private DOSStub dosStub;
     private PEHeader peHeader;
     private OptionalHeader optionalHeader;
@@ -27,9 +31,18 @@ public class PEFile extends ImageFile implements AddressConverter {
         loadImports();
     }
 
+    public static boolean isPEFile(Path path) throws IOException {
+        FileInputStream fileIn = new FileInputStream(path.toFile());
+        DataInputStream dataIn = new DataInputStream(fileIn);
+        int magic = Short.reverseBytes(dataIn.readShort());
+        dataIn.close();
+        fileIn.close();
+        return magic == DOSStub.DOS_MAGIC;
+    }
+
     @Override
     public X86Context createContext() {
-        if(optionalHeader.isPE64()) {
+        if(peHeader.is64BitCode()) {
             return new X86Context(Model.ANY, ExecutionMode.LONG);
         } else {
             return new X86Context(Model.ANY, ExecutionMode.PROTECTED);
@@ -100,9 +113,17 @@ public class PEFile extends ImageFile implements AddressConverter {
         long importsRVA = optionalHeader.getDataDirectoryOffsetRVA(OptionalHeader.DATA_DIRECTORY_IMPORT);
         if(importsRVA != 0) {
             imageFile.lock();
-            imageFile.seek(rvaToFile(importsRVA));
-            imports = new Imports(imageFile, this);
-            imageFile.unlock();
+            try {
+                imageFile.seek(rvaToFile(importsRVA));
+                imports = new Imports(imageFile, this, peHeader.is64BitCode());
+            } catch(Exception e) {
+                LOG.warning("Couldn't read imports: " + e.getMessage());
+                e.printStackTrace();
+                // continue without imports
+                imports = new Imports();
+            } finally {
+                imageFile.unlock();
+            }
         } else {
             // no imports
             imports = new Imports();

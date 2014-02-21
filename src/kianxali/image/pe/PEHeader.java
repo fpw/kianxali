@@ -35,8 +35,8 @@ public class PEHeader {
         image.skip(12);
     }
 
-    public Machine getMachine() {
-        return machine;
+    public boolean is64BitCode() {
+        return machine == Machine.X86_64;
     }
 
     public int getNumSections() {

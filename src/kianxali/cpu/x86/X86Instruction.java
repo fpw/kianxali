@@ -336,9 +336,9 @@ public class X86Instruction implements Instruction {
     public boolean stopsTrace() {
         X86Mnemonic mnemonic = syntax.getMnemonic();
         if(mnemonic == null) {
-            throw new UnsupportedOperationException(String.format("No mnemonic for %s at %08X", syntax, memAddr));
+            return true;
         }
-        switch(syntax.getMnemonic()) {
+        switch(mnemonic) {
         case JMP:
         case JMPE:
         case JMPF:

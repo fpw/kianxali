@@ -1,5 +1,8 @@
 package kianxali.cpu.x86;
 
+import java.util.logging.Logger;
+
+import kianxali.cpu.x86.X86CPU.OperandSize;
 import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.cpu.x86.X86CPU.Segment;
 import kianxali.cpu.x86.xml.OperandDesc.OperandType;
@@ -11,6 +14,7 @@ import kianxali.util.OutputFormatter;
 
 public class PointerOp implements Operand {
     // TODO: context should be removed from here
+    private static final Logger LOG = Logger.getLogger("kianxali.cpu.x86");
     private final X86Context context;
     private UsageType usage;
     private OperandType opType;
@@ -131,14 +135,21 @@ public class PointerOp implements Operand {
             DataType type;
             // only addressed by constant -> great because we know the size then
             // TODO: work on opType directly for more information
-            switch(X86CPU.getOperandSize(context, opType)) {
-            case O8:    type = DataType.BYTE; break;
-            case O16:   type = DataType.WORD; break;
-            case O32:   type = DataType.DWORD; break;
-            case O64:   type = DataType.QWORD; break;
-            case O128:  type = DataType.DQWORD; break;
-            case O512:  type = DataType.DYWORD; break;
-            default:    type = DataType.UNKNOWN;
+            try {
+                OperandSize size = X86CPU.getOperandSize(context, opType);
+
+                switch(size) {
+                case O8:    type = DataType.BYTE; break;
+                case O16:   type = DataType.WORD; break;
+                case O32:   type = DataType.DWORD; break;
+                case O64:   type = DataType.QWORD; break;
+                case O128:  type = DataType.DQWORD; break;
+                case O512:  type = DataType.DYWORD; break;
+                default:    type = DataType.UNKNOWN;
+                }
+            } catch(Exception e) {
+                LOG.warning("Unknown operand size for " + opType);
+                type = DataType.UNKNOWN;
             }
             return new Data(offset, type);
         } else {
@@ -160,15 +171,20 @@ public class PointerOp implements Operand {
             str.append("xmmword ptr ");
             break;
         default:
-            switch(X86CPU.getOperandSize(context, opType)) {
-            case O8:    str.append("byte ptr "); break;
-            case O16:   str.append("word ptr "); break;
-            case O32:   str.append("dword ptr "); break;
-            case O64:   str.append("qword ptr "); break;
-            case O80:   str.append("tbyte ptr "); break;
-            case O128:  str.append("dqword ptr "); break;
-            case O512:  str.append("dyword ptr "); break;
-            default: throw new RuntimeException("invalid operand size: " + opType);
+            try {
+                switch(X86CPU.getOperandSize(context, opType)) {
+                case O8:    str.append("byte ptr "); break;
+                case O16:   str.append("word ptr "); break;
+                case O32:   str.append("dword ptr "); break;
+                case O64:   str.append("qword ptr "); break;
+                case O80:   str.append("tbyte ptr "); break;
+                case O128:  str.append("dqword ptr "); break;
+                case O512:  str.append("dyword ptr "); break;
+                default: throw new RuntimeException("invalid operand size: " + opType);
+                }
+            } catch(Exception e) {
+                LOG.warning("Unknown operand size for " + opType);
+                str.append("? ptr ");
             }
         }
 
