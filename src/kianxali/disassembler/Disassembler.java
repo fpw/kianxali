@@ -380,8 +380,9 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 continue;
             }
 
-            if(inst.isJump()) {
+            if(inst.isJump() && !imageFile.getImports().containsKey(addr)) {
                 // a jump into a dereferenced data pointer means that the data is a table with jump destinations
+                // imports are a trivial single-entry jump table, hence they are discarded
                 LOG.finer(String.format("Probable jump table: %08X into %08X", inst.getMemAddress(), addr));
 
                 // contents of the jump table will be evaluated in the data analyze pass

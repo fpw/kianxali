@@ -1,10 +1,12 @@
 package kianxali.cpu.x86;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
@@ -69,8 +71,25 @@ public final class X86Decoder implements Decoder {
         for(short s : tree.getLeaveCodes()) {
             List<OpcodeSyntax> syntaxes = tree.getLeaves(s);
             if(syntaxes.size() > 1) {
-                filterSpecializedMode(syntaxes, mode);
-                filterReplaced(syntaxes, cpu);
+                Map<Short, List<OpcodeSyntax>> prefixLists = new HashMap<>();
+                // sort syntaxes by required prefix
+                for(OpcodeSyntax syntax : syntaxes) {
+                    Short prefix = syntax.getOpcodeEntry().prefix;
+                    if(prefix == null) {
+                        prefix = 0;
+                    }
+                    List<OpcodeSyntax> list = prefixLists.get(prefix);
+                    if(list == null) {
+                        list = new ArrayList<>();
+                        prefixLists.put(prefix, list);
+                    }
+                    list.add(syntax);
+                }
+                for(Short prefix : prefixLists.keySet()) {
+                    List<OpcodeSyntax> samePrefixSyntaxes = prefixLists.get(prefix);
+                    filterSpecializedMode(samePrefixSyntaxes, syntaxes, mode);
+                    filterReplaced(samePrefixSyntaxes, syntaxes, cpu);
+                }
                 // if(syntaxes.size() > 1) {
                 //    LOG.finest("Double prefix: " + syntaxes.get(0).getPrefixAsHexString());
                 // }
@@ -81,7 +100,7 @@ public final class X86Decoder implements Decoder {
         }
     }
 
-    private static void filterReplaced(List<OpcodeSyntax> syntaxes, Model cpu) {
+    private static void filterReplaced(List<OpcodeSyntax> syntaxes, List<OpcodeSyntax> removeFrom, Model cpu) {
         Model latestStart = null;
         Short extension = null;
         for(OpcodeSyntax syntax : syntaxes) {
@@ -94,19 +113,17 @@ public final class X86Decoder implements Decoder {
             }
         }
 
-        Iterator<OpcodeSyntax> it = syntaxes.iterator();
-        while(it.hasNext()) {
-            OpcodeSyntax syntax = it.next();
+        for(OpcodeSyntax syntax : syntaxes) {
             if(syntax.getExtension() != extension) {
                 continue;
             }
             if(syntax.getOpcodeEntry().getStartModel().ordinal() < latestStart.ordinal()) {
-                it.remove();
+                removeFrom.remove(syntax);
             }
         }
     }
 
-    private static boolean filterSpecializedMode(List<OpcodeSyntax> syntaxes, ExecutionMode mode) {
+    private static boolean filterSpecializedMode(List<OpcodeSyntax> syntaxes, List<OpcodeSyntax> removeFrom, ExecutionMode mode) {
         Short extension = null;
         boolean hasSpecialMode = false;
         for(OpcodeSyntax syntax : syntaxes) {
@@ -117,13 +134,11 @@ public final class X86Decoder implements Decoder {
         }
 
         if(hasSpecialMode) {
-            Iterator<OpcodeSyntax> it = syntaxes.iterator();
-            while(it.hasNext()) {
-                OpcodeSyntax syntax = it.next();
+            for(OpcodeSyntax syntax : syntaxes) {
                 if(syntax.getOpcodeEntry().mode != mode) {
                     if(extension == null || extension == syntax.getExtension()) {
                         // LOG.finest("Removing due to specialized version: " + syntax);
-                        it.remove();
+                        removeFrom.remove(syntax);
                     }
                 }
             }

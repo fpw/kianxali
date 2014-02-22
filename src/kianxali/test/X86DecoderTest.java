@@ -586,6 +586,10 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0x66, 0x51}, "push cx");
         checkOpcode32(new short[] {0x0F, 0xA4, 0x01, 0x02}, "shld dword ptr [ecx], eax, 2h");
         checkOpcode32(new short[] {0x66, 0x0F, 0xA4, 0x01, 0x02}, "shld word ptr [ecx], ax, 2h");
+        checkOpcode64(new short[] {0x45, 0xF3, 0x0F, 0xE6, 0xC0},  "cvtdq2pd xmm8, xmm8");
+        checkOpcode64(new short[] {0x44, 0x66, 0x0F, 0x6E, 0xC0},  "movd xmm8, eax");
+        checkOpcode64(new short[] {0xF3, 0x45, 0x0F, 0xE6, 0xC0},  "cvtdq2pd xmm8, xmm8");
+        checkOpcode64(new short[] {0x66, 0x44, 0x0F, 0x6E, 0xC0},  "movd xmm8, eax");
 
         // FPU
         checkOpcode32(new short[] {0x0F, 0xAE, 0x44, 0x24, 0x10}, "fxsave dyword ptr [esp + 10h]");

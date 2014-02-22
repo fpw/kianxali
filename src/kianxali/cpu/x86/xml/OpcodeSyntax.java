@@ -93,9 +93,9 @@ public class OpcodeSyntax {
     public short[] getPrefix() {
         short[] res = new short[4];
         int i = 0;
-        if(entry.prefix != null) {
-            res[i++] = entry.prefix;
-        }
+        // if(entry.prefix != null) {
+        //    res[i++] = entry.prefix;
+        // }
         if(entry.twoByte) {
             res[i++] = 0x0F;
         }

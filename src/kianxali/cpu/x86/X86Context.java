@@ -111,6 +111,46 @@ public class X86Context implements Context {
         }
     }
 
+    public void hidePrefix(short s) {
+        switch(s) {
+        case 0xF0: prefix.lockPrefix = false; break;
+        case 0xF2: prefix.repNZPrefix = false; break;
+        case 0xF3: prefix.repZPrefix = false; break;
+        case 0x2E: prefix.overrideSegment = Segment.CS; break;
+        case 0x36: prefix.overrideSegment = Segment.SS; break;
+        case 0x3E: prefix.overrideSegment = Segment.DS; break;
+        case 0x40:
+        case 0x41:
+        case 0x42:
+        case 0x43:
+        case 0x44:
+        case 0x45:
+        case 0x46:
+        case 0x47:
+        case 0x48:
+        case 0x49:
+        case 0x4A:
+        case 0x4B:
+        case 0x4C:
+        case 0x4D:
+        case 0x4E:
+        case 0x4F:
+                prefix.rexWPrefix = (s & 8) == 0;
+                prefix.rexRPrefix = (s & 4) == 0;
+                prefix.rexXPrefix = (s & 2) == 0;
+                prefix.rexBPrefix = (s & 1) == 0;
+                break;
+        case 0x26: prefix.overrideSegment = null; break;
+        case 0x64: prefix.overrideSegment = null; break;
+        case 0x65: prefix.overrideSegment = null; break;
+        case 0x66: prefix.opSizePrefix = false; break;
+        case 0x67: prefix.adrSizePrefix = false; break;
+        case 0x9B: prefix.waitPrefix = false; break;
+        default:
+            throw new UnsupportedOperationException("unknown prefix: " + s);
+        }
+    }
+
     public void setMode(ExecutionMode mode) {
         this.execMode = mode;
     }

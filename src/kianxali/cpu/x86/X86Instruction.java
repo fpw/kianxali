@@ -36,27 +36,46 @@ public class X86Instruction implements Instruction {
 
     public boolean decode(ByteSequence seq, X86Context ctx) {
         OpcodeSyntax selected = null;
+        int bestScore = 0;
 
         for(OpcodeSyntax syn : syntaxes) {
             this.syntax = syn;
-            if(tryDecode(seq, ctx)) {
+            int score;
+            long oldPos = seq.getPosition();
+            try {
+                score = tryDecode(seq, ctx);
+            } catch (Exception e) {
+                continue;
+            } finally {
+                seq.seek(oldPos);
+            }
+
+            if(score > bestScore) {
                 selected = syn;
-                // let 0x90 decode as NOP instead of XCHG EAX, EAX.
-                if(selected.getOpcodeEntry().opcode == 0x90) {
-                    continue;
-                } else {
-                    break;
-                }
+                bestScore = score;
             }
         }
-        this.syntax = selected;
-        return this.syntax != null;
+
+        syntax = selected;
+        if(syntax != null) {
+            Short needPrefix = syntax.getOpcodeEntry().prefix;
+            if(needPrefix != null) {
+                ctx.hidePrefix(needPrefix);
+            }
+            prefixString = ctx.getPrefix().toString();
+            tryDecode(seq, ctx);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // the prefix has been read from seq already
-    public boolean tryDecode(ByteSequence seq, X86Context ctx) {
+    // returns score where 0 means don't accept
+    public int tryDecode(ByteSequence seq, X86Context ctx) {
+        int score = 1;
         Prefix prefix = ctx.getPrefix();
-        prefixString = prefix.toString();
+
         if(syntax.isExtended()) {
             if(parsedExtension == null) {
                 if(syntax.getOpcodeEntry().secondOpcode != null) {
@@ -68,8 +87,27 @@ public class X86Instruction implements Instruction {
                 }
             }
             if(syntax.getExtension() != parsedExtension) {
-                return false;
+                return 0;
             }
+        }
+
+        // check if required prefix is present, but only actual prefixes
+        Short needPrefix = syntax.getOpcodeEntry().prefix;
+        boolean prefixOk = true;
+        if(needPrefix != null) {
+            prefixOk = false;
+            List<Short> prefixBytes = prefix.prefixBytes;
+            for(int i = 0; i < prefixBytes.size() - syntax.getPrefix().length; i++) {
+                if(prefixBytes.get(i).equals(needPrefix)) {
+                    prefixOk = true;
+                    score++;
+                    break;
+                }
+            }
+        }
+
+        if(!prefixOk) {
+            return 0;
         }
 
         operands.clear();
@@ -81,7 +119,7 @@ public class X86Instruction implements Instruction {
             modRM = new ModRM(seq, ctx);
             if((syntax.isModRMMustMem() && !modRM.isRMMem()) || (syntax.isModRMMustReg() && !modRM.isRMReg())) {
                 seq.skip(-1);
-                return false;
+                return 0;
             }
         }
 
@@ -95,7 +133,7 @@ public class X86Instruction implements Instruction {
             } else {
                 // failure to decode one operand -> failure to decode instruction
                 seq.seek(operandPos);
-                return false;
+                return 0;
             }
         }
         size = (int) (prefix.prefixBytes.size() + seq.getPosition() - operandPos);
@@ -113,6 +151,11 @@ public class X86Instruction implements Instruction {
             }
         }
 
+        // prefer NOP over xchg eax, eax
+        if(syntax.getMnemonic() == X86Mnemonic.NOP && size == 1) {
+            score++;
+        }
+
         // finally, retrieve the raw bytes
         rawData = new short[size];
         seq.skip(-size);
@@ -120,7 +163,7 @@ public class X86Instruction implements Instruction {
             rawData[i] = seq.readUByte();
         }
 
-        return true;
+        return score;
     }
 
     public boolean isPrefix() {
