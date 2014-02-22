@@ -24,6 +24,7 @@ import kianxali.gui.models.ImageDocument;
 import kianxali.gui.models.StringList;
 import kianxali.image.ByteSequence;
 import kianxali.image.ImageFile;
+import kianxali.image.elf.ELFFile;
 import kianxali.image.mach_o.MachOFile;
 import kianxali.image.pe.PEFile;
 import kianxali.scripting.ScriptManager;
@@ -97,6 +98,15 @@ public class Controller implements DisassemblyListener, DataListener {
                 } catch(Exception e) {
                     LOG.log(Level.SEVERE, "Invalid Mach-O file: " + e.getMessage(), e);
                     showError("Invalid Mach-O file: " + e.getMessage());
+                    return;
+                }
+            } else if(ELFFile.isELFFile(path)) {
+                LOG.fine("Loading as ELF file");
+                try {
+                    imageFile = new ELFFile(path);
+                } catch(Exception e) {
+                    LOG.log(Level.SEVERE, "Invalid ELF file: " + e.getMessage(), e);
+                    showError("Invalid ELF file: " + e.getMessage());
                     return;
                 }
             } else {
