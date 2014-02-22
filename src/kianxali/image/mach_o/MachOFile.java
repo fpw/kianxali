@@ -28,7 +28,7 @@ public class MachOFile extends ImageFile {
     public static boolean isMachOFile(Path path) throws IOException {
         FileInputStream fileIn = new FileInputStream(path.toFile());
         DataInputStream dataIn = new DataInputStream(fileIn);
-        int magic = Integer.reverseBytes(dataIn.readInt());
+        long magic = Integer.reverseBytes(dataIn.readInt()) & 0xFFFFFFFFL;
         dataIn.close();
         fileIn.close();
         return magic == MachHeader.MH_MAGIC || magic == MachHeader.MH_MAGIC_64;
