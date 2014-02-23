@@ -132,7 +132,11 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             if(item.data == null) {
                 disassembleTrace(item);
             } else {
-                analyzeData(item.data);
+                try {
+                    analyzeData(item.data);
+                } catch(Exception e) {
+                    LOG.info(String.format("Couldn't parse data at %X: %s", item.data.getMemAddress(), e.getMessage()));
+                }
             }
         }
     }
@@ -285,7 +289,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 disassemblyData.tellListeners(ref.getAddress());
             }
         } catch(Exception e) {
-            LOG.log(Level.WARNING, String.format("Data decode error (%s) at %08X", e, data.getMemAddress()), e);
+            LOG.log(Level.WARNING, String.format("Data decode error (%s) at %08X", e, data.getMemAddress()));
             // TODO: change to raw data
             for(DisassemblyListener listener : listeners) {
                 listener.onAnalyzeError(data.getMemAddress());

@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.cpu.x86.X86CPU.Segment;
+import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.cpu.x86.xml.OpcodeEntry;
 import kianxali.cpu.x86.xml.OpcodeGroup;
-import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.cpu.x86.xml.OpcodeSyntax;
+import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.decoder.Data;
 import kianxali.decoder.Instruction;
 import kianxali.decoder.Operand;
@@ -319,9 +319,20 @@ public class X86Instruction implements Instruction {
                 break;
             case WORD_DWORD_64:
                 switch(X86CPU.getOperandSize(ctx, op.operType)) {
-                case O16: immediate = seq.readUWord(); break;
-                case O32: immediate = seq.readUDword(); break;
-                case O64: immediate = seq.readSQword(); break;
+                case O16:
+                    immediate = seq.readUWord();
+                    break;
+                case O32:
+                    immediate = seq.readUDword();
+                    break;
+                case O64:
+                    // TODO: not sure if this is correct
+                    if(syntax.getOpcodeEntry().opSize) {
+                        immediate = seq.readUDword();
+                    } else {
+                        immediate = seq.readSQword();
+                    }
+                    break;
                 default: throw new UnsupportedOperationException("invalid size: " + X86CPU.getOperandSize(ctx, op.operType));
                 }
                 break;
@@ -329,6 +340,7 @@ public class X86Instruction implements Instruction {
                 switch(X86CPU.getOperandSize(ctx, op.operType)) {
                 case O16: immediate = seq.readSWord(); break;
                 case O32: immediate = seq.readSDword(); break;
+                case O64: immediate = seq.readSDword(); break; // sign extended doesn't mean the immediate is 64 bit already
                 default: throw new UnsupportedOperationException("invalid size: " + X86CPU.getOperandSize(ctx, op.operType));
                 }
                 break;
@@ -365,6 +377,9 @@ public class X86Instruction implements Instruction {
     private Operand decodeLeastReg(OperandDesc op, X86Context ctx) {
         int regIndex = ctx.getPrefix().prefixBytes.size() - 1 - syntax.getEncodedRegisterRelativeIndex();
         short regId = (short) (ctx.getPrefix().prefixBytes.get(regIndex) & 0x7);
+        if(ctx.getPrefix().rexBPrefix) {
+            regId |= 8;
+        }
         X86Register reg = X86CPU.getOperandRegister(op, ctx, regId);
         return new RegisterOp(op.usageType, reg);
     }

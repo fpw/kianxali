@@ -159,7 +159,13 @@ public class Controller implements DisassemblyListener, DataListener {
             imageDoc.updateDataEntry(memAddr, entry);
         } catch(Exception e) {
             // this can fail if the error happens when generating the string representation after decoding
-            LOG.log(Level.WARNING, String.format("Couldn't convert instruction to string at %08X: %s", memAddr, e.getMessage()));
+            String rawString  = "<no opcode>";
+            if(entry.getEntity() instanceof Instruction) {
+                Instruction inst = (Instruction) entry.getEntity();
+                short[] rawOpcode = inst.getRawBytes();
+                rawString = OutputFormatter.formatByteString(rawOpcode);
+            }
+            LOG.log(Level.WARNING, String.format("Couldn't convert instruction to string at %08X: %s (%s)", memAddr, e.getMessage(), rawString));
             e.printStackTrace();
         }
 

@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import kianxali.cpu.x86.X86Mnemonic;
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
 import kianxali.cpu.x86.X86CPU.InstructionSetExtension;
 import kianxali.cpu.x86.X86CPU.Model;
+import kianxali.cpu.x86.X86Mnemonic;
 import kianxali.cpu.x86.xml.OperandDesc.AddressType;
 import kianxali.cpu.x86.xml.OperandDesc.DirectGroup;
 import kianxali.cpu.x86.xml.OperandDesc.OperandType;
@@ -912,6 +912,9 @@ public class XMLParserX86 {
                 break;
             case "type":
                 opDesc.operType = parseOperandType(val);
+                if(currentEntry.opcode == 0xF7 && opDesc.adrType == AddressType.IMMEDIATE && opDesc.operType == OperandType.WORD_DWORD_64) {
+                    opDesc.operType = OperandType.WORD_DWORD;
+                }
                 break;
             case "displayed":
                 if(val.equals("no")) {

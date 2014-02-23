@@ -94,7 +94,7 @@ public class OperandDesc {
         WORD_DWORD,         // word or dword (default) depending on opsize
         WORD_DWORD_ADR,     // word or dword (default) depending on address size
         WORD_DWORD_STACK,   // word or dword depending on stack pointer size
-        WORD_DWORD_64,      // word or dword (depdending op size) extended if REX.W
+        WORD_DWORD_64,      // word or dword (depdending op size) extended to 64 bit if REX.W
         WORD_DWORD_S64      // word or dword (depending op size) sign ext to 64 bit if REX.W
     }
 

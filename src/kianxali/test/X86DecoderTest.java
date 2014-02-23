@@ -1,9 +1,9 @@
 package kianxali.test;
 
 import static org.junit.Assert.assertEquals;
-import kianxali.cpu.x86.X86Context;
 import kianxali.cpu.x86.X86CPU.ExecutionMode;
 import kianxali.cpu.x86.X86CPU.Model;
+import kianxali.cpu.x86.X86Context;
 import kianxali.decoder.Decoder;
 import kianxali.decoder.Instruction;
 import kianxali.image.ByteSequence;
@@ -666,6 +666,9 @@ public class X86DecoderTest {
         // with rex prefix
         checkOpcode64(new short[] {0x45, 0x88, 0x3A}, "mov byte ptr [R10], R15B");
         checkOpcode64(new short[] {0x67, 0x45, 0x88, 0x3A}, "mov byte ptr [R10D], R15B");
+        checkOpcode64(new short[] {0x48, 0xF7, 0xC2, 0xF8, 0xFF, 0xFF, 0xFF}, "test rdx, FFFFFFF8h");
+        checkOpcode64(new short[] {0x49, 0xBB, 0x2F, 0x64, 0x65, 0x76, 0x2F, 0x6C, 0x6F, 0x67}, "mov r11, 676F6C2F7665642Fh");
+        checkOpcode64(new short[] {0x48, 0x69, 0xC0, 0x80, 0x51, 0x01, 0x00}, "imul rax, rax, 15180h");
     }
 
     private void checkOpcode16(short[] opcode, String expected) {
