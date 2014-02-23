@@ -1,13 +1,13 @@
-package kianxali.cpu.x86.xml;
+package kianxali.decoder.arch.x86.xml;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import kianxali.cpu.x86.X86CPU.ExecutionMode;
-import kianxali.cpu.x86.X86CPU.InstructionSetExtension;
-import kianxali.cpu.x86.X86CPU.Model;
+import kianxali.decoder.arch.x86.X86CPU.ExecutionMode;
+import kianxali.decoder.arch.x86.X86CPU.InstructionSetExtension;
+import kianxali.decoder.arch.x86.X86CPU.Model;
 
 // an opcode can have a different meaning depending on CPU mode, hence store it here
 public class OpcodeEntry {

@@ -1,9 +1,9 @@
-package kianxali.cpu.x86;
+package kianxali.decoder.arch.x86;
 
-import kianxali.cpu.x86.X86CPU.AddressSize;
-import kianxali.cpu.x86.X86CPU.X86Register;
-import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.decoder.Operand;
+import kianxali.decoder.arch.x86.X86CPU.AddressSize;
+import kianxali.decoder.arch.x86.X86CPU.X86Register;
+import kianxali.decoder.arch.x86.xml.OperandDesc;
 import kianxali.loader.ByteSequence;
 
 public class ModRM {

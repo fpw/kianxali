@@ -1,5 +1,5 @@
 // automatically generated, do not edit
-package kianxali.cpu.x86;
+package kianxali.decoder.arch.x86;
 public enum X86Mnemonic {
 AAA,
 AAD,

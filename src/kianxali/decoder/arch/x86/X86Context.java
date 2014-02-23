@@ -1,16 +1,16 @@
-package kianxali.cpu.x86;
+package kianxali.decoder.arch.x86;
 
 import java.io.IOException;
 
-import kianxali.cpu.x86.X86CPU.AddressSize;
-import kianxali.cpu.x86.X86CPU.ExecutionMode;
-import kianxali.cpu.x86.X86CPU.Model;
-import kianxali.cpu.x86.X86CPU.Segment;
-import kianxali.cpu.x86.xml.OpcodeEntry;
-import kianxali.cpu.x86.xml.OpcodeGroup;
-import kianxali.cpu.x86.xml.OpcodeSyntax;
 import kianxali.decoder.Context;
 import kianxali.decoder.Decoder;
+import kianxali.decoder.arch.x86.X86CPU.AddressSize;
+import kianxali.decoder.arch.x86.X86CPU.ExecutionMode;
+import kianxali.decoder.arch.x86.X86CPU.Model;
+import kianxali.decoder.arch.x86.X86CPU.Segment;
+import kianxali.decoder.arch.x86.xml.OpcodeEntry;
+import kianxali.decoder.arch.x86.xml.OpcodeGroup;
+import kianxali.decoder.arch.x86.xml.OpcodeSyntax;
 
 import org.xml.sax.SAXException;
 

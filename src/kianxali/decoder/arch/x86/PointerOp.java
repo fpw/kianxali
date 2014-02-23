@@ -1,20 +1,20 @@
-package kianxali.cpu.x86;
+package kianxali.decoder.arch.x86;
 
 import java.util.logging.Logger;
 
-import kianxali.cpu.x86.X86CPU.OperandSize;
-import kianxali.cpu.x86.X86CPU.X86Register;
-import kianxali.cpu.x86.X86CPU.Segment;
-import kianxali.cpu.x86.xml.OperandDesc.OperandType;
 import kianxali.decoder.Data;
 import kianxali.decoder.Operand;
 import kianxali.decoder.UsageType;
 import kianxali.decoder.Data.DataType;
+import kianxali.decoder.arch.x86.X86CPU.OperandSize;
+import kianxali.decoder.arch.x86.X86CPU.Segment;
+import kianxali.decoder.arch.x86.X86CPU.X86Register;
+import kianxali.decoder.arch.x86.xml.OperandDesc.OperandType;
 import kianxali.util.OutputFormatter;
 
 public class PointerOp implements Operand {
     // TODO: context should be removed from here
-    private static final Logger LOG = Logger.getLogger("kianxali.cpu.x86");
+    private static final Logger LOG = Logger.getLogger("kianxali.decoder.arch.x86");
     private final X86Context context;
     private UsageType usage;
     private OperandType opType;

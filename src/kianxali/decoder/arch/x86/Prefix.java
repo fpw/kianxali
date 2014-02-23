@@ -1,9 +1,9 @@
-package kianxali.cpu.x86;
+package kianxali.decoder.arch.x86;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import kianxali.cpu.x86.X86CPU.Segment;
+import kianxali.decoder.arch.x86.X86CPU.Segment;
 
 public class Prefix {
     public Segment overrideSegment;

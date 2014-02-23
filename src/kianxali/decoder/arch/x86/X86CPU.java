@@ -1,8 +1,8 @@
-package kianxali.cpu.x86;
+package kianxali.decoder.arch.x86;
 
-import kianxali.cpu.x86.xml.OperandDesc;
-import kianxali.cpu.x86.xml.OperandDesc.OperandType;
 import kianxali.decoder.Register;
+import kianxali.decoder.arch.x86.xml.OperandDesc;
+import kianxali.decoder.arch.x86.xml.OperandDesc.OperandType;
 
 public final class X86CPU {
     public enum Model {

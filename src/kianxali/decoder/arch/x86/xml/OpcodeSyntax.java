@@ -1,12 +1,12 @@
-package kianxali.cpu.x86.xml;
+package kianxali.decoder.arch.x86.xml;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import kianxali.cpu.x86.X86Mnemonic;
-import kianxali.cpu.x86.xml.OperandDesc.AddressType;
+import kianxali.decoder.arch.x86.X86Mnemonic;
+import kianxali.decoder.arch.x86.xml.OperandDesc.AddressType;
 
 public class OpcodeSyntax {
     private final OpcodeEntry entry; // syntax belongs to this entry

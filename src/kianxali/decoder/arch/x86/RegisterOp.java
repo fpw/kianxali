@@ -1,8 +1,8 @@
-package kianxali.cpu.x86;
+package kianxali.decoder.arch.x86;
 
-import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.decoder.Operand;
 import kianxali.decoder.UsageType;
+import kianxali.decoder.arch.x86.X86CPU.X86Register;
 import kianxali.util.OutputFormatter;
 
 public class RegisterOp implements Operand {

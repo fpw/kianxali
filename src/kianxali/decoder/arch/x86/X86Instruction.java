@@ -1,19 +1,19 @@
-package kianxali.cpu.x86;
+package kianxali.decoder.arch.x86;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import kianxali.cpu.x86.X86CPU.Segment;
-import kianxali.cpu.x86.X86CPU.X86Register;
-import kianxali.cpu.x86.xml.OpcodeEntry;
-import kianxali.cpu.x86.xml.OpcodeGroup;
-import kianxali.cpu.x86.xml.OpcodeSyntax;
-import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.decoder.Data;
 import kianxali.decoder.Instruction;
 import kianxali.decoder.Operand;
 import kianxali.decoder.UsageType;
+import kianxali.decoder.arch.x86.X86CPU.Segment;
+import kianxali.decoder.arch.x86.X86CPU.X86Register;
+import kianxali.decoder.arch.x86.xml.OpcodeEntry;
+import kianxali.decoder.arch.x86.xml.OpcodeGroup;
+import kianxali.decoder.arch.x86.xml.OpcodeSyntax;
+import kianxali.decoder.arch.x86.xml.OperandDesc;
 import kianxali.loader.ByteSequence;
 import kianxali.util.OutputFormatter;
 

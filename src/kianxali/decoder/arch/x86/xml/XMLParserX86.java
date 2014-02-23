@@ -1,4 +1,4 @@
-package kianxali.cpu.x86.xml;
+package kianxali.decoder.arch.x86.xml;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import kianxali.cpu.x86.X86CPU.ExecutionMode;
-import kianxali.cpu.x86.X86CPU.InstructionSetExtension;
-import kianxali.cpu.x86.X86CPU.Model;
-import kianxali.cpu.x86.X86Mnemonic;
-import kianxali.cpu.x86.xml.OperandDesc.AddressType;
-import kianxali.cpu.x86.xml.OperandDesc.DirectGroup;
-import kianxali.cpu.x86.xml.OperandDesc.OperandType;
 import kianxali.decoder.UsageType;
+import kianxali.decoder.arch.x86.X86Mnemonic;
+import kianxali.decoder.arch.x86.X86CPU.ExecutionMode;
+import kianxali.decoder.arch.x86.X86CPU.InstructionSetExtension;
+import kianxali.decoder.arch.x86.X86CPU.Model;
+import kianxali.decoder.arch.x86.xml.OperandDesc.AddressType;
+import kianxali.decoder.arch.x86.xml.OperandDesc.DirectGroup;
+import kianxali.decoder.arch.x86.xml.OperandDesc.OperandType;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -26,7 +26,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 public class XMLParserX86 {
-    private static final Logger LOG = Logger.getLogger("kianxali.x86.xml");
+    private static final Logger LOG = Logger.getLogger("kianxali.decoder.arch.x86.xml");
     private final List<OpcodeSyntax> syntaxes;
 
     // parsing stuff

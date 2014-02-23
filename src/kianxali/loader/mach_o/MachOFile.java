@@ -10,10 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kianxali.cpu.x86.X86Context;
-import kianxali.cpu.x86.X86CPU.ExecutionMode;
-import kianxali.cpu.x86.X86CPU.Model;
 import kianxali.decoder.Context;
+import kianxali.decoder.arch.x86.X86Context;
+import kianxali.decoder.arch.x86.X86CPU.ExecutionMode;
+import kianxali.decoder.arch.x86.X86CPU.Model;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
 

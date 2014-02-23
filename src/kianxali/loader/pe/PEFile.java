@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import kianxali.cpu.x86.X86Context;
-import kianxali.cpu.x86.X86CPU.ExecutionMode;
-import kianxali.cpu.x86.X86CPU.Model;
+import kianxali.decoder.arch.x86.X86Context;
+import kianxali.decoder.arch.x86.X86CPU.ExecutionMode;
+import kianxali.decoder.arch.x86.X86CPU.Model;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
 

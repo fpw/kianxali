@@ -1,4 +1,4 @@
-package kianxali.cpu.x86.xml;
+package kianxali.decoder.arch.x86.xml;
 
 import kianxali.decoder.UsageType;
 

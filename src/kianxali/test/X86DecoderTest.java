@@ -1,11 +1,11 @@
 package kianxali.test;
 
 import static org.junit.Assert.assertEquals;
-import kianxali.cpu.x86.X86CPU.ExecutionMode;
-import kianxali.cpu.x86.X86CPU.Model;
-import kianxali.cpu.x86.X86Context;
 import kianxali.decoder.Decoder;
 import kianxali.decoder.Instruction;
+import kianxali.decoder.arch.x86.X86Context;
+import kianxali.decoder.arch.x86.X86CPU.ExecutionMode;
+import kianxali.decoder.arch.x86.X86CPU.Model;
 import kianxali.loader.ByteSequence;
 import kianxali.util.OutputFormatter;
 

@@ -1,4 +1,4 @@
-package kianxali.cpu.x86;
+package kianxali.decoder.arch.x86;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,20 +9,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import kianxali.cpu.x86.X86CPU.ExecutionMode;
-import kianxali.cpu.x86.X86CPU.Model;
-import kianxali.cpu.x86.xml.OpcodeSyntax;
-import kianxali.cpu.x86.xml.XMLParserX86;
 import kianxali.decoder.Context;
 import kianxali.decoder.DecodeTree;
 import kianxali.decoder.Decoder;
 import kianxali.decoder.Instruction;
+import kianxali.decoder.arch.x86.X86CPU.ExecutionMode;
+import kianxali.decoder.arch.x86.X86CPU.Model;
+import kianxali.decoder.arch.x86.xml.OpcodeSyntax;
+import kianxali.decoder.arch.x86.xml.XMLParserX86;
 import kianxali.loader.ByteSequence;
 
 import org.xml.sax.SAXException;
 
 public final class X86Decoder implements Decoder {
-    private static final Logger LOG = Logger.getLogger("kianxali.x86.decoder");
+    private static final Logger LOG = Logger.getLogger("kianxali.decoder.arch.x86");
     private static XMLParserX86 parser;
     private final DecodeTree<OpcodeSyntax> decodeTree;
 
