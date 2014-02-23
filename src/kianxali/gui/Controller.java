@@ -132,10 +132,9 @@ public class Controller implements DisassemblyListener, DataListener {
 
             disassembler.startAnalyzer();
         } catch (Exception e) {
-            // TODO: add more file types and decide somehow
             LOG.warning("Couldn't load image: " + e.getMessage());
             e.printStackTrace();
-            gui.showError("Couldn't load file", e.getMessage() + "\nCurrently, only PE (.exe) and Mach-O files are supported.");
+            gui.showError("Couldn't load file", e.getMessage() + "\nCurrently, only PE (Windows .exe), ELF (Linux, UNIX) and Mach-O (OS X) files are supported.");
         }
     }
 
