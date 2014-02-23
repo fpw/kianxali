@@ -208,12 +208,18 @@ public class ImageDocument extends DefaultStyledDocument {
         specs.add(endTag());
     }
 
-    private void addImageStart(long memAddr, ImageFile startImageFile, List<ElementSpec> specs) {
-        if(startImageFile == null) {
+    private void addImageStart(long memAddr, ImageFile imageFile, List<ElementSpec> specs) {
+        if(imageFile == null) {
             return;
         }
         startLine(memAddr, specs);
         specs.add(contentTag(infoAttributes, "; Image file start"));
+        endLine(specs);
+        startLine(memAddr, specs);
+        specs.add(contentTag(infoAttributes, "; Image name: " + imageFile.getFileName()));
+        endLine(specs);
+        startLine(memAddr, specs);
+        specs.add(contentTag(infoAttributes, "; Entry point: " + formatter.formatAddress(imageFile.getCodeEntryPointMem())));
         endLine(specs);
     }
 

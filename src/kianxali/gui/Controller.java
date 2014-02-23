@@ -192,6 +192,7 @@ public class Controller implements DisassemblyListener, DataListener {
                     duration, disassemblyData.getEntityCount())
                 );
 
+        // only perform the following steps on the first run, i.e. not when a script calls reanalyze etc.
         if(initialAnalyzeDone) {
             return;
         }
@@ -200,6 +201,11 @@ public class Controller implements DisassemblyListener, DataListener {
             @Override
             public void run() {
                 gui.getImageView().setDocument(imageDoc);
+                try {
+                    gui.getImageView().scrollTo(imageFile.getCodeEntryPointMem());
+                } catch (BadLocationException e) {
+                    // ignore if scrolling didn't work
+                }
                 gui.getFunctionListView().setModel(functionList);
                 gui.getStringListView().setModel(stringList);
             }

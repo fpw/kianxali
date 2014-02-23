@@ -10,10 +10,12 @@ import kianxali.decoder.Context;
 public abstract class ImageFile {
     protected final ByteSequence imageFile;
     protected final long fileSize;
+    protected final String fileName;
 
     public ImageFile(Path path) throws IOException {
         this.imageFile = ByteSequence.fromFile(path);
         this.fileSize = imageFile.getRemaining();
+        this.fileName = path.getFileName().toString();
     }
 
     public abstract List<Section> getSections();
@@ -22,6 +24,10 @@ public abstract class ImageFile {
     public abstract long toFileAddress(long memAddress);
     public abstract long toMemAddress(long fileOffset);
     public abstract Map<Long, String> getImports();
+
+    public String getFileName() {
+        return fileName;
+    }
 
     public ByteSequence getByteSequence(long memAddress, boolean locked) {
         if(locked) {
