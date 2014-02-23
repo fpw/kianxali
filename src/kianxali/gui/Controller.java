@@ -41,8 +41,8 @@ public class Controller implements DisassemblyListener, DataListener {
     private DisassemblyData disassemblyData;
     private long beginDisassembleTime;
     private ImageFile imageFile;
-    private final FunctionList functionList;
-    private final StringList stringList;
+    private FunctionList functionList;
+    private StringList stringList;
     private final OutputFormatter formatter;
     private KianxaliGUI gui;
     private final ScriptManager scripts;
@@ -50,18 +50,8 @@ public class Controller implements DisassemblyListener, DataListener {
 
     public Controller() {
         this.formatter = new OutputFormatter();
-        this.functionList = new FunctionList();
-        this.stringList = new StringList();
         this.scripts = new ScriptManager(this);
         formatter.setIncludeRawBytes(true);
-    }
-
-    public FunctionList getFunctionList() {
-        return functionList;
-    }
-
-    public StringList getStringList() {
-        return stringList;
     }
 
     public void showGUI() {
@@ -161,12 +151,20 @@ public class Controller implements DisassemblyListener, DataListener {
             }
 
             initialAnalyzeDone = false;
-            functionList.clear();
-            stringList.clear();
+
+            // reset data structures and GUI if another file was previously loaded
+            if(functionList != null) {
+                functionList.clear();
+            }
+            if(stringList != null) {
+                stringList.clear();
+            }
             gui.getImageView().setDocument(null);
+            gui.getImageView().getStatusView().initNewData(imageFile.getFileSize());
 
             imageDoc = new ImageDocument(formatter);
-            gui.getImageView().getStatusView().initNewData(imageFile.getFileSize());
+            functionList = new FunctionList();
+            stringList = new StringList();
 
             disassemblyData = new DisassemblyData();
             disassemblyData.addListener(this);
