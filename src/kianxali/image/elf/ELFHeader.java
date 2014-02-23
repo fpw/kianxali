@@ -53,7 +53,7 @@ public class ELFHeader {
         seq.skip(9);
 
         int eType = seq.readUWord();
-        if(eType != 2) {
+        if(eType != 2 && eType != 3) {
             throw new UnsupportedOperationException("invalid e_type: " + eType);
         }
 
