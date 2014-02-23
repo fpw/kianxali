@@ -439,6 +439,8 @@ public final class X86CPU {
         case MOD_RM_R:
         case MOD_RM_M:
         case LEAST_REG:
+        case MOD_RM_R_FORCE_GEN:
+        case MOD_RM_M_FORCE_GEN:
             return getOperandRegisterGeneral(op, ctx, id);
         case MOD_RM_R_SEG:
             return getSegmentRegister(id);
@@ -457,8 +459,6 @@ public final class X86CPU {
             return getSegmentRegister((short) ((id >> 3) & 0x3));
         case SEGMENT33:
             return getSegmentRegister((short) ((id >> 3) & 0x7));
-        case MOD_RM_R_FORCE_GEN:
-            return getGenericAddressRegister(ctx, id);
         case MOD_RM_R_DEBUG:
             return getDebugRegister(id);
         case MOD_RM_R_CTRL:

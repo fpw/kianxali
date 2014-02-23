@@ -109,6 +109,9 @@ public class OpcodeSyntax {
     public String getPrefixAsHexString() {
         short[] prefix = getPrefix();
         StringBuilder res = new StringBuilder();
+        if(entry.prefix != null) {
+            res.append(String.format("%02X", entry.prefix));
+        }
         for(short b : prefix) {
             res.append(String.format("%02X", b));
         }

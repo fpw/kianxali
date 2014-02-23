@@ -102,12 +102,12 @@ public class X86DecoderTest {
     }
 
     private void testControlDebug() {
-        checkOpcode32(new short[] {0x0F, 0x20, 0x00}, "mov eax, cr0");
-        checkOpcode32(new short[] {0x0F, 0x22, 0x00}, "mov cr0, eax");
-        checkOpcode32(new short[] {0x0F, 0x23, 0x00}, "mov dr0, eax");
+        checkOpcode32(new short[] {0x0F, 0x20, 0xC0}, "mov eax, cr0");
+        checkOpcode32(new short[] {0x0F, 0x22, 0xC0}, "mov cr0, eax");
+        checkOpcode32(new short[] {0x0F, 0x23, 0xC0}, "mov dr0, eax");
         ctx32.setModel(Model.I80386);
-        checkOpcode32(new short[] {0x0F, 0x24, 0x00}, "mov eax, tr0");
-        checkOpcode32(new short[] {0x0F, 0x26, 0x00}, "mov tr0, eax");
+        checkOpcode32(new short[] {0x0F, 0x24, 0xC0}, "mov eax, tr0");
+        checkOpcode32(new short[] {0x0F, 0x26, 0xC0}, "mov tr0, eax");
         ctx32.setModel(Model.ANY);
         ctx32.setMode(ExecutionMode.SMM);
         checkOpcode32(new short[] {0x0F, 0xAA}, "rsm");
@@ -481,6 +481,7 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0xF3, 0x0F, 0x5D, 0x00}, "minss xmm0, dword ptr [eax]");
         checkOpcode32(new short[] {0xF3, 0x0F, 0x5F, 0x00}, "maxss xmm0, dword ptr [eax]");
         checkOpcode32(new short[] {0x0F, 0xC6, 0x00, 0x01}, "shufps xmm0, xmmword ptr [eax], 1");
+        checkOpcode32(new short[] {0x66, 0x0F, 0x3A, 0x20, 0xC6, 0x0F}, "pinsrb xmm0, esi, 0Fh");
     }
 
     private void testMisc() {

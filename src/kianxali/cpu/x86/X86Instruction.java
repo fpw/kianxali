@@ -117,7 +117,7 @@ public class X86Instruction implements Instruction {
         OpcodeEntry entry = syntax.getOpcodeEntry();
         if(entry.modRM) {
             modRM = new ModRM(seq, ctx);
-            if((syntax.isModRMMustMem() && !modRM.isRMMem()) || (syntax.isModRMMustReg() && !modRM.isRMReg())) {
+            if(/*(syntax.isModRMMustMem() && !modRM.isRMMem()) || */(syntax.isModRMMustReg() && !modRM.isRMReg())) {
                 seq.skip(-1);
                 return 0;
             }
@@ -184,7 +184,6 @@ public class X86Instruction implements Instruction {
         case OFFSET:                return decodeOffset(seq, op, ctx);
         case LEAST_REG:             return decodeLeastReg(op, ctx);
 
-        case MOD_RM_R_FORCE_GEN:
         case MOD_RM_R_CTRL:
         case MOD_RM_R_DEBUG:
         case MOD_RM_R_TEST:
@@ -196,6 +195,11 @@ public class X86Instruction implements Instruction {
                 modRM = new ModRM(seq, ctx);
             }
             return modRM.getReg(op);
+        case MOD_RM_R_FORCE_GEN: // sic!
+            if(modRM == null) {
+                modRM = new ModRM(seq, ctx);
+            }
+            return modRM.getMem(op, true, false);
         case MOD_RM_MUST_M:
             if(modRM == null) {
                 modRM = new ModRM(seq, ctx);
@@ -208,6 +212,7 @@ public class X86Instruction implements Instruction {
             }
             return modRM.getMem(op, true, true);
         case MOD_RM_M_FORCE_GEN:
+            return modRM.getMem(op, true, true);
         case MOD_RM_M_FPU:
         case MOD_RM_M_MMX:
         case MOD_RM_M:
