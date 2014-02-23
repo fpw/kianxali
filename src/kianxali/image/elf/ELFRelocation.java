@@ -3,7 +3,7 @@ package kianxali.image.elf;
 import kianxali.image.ByteSequence;
 
 public class ELFRelocation {
-    public enum Type {JUMP_SLOT, UNKNOWN};
+    public enum Type { JUMP_SLOT, UNKNOWN };
     private long address;
     private long entryIndex;
     private long addend;

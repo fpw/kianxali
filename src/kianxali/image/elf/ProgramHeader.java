@@ -9,7 +9,7 @@ public class ProgramHeader {
 		PT_DYNAMIC,		// Dynamic linking information
 		PT_INTERP,		// Program interpreter, e.g. ld-linux
 		PT_NOTE,		// Auxiliary information
-		UNKNOWN};
+		UNKNOWN };
 
 	private Type type;
 	private long flags, fileOffset, virtAddr, physAddr;

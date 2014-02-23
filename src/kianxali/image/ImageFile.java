@@ -57,11 +57,7 @@ public abstract class ImageFile {
 
     public boolean isCodeAddress(long memAddress) {
         Section sect = getSectionForMemAddress(memAddress);
-        if(sect == null || !sect.isExecutable()) {
-            return false;
-        } else {
-            return true;
-        }
+        return sect != null && sect.isExecutable();
     }
 
     public long getFileSize() {

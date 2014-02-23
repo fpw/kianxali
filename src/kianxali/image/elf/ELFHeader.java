@@ -8,7 +8,7 @@ import kianxali.image.ByteSequence;
 
 public class ELFHeader {
     public static final long ELF_MAGIC = 0x7F454C46;
-    private enum Machine {X86, X86_64};
+    private enum Machine { X86, X86_64 };
     private boolean elf64; // header format, not machine
     private Machine machine;
     private long entryPoint;
@@ -38,7 +38,7 @@ public class ELFHeader {
         short eiData = seq.readUByte();
         if(eiData == 1) {
             seq.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        } else if(eiData == 2){
+        } else if(eiData == 2) {
             seq.setByteOrder(ByteOrder.BIG_ENDIAN);
         } else {
             throw new UnsupportedOperationException("invalid EI_DATA: " + eiData);

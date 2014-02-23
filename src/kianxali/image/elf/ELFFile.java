@@ -169,8 +169,8 @@ public class ELFFile extends ImageFile {
 
     @Override
     public long toMemAddress(long fileOffset) {
-        for(Section section_ : loadedSections) {
-            ELFSection section = (ELFSection) section_;
+        for(Section sec : loadedSections) {
+            ELFSection section = (ELFSection) sec;
             long size = section.getEndAddress() - section.getStartAddress();
             if(fileOffset >= section.getOffset() && fileOffset <= section.getOffset() + size) {
                 long diff = fileOffset - section.getOffset();
