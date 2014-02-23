@@ -94,7 +94,7 @@ public final class ByteSequence {
         return bytes.getShort() & 0xFFFF;
     }
 
-    public long readSWord() {
+    public short readSWord() {
         return bytes.getShort();
     }
 
@@ -102,7 +102,7 @@ public final class ByteSequence {
         return bytes.getInt() & 0xFFFFFFFFL;
     }
 
-    public long readSDword() {
+    public int readSDword() {
         return bytes.getInt();
     }
 

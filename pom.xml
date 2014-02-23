@@ -4,8 +4,8 @@
     <groupId>kianxali</groupId>
     <artifactId>kianxali</artifactId>
     <version>0.0.1</version>
-    <name>KiAnXaLi</name>
-    <description>KiAnXAli analyzer for executables and libraries</description>
+    <name>Kianxali</name>
+    <description>Kianxali: Kieler analyzer for executables and libraries</description>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <plugins>
@@ -27,6 +27,19 @@
                             <mainClass>kianxali.Kianxali</mainClass>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>kianxali.Kianxali</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
             </plugin>
         </plugins>
@@ -57,4 +70,8 @@
         	<version>1.6.5-1</version>
         </dependency>
     </dependencies>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
 </project>
