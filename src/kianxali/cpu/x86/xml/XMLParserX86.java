@@ -912,9 +912,6 @@ public class XMLParserX86 {
                 break;
             case "type":
                 opDesc.operType = parseOperandType(val);
-                if(currentEntry.opcode == 0xF7 && opDesc.adrType == AddressType.IMMEDIATE && opDesc.operType == OperandType.WORD_DWORD_64) {
-                    opDesc.operType = OperandType.WORD_DWORD;
-                }
                 break;
             case "displayed":
                 if(val.equals("no")) {
