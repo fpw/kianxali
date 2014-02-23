@@ -7,7 +7,7 @@ public class MachSection implements Section {
     private final String name, segmentName;
     private final long virtualAddress, virtualSize, fileOffset, flags;
 
-    public MachSection(ByteSequence seq, boolean mach64) {
+    public MachSection(ByteSequence seq, long startOffset, boolean mach64) {
         name = seq.readString(16);
         segmentName = seq.readString(16);
 
@@ -18,7 +18,7 @@ public class MachSection implements Section {
             virtualAddress = seq.readUDword();
             virtualSize = seq.readUDword();
         }
-        fileOffset = seq.readUDword();
+        fileOffset = startOffset + seq.readUDword();
 
         seq.skip(3 * 4);
         flags = seq.readUDword();

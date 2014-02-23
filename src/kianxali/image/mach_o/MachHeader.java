@@ -16,15 +16,18 @@ public class MachHeader {
     public static final long LC_MAIN            = 0x80000028L;
 
     private boolean mach64;
+    private final long startOffset;
     private long entryPoint;
     private final List<MachSegment> segments;
     private final List<MachSection> sections;
     private SymbolTable symbolTable;
 
-    public MachHeader(ByteSequence seq) {
+    public MachHeader(ByteSequence seq, long offset) {
+        startOffset = offset;
         segments = new ArrayList<>();
         sections = new ArrayList<>();
 
+        seq.seek(offset);
         long magic = seq.readUDword();
         if(magic == MH_MAGIC) {
             mach64 = false;
@@ -64,19 +67,19 @@ public class MachHeader {
             long size = seq.readUDword();
 
             if(cmd == LC_SEGMENT_64 || cmd == LC_SEGMENT) {
-                MachSegment segment = new MachSegment(seq, mach64);
+                MachSegment segment = new MachSegment(seq, startOffset, mach64);
                 for(MachSection section : segment.getSections()) {
                     sections.add(section);
                 }
                 segments.add(segment);
             } else if(cmd == LC_DYLD_INFO_ONLY) {
-                symbolTable = new SymbolTable(seq, mach64);
+                symbolTable = new SymbolTable(seq, startOffset, mach64);
             } else if(cmd == LC_MAIN) {
                 if(mach64) {
-                    entryPoint = seq.readSQword();
+                    entryPoint = startOffset + seq.readSQword();
                     seq.readSQword();
                 } else {
-                    entryPoint = seq.readUDword();
+                    entryPoint = startOffset + seq.readUDword();
                     seq.readUDword();
                 }
             } else {
@@ -87,6 +90,10 @@ public class MachHeader {
         if(symbolTable != null) {
             symbolTable.load(segments, seq, mach64);
         }
+    }
+
+    public long getStartOffset() {
+        return startOffset;
     }
 
     public SymbolTable getSymbolTable() {

@@ -3,9 +3,11 @@ package kianxali.gui;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -25,6 +27,7 @@ import kianxali.gui.models.StringList;
 import kianxali.image.ByteSequence;
 import kianxali.image.ImageFile;
 import kianxali.image.elf.ELFFile;
+import kianxali.image.mach_o.FatFile;
 import kianxali.image.mach_o.MachOFile;
 import kianxali.image.pe.PEFile;
 import kianxali.scripting.ScriptManager;
@@ -80,37 +83,81 @@ public class Controller implements DisassemblyListener, DataListener {
         }
     }
 
+    private void loadPEFile(Path path) {
+        LOG.fine("Loading as PE file");
+        try {
+            imageFile = new PEFile(path);
+        } catch(Exception e) {
+            LOG.log(Level.SEVERE, "Invalid PE file: " + e.getMessage(), e);
+            showError("Invalid PE file: " + e.getMessage());
+        }
+    }
+
+    private void loadMachOFile(Path path) {
+        LOG.fine("Loading as Mach-O file");
+        try {
+            imageFile = new MachOFile(path, 0);
+        } catch(Exception e) {
+            LOG.log(Level.SEVERE, "Invalid Mach-O file: " + e.getMessage(), e);
+            showError("Invalid Mach-O file: " + e.getMessage());
+            return;
+        }
+    }
+
+    private void loadFatFile(Path path) {
+        // a fat file contains multiple mach headers for different architectures, let user choose
+        LOG.fine("Loading as fat file");
+        try {
+            FatFile fatFile = new FatFile(path);
+            Map<String, Long> archTypes = fatFile.getArchitectures();
+            Object[] arches = new Object[archTypes.size()];
+            int i = 0;
+            for(String arch : archTypes.keySet()) {
+                arches[i++] = arch;
+            }
+            Object arch = JOptionPane.showInputDialog(gui,
+                    "Multiple architectures found in fat file.\nWhich one should be analyzed?", "Fat file detected",
+                    JOptionPane.PLAIN_MESSAGE, null, arches, arches[0]);
+            if(arch == null) {
+                return;
+            }
+            long offset = archTypes.get(arch);
+            imageFile = new MachOFile(path, offset);
+        } catch(Exception e) {
+            LOG.log(Level.SEVERE, "Invalid Mach-O file: " + e.getMessage(), e);
+            showError("Invalid Mach-O file: " + e.getMessage());
+            return;
+        }
+    }
+
+    private void loadELFFile(Path path) {
+        LOG.fine("Loading as ELF file");
+        try {
+            imageFile = new ELFFile(path);
+        } catch(Exception e) {
+            LOG.log(Level.SEVERE, "Invalid ELF file: " + e.getMessage(), e);
+            showError("Invalid ELF file: " + e.getMessage());
+            return;
+        }
+    }
+
     public void onFileOpened(Path path) {
         try {
+            ImageFile old = imageFile;
             if(PEFile.isPEFile(path)) {
-                LOG.fine("Loading as PE file");
-                try {
-                    imageFile = new PEFile(path);
-                } catch(Exception e) {
-                    LOG.log(Level.SEVERE, "Invalid PE file: " + e.getMessage(), e);
-                    showError("Invalid PE file: " + e.getMessage());
-                    return;
-                }
+                loadPEFile(path);
             } else if(MachOFile.isMachOFile(path)) {
-                LOG.fine("Loading as Mach-O file");
-                try {
-                    imageFile = new MachOFile(path);
-                } catch(Exception e) {
-                    LOG.log(Level.SEVERE, "Invalid Mach-O file: " + e.getMessage(), e);
-                    showError("Invalid Mach-O file: " + e.getMessage());
-                    return;
-                }
+                loadMachOFile(path);
+            } else if(FatFile.isFatFile(path)) {
+                loadFatFile(path);
             } else if(ELFFile.isELFFile(path)) {
-                LOG.fine("Loading as ELF file");
-                try {
-                    imageFile = new ELFFile(path);
-                } catch(Exception e) {
-                    LOG.log(Level.SEVERE, "Invalid ELF file: " + e.getMessage(), e);
-                    showError("Invalid ELF file: " + e.getMessage());
-                    return;
-                }
+                loadELFFile(path);
             } else {
-                throw new UnsupportedOperationException("Unknown file type.");
+                showError("<html>Unknown file type.<br>Supported are: <ul><li>PE (Windows .exe)</li><li>ELF (Unix, Linux)</li><li>MachO (OS X)</li><li>Fat MachO (OS X)</li></ul></html>");
+            }
+
+            if(imageFile == old) {
+                return;
             }
 
             initialAnalyzeDone = false;
@@ -134,7 +181,7 @@ public class Controller implements DisassemblyListener, DataListener {
         } catch (Exception e) {
             LOG.warning("Couldn't load image: " + e.getMessage());
             e.printStackTrace();
-            gui.showError("Couldn't load file", e.getMessage() + "\nCurrently, only PE (Windows .exe), ELF (Linux, UNIX) and Mach-O (OS X) files are supported.");
+            gui.showError("Couldn't load file", "Error loading file: " + e.getMessage());
         }
     }
 

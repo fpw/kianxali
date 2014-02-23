@@ -7,17 +7,17 @@ public class MachSegment {
     private long virtualAddress, virtualSize, fileOffset, fileSize;
     private final MachSection[] sections;
 
-    public MachSegment(ByteSequence seq, boolean mach64) {
+    public MachSegment(ByteSequence seq, long startOffset, boolean mach64) {
         name = seq.readString(16);
         if(mach64) {
             virtualAddress = seq.readSQword();
             virtualSize = seq.readSQword();
-            fileOffset = seq.readSQword();
+            fileOffset = startOffset + seq.readSQword();
             fileSize = seq.readSQword();
         } else {
             virtualAddress = seq.readUDword();
             virtualSize = seq.readUDword();
-            fileOffset = seq.readUDword();
+            fileOffset = startOffset + seq.readUDword();
             fileSize = seq.readUDword();
         }
         // memory protection
@@ -27,7 +27,7 @@ public class MachSegment {
         seq.skip(4);
         sections = new MachSection[(int) numSections];
         for(int i = 0; i < numSections; i++) {
-            sections[i] = new MachSection(seq, mach64);
+            sections[i] = new MachSection(seq, startOffset, mach64);
         }
     }
 

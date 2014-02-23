@@ -62,7 +62,7 @@ public final class Test implements DisassemblyListener, DataListener {
 
     private void testDisassembler() throws IOException {
         Path path = FileSystems.getDefault().getPath(".", "targets", "mach-o-32");
-        ImageFile image = new MachOFile(path);
+        ImageFile image = new MachOFile(path, 0);
         data = new DisassemblyData();
         data.addListener(this);
         dasm = new Disassembler(image, data);

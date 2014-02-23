@@ -29,14 +29,14 @@ public class SymbolTable {
     private final long offset, size;
     private final Map<Long, String> symbols;
 
-    public SymbolTable(ByteSequence seq, boolean mach64) {
+    public SymbolTable(ByteSequence seq, long startOffset, boolean mach64) {
         symbols = new HashMap<>();
 
         seq.skip(8); // rebase info
         seq.skip(8); // binding info
         seq.skip(8); // weak binding info
 
-        offset = seq.readUDword();
+        offset = startOffset + seq.readUDword();
         size = seq.readUDword();
 
         seq.skip(8); // export info

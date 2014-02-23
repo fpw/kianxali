@@ -20,9 +20,9 @@ import kianxali.image.Section;
 public class MachOFile extends ImageFile {
     private MachHeader machHeader;
 
-    public MachOFile(Path path) throws IOException {
+    public MachOFile(Path path, long offset) throws IOException {
         super(path);
-        loadHeaders();
+        loadHeaders(offset);
     }
 
     public static boolean isMachOFile(Path path) throws IOException {
@@ -34,11 +34,10 @@ public class MachOFile extends ImageFile {
         return magic == MachHeader.MH_MAGIC || magic == MachHeader.MH_MAGIC_64;
     }
 
-    private void loadHeaders() {
+    private void loadHeaders(long offset) {
         imageFile.lock();
         imageFile.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        imageFile.seek(0);
-        machHeader = new MachHeader(imageFile);
+        machHeader = new MachHeader(imageFile, offset);
         imageFile.unlock();
     }
 
