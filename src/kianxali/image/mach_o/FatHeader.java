@@ -7,7 +7,7 @@ import java.util.Map;
 import kianxali.image.ByteSequence;
 
 public class FatHeader {
-    public static long FAT_MAGIC = 0xBEBAFECAL;
+    public static final long FAT_MAGIC = 0xBEBAFECAL;
     private final Map<Long, Long> entries;
 
     public FatHeader(ByteSequence seq) {
