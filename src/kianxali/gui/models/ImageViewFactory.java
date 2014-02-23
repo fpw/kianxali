@@ -7,7 +7,7 @@ import javax.swing.text.StyledEditorKit;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
-import kianxali.gui.MnemonicView;
+import kianxali.gui.views.MnemonicView;
 
 public class ImageViewFactory implements ViewFactory {
     private final ViewFactory delegate;

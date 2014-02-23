@@ -16,9 +16,9 @@ import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Decoder;
 import kianxali.decoder.Instruction;
 import kianxali.decoder.JumpTable;
-import kianxali.image.ByteSequence;
-import kianxali.image.ImageFile;
-import kianxali.image.Section;
+import kianxali.loader.ByteSequence;
+import kianxali.loader.ImageFile;
+import kianxali.loader.Section;
 
 public class Disassembler implements AddressNameResolver, AddressNameListener {
     private static final Logger LOG = Logger.getLogger("kianxali.disassembler");

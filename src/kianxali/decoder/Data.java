@@ -1,6 +1,6 @@
 package kianxali.decoder;
 
-import kianxali.image.ByteSequence;
+import kianxali.loader.ByteSequence;
 import kianxali.util.OutputFormatter;
 
 public class Data implements DecodedEntity {

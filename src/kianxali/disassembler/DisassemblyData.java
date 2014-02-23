@@ -8,8 +8,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Instruction;
-import kianxali.image.ImageFile;
-import kianxali.image.Section;
+import kianxali.loader.ImageFile;
+import kianxali.loader.Section;
 
 public class DisassemblyData {
     private final Set<DataListener> listeners;

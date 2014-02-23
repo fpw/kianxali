@@ -18,8 +18,8 @@ import kianxali.decoder.Instruction;
 import kianxali.decoder.Operand;
 import kianxali.disassembler.DataEntry;
 import kianxali.disassembler.Function;
-import kianxali.image.ImageFile;
-import kianxali.image.Section;
+import kianxali.loader.ImageFile;
+import kianxali.loader.Section;
 import kianxali.util.OutputFormatter;
 
 public class ImageDocument extends DefaultStyledDocument {

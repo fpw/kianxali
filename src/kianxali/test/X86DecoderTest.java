@@ -6,7 +6,7 @@ import kianxali.cpu.x86.X86CPU.Model;
 import kianxali.cpu.x86.X86Context;
 import kianxali.decoder.Decoder;
 import kianxali.decoder.Instruction;
-import kianxali.image.ByteSequence;
+import kianxali.loader.ByteSequence;
 import kianxali.util.OutputFormatter;
 
 import org.junit.Before;

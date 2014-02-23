@@ -9,8 +9,9 @@ import kianxali.disassembler.Disassembler;
 import kianxali.disassembler.DisassemblyData;
 import kianxali.disassembler.InstructionVisitor;
 import kianxali.gui.Controller;
-import kianxali.image.ByteSequence;
-import kianxali.image.ImageFile;
+import kianxali.loader.ByteSequence;
+import kianxali.loader.ImageFile;
+
 import org.jruby.Ruby;
 import org.jruby.RubyProc;
 import org.jruby.embed.ScriptingContainer;

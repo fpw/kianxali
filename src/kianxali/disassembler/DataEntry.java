@@ -7,8 +7,8 @@ import java.util.Set;
 import kianxali.decoder.Data;
 import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Instruction;
-import kianxali.image.ImageFile;
-import kianxali.image.Section;
+import kianxali.loader.ImageFile;
+import kianxali.loader.Section;
 
 // an address can be associated with:
 //  * references to other entries

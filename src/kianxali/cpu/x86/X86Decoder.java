@@ -17,7 +17,7 @@ import kianxali.decoder.Context;
 import kianxali.decoder.DecodeTree;
 import kianxali.decoder.Decoder;
 import kianxali.decoder.Instruction;
-import kianxali.image.ByteSequence;
+import kianxali.loader.ByteSequence;
 
 import org.xml.sax.SAXException;
 

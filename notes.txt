@@ -1,8 +1,0 @@
-TODO:
- - create fuzzer by iterating syntaxes and operands
- - verify all encodings in 16, 32 and 64 bit mode
- - tests ergaenzen
- - basic blocks, functions
-
-Document:
-  - trie / tree approach to decoding with principle of longest match

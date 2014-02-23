@@ -4,7 +4,7 @@ import kianxali.cpu.x86.X86CPU.AddressSize;
 import kianxali.cpu.x86.X86CPU.X86Register;
 import kianxali.cpu.x86.xml.OperandDesc;
 import kianxali.decoder.Operand;
-import kianxali.image.ByteSequence;
+import kianxali.loader.ByteSequence;
 
 public class ModRM {
     private final short codedMod;

@@ -14,7 +14,7 @@ import kianxali.decoder.Data;
 import kianxali.decoder.Instruction;
 import kianxali.decoder.Operand;
 import kianxali.decoder.UsageType;
-import kianxali.image.ByteSequence;
+import kianxali.loader.ByteSequence;
 import kianxali.util.OutputFormatter;
 
 public class X86Instruction implements Instruction {

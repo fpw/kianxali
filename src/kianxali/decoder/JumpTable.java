@@ -3,7 +3,7 @@ package kianxali.decoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import kianxali.image.ByteSequence;
+import kianxali.loader.ByteSequence;
 import kianxali.util.OutputFormatter;
 
 public class JumpTable extends Data {
