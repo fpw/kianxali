@@ -10,7 +10,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
-import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -25,6 +24,8 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 
+import org.jdesktop.swingx.JXEditorPane;
+
 import kianxali.disassembler.DataEntry;
 import kianxali.disassembler.Function;
 import kianxali.gui.models.ImageDocument;
@@ -33,7 +34,7 @@ import kianxali.gui.models.ImageEditorKit;
 public class ImageView extends JPanel {
     private static final long serialVersionUID = 1L;
     private final Controller controller;
-    private final JEditorPane editor;
+    private final JXEditorPane editor;
     private final StatusView statusView;
     private final JScrollPane scrollPane;
 
@@ -44,7 +45,7 @@ public class ImageView extends JPanel {
         statusView = new StatusView();
         add(statusView, BorderLayout.NORTH);
 
-        editor = new JEditorPane();
+        editor = new JXEditorPane();
         editor.setEditable(false);
         editor.setEditorKit(new ImageEditorKit());
         editor.addMouseMotionListener(new MouseMotionListener() {

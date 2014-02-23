@@ -11,18 +11,18 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 
+import org.jdesktop.swingx.JXList;
 import kianxali.disassembler.Function;
 import kianxali.gui.models.FunctionList;
 
 public class FunctionListView extends JPanel {
     private static final long serialVersionUID = 1L;
-    private final JList<Function> list;
+    private final JXList list;
     private final Controller controller;
 
     public FunctionListView(Controller controller) {
         this.controller = controller;
-        this.list = new JList<>();
-
+        this.list = new JXList();
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -32,7 +32,6 @@ public class FunctionListView extends JPanel {
                 }
             }
         });
-
         list.setCellRenderer(new Renderer());
 
         setLayout(new BorderLayout());
@@ -44,7 +43,7 @@ public class FunctionListView extends JPanel {
     }
 
     private void onDoubleClick(int index) {
-        Function fun = list.getModel().getElementAt(index);
+        Function fun = (Function) list.getModel().getElementAt(index);
         controller.onFunctionDoubleClick(fun);
     }
 

@@ -120,4 +120,13 @@ public class Data implements DecodedEntity {
             return "<" + type + ": " + content + ">";
         }
     }
+
+    @Override
+    public String toString() {
+        if(content != null) {
+            return content.toString();
+        } else {
+            return "<empty data>";
+        }
+    }
 }

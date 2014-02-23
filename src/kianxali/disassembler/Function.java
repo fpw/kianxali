@@ -33,4 +33,9 @@ public class Function {
     public long getEndAddress() {
         return endAddress;
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

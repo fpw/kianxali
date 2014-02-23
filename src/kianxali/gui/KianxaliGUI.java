@@ -41,7 +41,7 @@ public class KianxaliGUI extends JFrame {
         add(desktop);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setPreferredSize(new Dimension(1100, 725));
+        setPreferredSize(new Dimension(1120, 730));
 
         setupLookAndFeel();
         setupMenu();
@@ -91,7 +91,7 @@ public class KianxaliGUI extends JFrame {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             // doesn't matter, just use default laf
-            LOG.info("Couldn't set platform look and feel");
+            LOG.info("Couldn't set system look and feel");
         }
     }
 

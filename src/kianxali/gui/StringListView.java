@@ -11,17 +11,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 
+import org.jdesktop.swingx.JXList;
+
 import kianxali.decoder.Data;
 import kianxali.gui.models.StringList;
 
 public class StringListView extends JPanel {
     private static final long serialVersionUID = 1L;
     private final Controller controller;
-    private final JList<Data> list;
+    private final JXList list;
 
     public StringListView(Controller controller) {
         this.controller = controller;
-        this.list = new JList<Data>();
+        this.list = new JXList();
 
         list.addMouseListener(new MouseAdapter() {
             @Override
@@ -44,7 +46,7 @@ public class StringListView extends JPanel {
     }
 
     private void onDoubleClick(int index) {
-        Data data = list.getModel().getElementAt(index);
+        Data data = (Data) list.getModel().getElementAt(index);
         controller.onStringDoubleClicked(data);
     }
 
