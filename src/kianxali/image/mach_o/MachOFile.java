@@ -86,6 +86,12 @@ public class MachOFile extends ImageFile {
 
     @Override
     public Map<Long, String> getImports() {
+        if(machHeader.getSymbolTable() != null) {
+            Map<Long, String> res = machHeader.getSymbolTable().getSymbols();
+            if(res != null) {
+                return res;
+            }
+        }
         return new HashMap<Long, String>();
     }
 }

@@ -11,14 +11,18 @@ public class MachHeader {
     public static final long CPU_TYPE_X86       = 7L;
     public static final long CPU_TYPE_X86_64    = 0x01000007L;
     public static final long LC_SEGMENT         = 0x1L;
+    public static final long LC_DYLD_INFO_ONLY  = 0x80000022L;
     public static final long LC_SEGMENT_64      = 0x19L;
     public static final long LC_MAIN            = 0x80000028L;
 
     private boolean mach64;
     private long entryPoint;
+    private final List<MachSegment> segments;
     private final List<MachSection> sections;
+    private SymbolTable symbolTable;
 
     public MachHeader(ByteSequence seq) {
+        segments = new ArrayList<>();
         sections = new ArrayList<>();
 
         long magic = seq.readUDword();
@@ -64,6 +68,9 @@ public class MachHeader {
                 for(MachSection section : segment.getSections()) {
                     sections.add(section);
                 }
+                segments.add(segment);
+            } else if(cmd == LC_DYLD_INFO_ONLY) {
+                symbolTable = new SymbolTable(seq, mach64);
             } else if(cmd == LC_MAIN) {
                 if(mach64) {
                     entryPoint = seq.readSQword();
@@ -76,6 +83,14 @@ public class MachHeader {
                 seq.skip(size - 8);
             }
         }
+
+        if(symbolTable != null) {
+            symbolTable.load(segments, seq, mach64);
+        }
+    }
+
+    public SymbolTable getSymbolTable() {
+        return symbolTable;
     }
 
     public boolean isMach64() {
