@@ -335,4 +335,22 @@ public class Controller implements DisassemblyListener, DataListener {
     public void onCommentChangeReq(DataEntry data, String comment) {
         disassemblyData.insertComment(data.getAddress(), comment);
     }
+
+    public void onGotoRequest(String where) {
+        if(imageFile == null) {
+            showError("No image file loaded");
+            return;
+        }
+
+        try {
+            long addr = Long.parseLong(where, 16);
+            gui.getImageView().scrollTo(addr);
+        } catch (Exception e) {
+            showError("Invalid address: " + e.getMessage());
+        }
+    }
+
+    public void onExitRequest() {
+        gui.dispose();
+    }
 }

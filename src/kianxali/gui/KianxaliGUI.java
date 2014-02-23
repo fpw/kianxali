@@ -2,9 +2,11 @@ package kianxali.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Event;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.logging.Logger;
 
 import javax.swing.JDesktopPane;
@@ -16,6 +18,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 public class KianxaliGUI extends JFrame {
@@ -95,6 +98,7 @@ public class KianxaliGUI extends JFrame {
     private void setupMenu() {
         JMenuBar menuBar = new JMenuBar();
 
+        // File menu
         JMenu fileMenu = new JMenu("File");
         JMenuItem fileOpen = new JMenuItem("Open");
         fileOpen.addActionListener(new ActionListener() {
@@ -112,8 +116,30 @@ public class KianxaliGUI extends JFrame {
         });
         fileMenu.add(fileSave);
 
-        menuBar.add(fileMenu);
+        JMenuItem exit = new JMenuItem("Exit");
+        exit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                controller.onExitRequest();
+            }
+        });
+        fileMenu.add(exit);
 
+        // Edit menu
+        JMenu editMenu = new JMenu("Edit");
+        JMenuItem gotoAddr = new JMenuItem("Goto location");
+        gotoAddr.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                String where = JOptionPane.showInputDialog("Goto where (hex mem address)?");
+                if(where != null) {
+                    controller.onGotoRequest(where);
+                }
+            }
+        });
+        gotoAddr.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, Event.CTRL_MASK));
+        editMenu.add(gotoAddr);
+
+        menuBar.add(fileMenu);
+        menuBar.add(editMenu);
         setJMenuBar(menuBar);
     }
 
