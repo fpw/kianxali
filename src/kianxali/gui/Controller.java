@@ -400,4 +400,8 @@ public class Controller implements DisassemblyListener, DataListener {
     public void onExitRequest() {
         gui.dispose();
     }
+
+    public void onClearLogRequest() {
+        gui.getLogView().clear();
+    }
 }
