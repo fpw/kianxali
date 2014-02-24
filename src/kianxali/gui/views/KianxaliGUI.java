@@ -130,7 +130,7 @@ public class KianxaliGUI extends JFrame {
         JMenu editMenu = new JMenu("Edit");
         JMenuItem gotoAddr = new JMenuItem("Goto location");
         gotoAddr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
+            public void actionPerformed(ActionEvent e) {
                 String where = JOptionPane.showInputDialog("Goto where (hex mem address)?");
                 if(where != null) {
                     controller.onGotoRequest(where);
@@ -139,6 +139,14 @@ public class KianxaliGUI extends JFrame {
         });
         gotoAddr.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, Event.CTRL_MASK));
         editMenu.add(gotoAddr);
+
+        JMenuItem clearLog = new JMenuItem("Clear log");
+        clearLog.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                controller.onClearLogRequest();
+            }
+        });
+        editMenu.add(clearLog);
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);

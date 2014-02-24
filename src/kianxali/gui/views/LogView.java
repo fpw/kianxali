@@ -73,4 +73,13 @@ public class LogView extends JPanel {
             System.err.println("Can't add text to log: " + e.getMessage());
         }
     }
+
+    public void clear() {
+        try {
+            Document doc = logPane.getDocument();
+            doc.remove(0, doc.getLength());
+        } catch (BadLocationException e) {
+            // don't care
+        }
+    }
 }
