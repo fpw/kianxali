@@ -3,7 +3,14 @@ package kianxali.decoder;
 import kianxali.loader.ByteSequence;
 import kianxali.util.OutputFormatter;
 
+/**
+ * This class represents data references that can be yielded by operands.
+ * The data can be used for further analysis by higher level classes.
+ * @author fwi
+ *
+ */
 public class Data implements DecodedEntity {
+    /** Data type that an instance can represent */
     public enum DataType {
         BYTE, WORD, DWORD, QWORD, DQWORD, DYWORD,
         FLOAT, DOUBLE,
@@ -16,23 +23,45 @@ public class Data implements DecodedEntity {
     private Object content;
     private int tableScaling; // for data arrays
 
+    /**
+     * Construct a new data item
+     * @param memAddr the address of the data
+     * @param type the type of data
+     */
     public Data(long memAddr, DataType type) {
         this.memAddr = memAddr;
         this.type = type;
     }
 
+    /**
+     * Change the data type
+     * @param type new type
+     */
     public void setType(DataType type) {
         this.type = type;
     }
 
+    /**
+     * If the data is a table, this sets the size of the
+     * entries
+     * @param tableScaling size of the entries in the table
+     */
     public void setTableScaling(int tableScaling) {
         this.tableScaling = tableScaling;
     }
 
+    /**
+     * If the data is a table, this returns the size of its entries
+     * @return the size of a table entry
+     */
     public int getTableScaling() {
         return tableScaling;
     }
 
+    /**
+     * Actually analyze the contents of the memory address
+     * @param seq a byte sequence already pointing to the correct address
+     */
     public void analyze(ByteSequence seq) {
         String str = checkForString(seq);
         if(str != null) {
@@ -103,10 +132,19 @@ public class Data implements DecodedEntity {
         }
     }
 
+    /**
+     * Returns the type of the associated data
+     * @return the type of the associated data
+     */
     public DataType getType() {
         return type;
     }
 
+    /**
+     * Returns an arbitrary object that was decoded when
+     * analyzing the data, can be null.
+     * @return an arbitrary object representing the decoded data
+     */
     public Object getRawContent() {
         return content;
     }
