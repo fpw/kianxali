@@ -27,12 +27,12 @@ public interface Instruction extends DecodedEntity {
     boolean isFunctionCall();
 
     /**
-     * Return true if this instruction is a jump of any kind.
+     * Return true if this instruction is an unconditional jump.
      * If this is true, the destination should be returned
      * in {@link Instruction#getBranchAddresses()}.
-     * @return true iff this instruction is a jump
+     * @return true iff this instruction is an uncinditonal jump
      */
-    boolean isJump();
+    boolean isUnconditionalJump();
 
     /**
      * Returns a string representation of the mnemonic (excluding operands)

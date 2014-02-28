@@ -46,7 +46,15 @@ public class ImageView extends JPanel {
         statusView = new StatusView();
         add(statusView, BorderLayout.NORTH);
 
-        editor = new JXEditorPane();
+        editor = new JXEditorPane() {
+            private static final long serialVersionUID = -481545877802655847L;
+
+            @Override
+            public boolean getScrollableTracksViewportWidth() {
+                // disable line wrap, source: http://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
+                return getUI().getPreferredSize(this).width <= getParent().getSize().width;
+            }
+        };
         editor.setEditable(false);
         editor.setEditorKit(new ImageEditorKit());
         editor.addMouseMotionListener(new MouseMotionListener() {
@@ -78,6 +86,7 @@ public class ImageView extends JPanel {
                 onScrollChange();
             }
         });
+        scrollPane.setRowHeaderView(new CrossReferenceHeader(controller, editor));
         add(scrollPane, BorderLayout.CENTER);
     }
 
@@ -106,6 +115,7 @@ public class ImageView extends JPanel {
                 controller.onScrollChange(addr);
             }
         }
+        scrollPane.getRowHeader().repaint();
     }
 
     private void mouseOverIndex(int index) {

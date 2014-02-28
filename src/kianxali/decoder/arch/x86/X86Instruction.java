@@ -553,7 +553,7 @@ class X86Instruction implements Instruction {
     }
 
     @Override
-    public boolean isJump() {
+    public boolean isUnconditionalJump() {
         X86Mnemonic mnem = syntax.getMnemonic();
         if(mnem == X86Mnemonic.JMP || mnem == X86Mnemonic.JMPE || mnem == X86Mnemonic.JMPF) {
             return true;

@@ -191,7 +191,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             DataEntry entry = disassemblyData.getInfoOnExactAddress(start);
             if(entry != null && entry.getEntity() instanceof Instruction) {
                 Instruction inst = (Instruction) entry.getEntity();
-                if(inst.isJump() && inst.getAssociatedData().size() == 1) {
+                if(inst.isUnconditionalJump() && inst.getAssociatedData().size() == 1) {
                     // the function immediately jumps somewhere else, take name from there
                     Data data = inst.getAssociatedData().get(0);
                     long branch = data.getMemAddress();
@@ -396,8 +396,8 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         // check if we have branch addresses to be analyzed later
         for(long addr : inst.getBranchAddresses()) {
             if(imageFile.isValidAddress(addr)) {
+                disassemblyData.insertReference(srcEntry, addr);
                 if(inst.isFunctionCall()) {
-                    disassemblyData.insertReference(srcEntry, addr);
                     detectFunction(addr, null);
                 } else if(function != null) {
                     // if the branch is not a function call, it should belong to the current function
@@ -421,7 +421,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 continue;
             }
 
-            if(inst.isJump() && !imageFile.getImports().containsKey(addr)) {
+            if(inst.isUnconditionalJump() && !imageFile.getImports().containsKey(addr)) {
                 // a jump into a dereferenced data pointer means that the data is a table with jump destinations
                 // imports are a trivial single-entry jump table, hence they are discarded
                 LOG.finer(String.format("Probable jump table: %08X into %08X", inst.getMemAddress(), addr));
