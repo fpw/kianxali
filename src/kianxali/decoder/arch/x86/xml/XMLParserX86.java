@@ -25,11 +25,19 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+/**
+ * Parses an XML document in the syntax from <a href='http://ref.x86asm.net/'>http://ref.x86asm.net/</a>
+ * into a list of {@link OpcodeSyntax} entries.
+ * A SAX parser is used to avoid having the whole DOM tree in memory.
+ *
+ * @author fwi
+ *
+ */
 public class XMLParserX86 {
     private static final Logger LOG = Logger.getLogger("kianxali.decoder.arch.x86.xml");
     private final List<OpcodeSyntax> syntaxes;
 
-    // parsing stuff
+    // SAX parsing stuff to remember current state
     private Short currentOpcode;
     private OpcodeEntry currentEntry;
     private OpcodeSyntax currentSyntax;
@@ -40,14 +48,23 @@ public class XMLParserX86 {
     private boolean inSrc, inDst, inA, inT, inOpcdExt, inGroup, inInstrExt;
     private boolean inProcStart, inProcEnd, in2ndOpcode, inPref, inBrief;
 
+    /**
+     * Constructs a new parser. Use {@link XMLParserX86#loadXML(String, String)} to load
+     * the actual XML document.
+     */
     public XMLParserX86() {
         syntaxes = new LinkedList<>();
     }
 
-    public List<OpcodeSyntax> getSyntaxEntries() {
-        return Collections.unmodifiableList(syntaxes);
-    }
-
+    /**
+     * Loads the XML document describing the x86 instruction set.
+     * When done, use {@link XMLParserX86#getSyntaxEntries()} to retrieve the result.
+     *
+     * @param xmlPath path to the XML document
+     * @param dtdPath path to the DTD that defines the syntax of the XML document
+     * @throws SAXException if there is a parse error
+     * @throws IOException if one of the input files couldn't be read
+     */
     public void loadXML(String xmlPath, String dtdPath) throws SAXException, IOException {
         XMLReader xmlReader = XMLReaderFactory.createXMLReader();
         FileReader reader = new FileReader(xmlPath);
@@ -77,6 +94,14 @@ public class XMLParserX86 {
         });
         xmlReader.parse(source);
         reader.close();
+    }
+
+    /**
+     * Returns a list of all the opcode syntaxes defined in the XML document.
+     * @return the syntax list as an unmodifiable list
+     */
+    public List<OpcodeSyntax> getSyntaxEntries() {
+        return Collections.unmodifiableList(syntaxes);
     }
 
     private void onElementStart(String name, Attributes atts)  {

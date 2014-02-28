@@ -9,38 +9,72 @@ import kianxali.decoder.arch.x86.X86CPU.ExecutionMode;
 import kianxali.decoder.arch.x86.X86CPU.InstructionSetExtension;
 import kianxali.decoder.arch.x86.X86CPU.Model;
 
-// an opcode can have a different meaning depending on CPU mode, hence store it here
+/**
+ * An x86 opcode can have a syntax depending on the current CPU mode.
+ * This class stores the information that is shared across all different
+ * syntaxes.
+ *
+ * @author fwi
+ *
+ */
 public class OpcodeEntry {
+    /** The prefix that must be present for this opcode (optional).
+     * Note that it doesn't have to be directly before the opcode */
+    public Short prefix;
+
+    /** whether the opcode is a two-byte one, e.g. needs 0F directly before it */
     public boolean twoByte;
+
+    /** the actual opcode byte */
     public short opcode;
+
+    /** A byte that must be immediately followed by the opcode */
+    public Short secondOpcode;
+
+    /** the mode where this opcode is defined */
     public ExecutionMode mode;
+
+    /** whether the opcode always needs a ModR/M byte. false doesn't imply there won't be one */
+    public boolean modRM;
+
+    /** If the opcode is not part of the basic x86 opcodes,
+     * the instruction set extension is stored here */
+    public InstructionSetExtension instrExt;
+
+    /** A brief description of what this opcode does */
+    public String briefDescription;
+
+    /** groups that further describe this opcode */
+    public final Set<OpcodeGroup> groups;
+
+    // not so important stuff coming from the XML document
     public boolean invalid, undefined;
     public boolean direction;
     public boolean sgnExt;
     public boolean opSize;
-    public boolean modRM;
     public boolean lock;
     public boolean particular;
     public byte tttn;
-    public String briefDescription;
-
-    public Short prefix; // prefix that must be present for this opcode
-    public Short secondOpcode; // mandatory byte after opcode
-    public InstructionSetExtension instrExt;
 
     private final List<OpcodeSyntax> syntaxes;
-    Model startModel, lastModel;
-    public final Set<OpcodeGroup> groups;
 
-    public OpcodeEntry() {
+    // models where the opcode was first and last supported
+    Model startModel, lastModel;
+
+    OpcodeEntry() {
         this.groups = new HashSet<>();
         this.syntaxes = new ArrayList<>(4);
     }
 
-    public void setStartProcessor(Model p) {
+    void setStartProcessor(Model p) {
         this.startModel = p;
     }
 
+    /**
+     * Get the CPU model that introduced this opcode,
+     * i.e. where it was first supported.
+     * @return the first CPU model supporting this opcode. Never null.
+     */
     public Model getStartModel() {
         if(startModel != null) {
             return startModel;
@@ -49,10 +83,15 @@ public class OpcodeEntry {
         }
     }
 
-    public void setEndProcessor(Model p) {
+    void setEndProcessor(Model p) {
         this.lastModel = p;
     }
 
+    /**
+     * Get the latest CPU model that supports this opcode.
+     * @return the latest CPU model supporting this opcode.
+     *         {@link Model#ANY} iff not obsolete.
+     */
     public Model getLastModel() {
         if(lastModel != null) {
             return lastModel;
@@ -61,6 +100,13 @@ public class OpcodeEntry {
         }
     }
 
+    /**
+     * Checks whether this opcode is supported on a specific CPU model
+     * in a specific execution mode.
+     * @param p the CPU model to check for
+     * @param pMode the execution mode to check for
+     * @return true if the opcode is supported, false if not
+     */
     public boolean isSupportedOn(Model p, ExecutionMode pMode) {
         Model compare = p;
         if(p == Model.ANY) {
@@ -77,26 +123,20 @@ public class OpcodeEntry {
         return true;
     }
 
-    public void addOpcodeGroup(OpcodeGroup group) {
+    void addOpcodeGroup(OpcodeGroup group) {
         groups.add(group);
     }
 
+    /**
+     * Checks whether this opcode belongs to a certain group
+     * @param group the group to check for
+     * @return true if the opcode is part of the group, false otherwise
+     */
     public boolean belongsTo(OpcodeGroup group) {
         return groups.contains(group);
     }
 
-    public void addSyntax(OpcodeSyntax syntax) {
+    void addSyntax(OpcodeSyntax syntax) {
         syntaxes.add(syntax);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder res = new StringBuilder();
-        res.append(String.format("<opcode=%s%2X mode=%s modRM=%s", twoByte ? "0F" : "", opcode, mode, modRM));
-        for(OpcodeSyntax syntax : syntaxes) {
-            res.append(" " + syntax.toString());
-        }
-        res.append(">");
-        return res.toString();
     }
 }

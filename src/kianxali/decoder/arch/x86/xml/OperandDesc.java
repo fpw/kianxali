@@ -2,7 +2,19 @@ package kianxali.decoder.arch.x86.xml;
 
 import kianxali.decoder.UsageType;
 
+/**
+ * This class describes an opcode's operands.
+ * Each operand has an operand type specifying the width of the operand
+ * and an address type specifying how this operand is addressed (encoded).
+ * @author fwi
+ *
+ */
 public class OperandDesc {
+    /**
+     * Describes how an operand can be encoded in an opcode.
+     * @author fwi
+     *
+     */
     public enum AddressType {
         DIRECT,             // absolute address of adressType coded after opcode
         MOD_RM_M,           // modRM.mem
@@ -39,8 +51,15 @@ public class OperandDesc {
         DS_EDI_RDI          // by group: memory through DS:EDI or RDI
     }
 
+    /**
+     * Describes types of operands for opcodes that implicitly carry an
+     * operand, e.g. certain variants of MOV always have EAX has target
+     * register.
+     * @author fwi
+     *
+     */
     public enum DirectGroup {
-        GENERIC,        // AL, AX, EAX etc.
+        GENERIC,        // AL, BX, ECX etc.
         SEGMENT,        // CS, DS etc.
         X87FPU,         // FPU register
         MMX,            // MMX register
@@ -52,6 +71,11 @@ public class OperandDesc {
         XCR             // no idea
     }
 
+    /**
+     * Describes the size and type of an operand
+     * @author fwi
+     *
+     */
     public enum OperandType {
         TWO_INDICES,        // two memory operands, adheres operand size attribute
         BYTE,               // byte regardless of operand size
@@ -98,13 +122,28 @@ public class OperandDesc {
         WORD_DWORD_S64      // word or dword (depending op size) sign ext to 64 bit if REX.W
     }
 
-    public String hardcoded; // hardcoded operand
-    public boolean indirect; // only indirect modification, e.g. LEAVE modifying EBP
-    public boolean depends; // resulting value depends on its previous value
+    /** If the register has a hardcoded operand, its type will be stored here */
     public DirectGroup directGroup;
+
+    /** Some opcodes have a hardcoded operand in the XML, it will be stored here */
+    public String hardcoded;
+
+    /** Some opcode have a hardcoded operand that is hardcoded as a register numer */
     public long numForGroup;
+
+    /** true if the operand is only indirectly modified, e.g. EBP when using LEAVE */
+    public boolean indirect;
+
+    /** true if the result depends on its previous value */
+    public boolean depends;
+
+    /** Whether the operand is a source or destination operand */
     public UsageType usageType;
+
+    /** The encoding mode of the operand */
     public AddressType adrType;
+
+    /** The type the operand */
     public OperandType operType;
 
     @Override

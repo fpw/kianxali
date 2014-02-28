@@ -1,5 +1,10 @@
 package kianxali.decoder.arch.x86.xml;
 
+/**
+ * A group used to categorize an opcode semantically.
+ * @author fwi
+ *
+ */
 public enum OpcodeGroup {
     PREFIX,
     PREFIX_SEGREG,
