@@ -295,10 +295,11 @@ public class ImageDocument extends DefaultStyledDocument {
             SimpleAttributeSet attr = new SimpleAttributeSet(mnemonicAttributes);
             attr.addAttribute(InstructionKey, inst);
             specs.add(contentTag(attr, mnemo));
-            for(int i = 0; i < operands.size(); i++) {
-                Operand op = operands.get(i);
+            int i = 0;
+            for(Operand op : operands) {
                 String opString = op.asString(formatter) + ((i < operands.size() - 1) ? ", " : "");
                 specs.add(contentTag(operandAttributes, opString));
+                i++;
             }
         } else if(entity instanceof Data) {
             String dataLine = entity.asString(formatter);
