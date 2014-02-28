@@ -19,6 +19,7 @@ import kianxali.decoder.JumpTable;
 import kianxali.loader.ByteSequence;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
+import kianxali.util.AddressNameResolver;
 
 /**
  * This class implements a recursive-traversal disassembler. It gets

@@ -1,4 +1,4 @@
-package kianxali.disassembler;
+package kianxali.util;
 
 /**
  * This interface is implemented by classes that can resolve memory addresses
