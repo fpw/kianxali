@@ -19,12 +19,23 @@ import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+/**
+ * This class is the interface between scripts entered by the user and the controller
+ * associated with the GUI
+ * @author fwi
+ *
+ */
 public class ScriptManager implements ScriptAPI {
     private static final Logger LOG = Logger.getLogger("kianxali.scripting");
     private final Controller controller;
     private final ScriptingContainer ruby;
     private final ThreadContext rubyContext;
 
+    /**
+     * Create a new script manager for a given controller.
+     * The method blocks for a few seconds because loading JRuby takes quite a while
+     * @param controller the controller that contains the disassembly data etc.
+     */
     public ScriptManager(Controller controller) {
         this.controller = controller;
         this.ruby = new ScriptingContainer();
@@ -36,6 +47,10 @@ public class ScriptManager implements ScriptAPI {
         LOG.config("Using Ruby version: " + ruby.getCompatVersion());
     }
 
+    /**
+     * Runs a ruby script
+     * @param script the script to run
+     */
     public void runScript(String script) {
         try {
             ruby.runScriptlet(script);
@@ -46,7 +61,7 @@ public class ScriptManager implements ScriptAPI {
         }
     }
 
-    public IRubyObject toRubyObject(Object object) {
+    private IRubyObject toRubyObject(Object object) {
         return JavaEmbedUtils.javaToRuby(rubyContext.getRuntime(), object);
     }
 
