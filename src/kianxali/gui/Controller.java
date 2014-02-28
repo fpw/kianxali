@@ -35,6 +35,12 @@ import kianxali.loader.pe.PEFile;
 import kianxali.scripting.ScriptManager;
 import kianxali.util.OutputFormatter;
 
+/**
+ * The controller creates the GUI and receives events from the views to change the models
+ * and vice-versa.
+ * @author fwi
+ *
+ */
 public class Controller implements DisassemblyListener, DataListener {
     private static final Logger LOG = Logger.getLogger("kianxali.gui.controller");
 
@@ -50,12 +56,18 @@ public class Controller implements DisassemblyListener, DataListener {
     private final ScriptManager scripts;
     private boolean initialAnalyzeDone;
 
+    /**
+     * Creates a new controller.
+     */
     public Controller() {
         this.formatter = new OutputFormatter();
         this.scripts = new ScriptManager(this);
         formatter.setIncludeRawBytes(true);
     }
 
+    /**
+     * Creates and shows the GUI for this controller
+     */
     public void showGUI() {
         gui = new KianxaliGUI(this);
         gui.setLocationRelativeTo(null);
