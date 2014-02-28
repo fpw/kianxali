@@ -1,5 +1,11 @@
 // automatically generated, do not edit
 package kianxali.decoder.arch.x86;
+
+/**
+ * Contains all available x86 mnemonics
+ * @author fwi
+ *
+ */
 public enum X86Mnemonic {
 AAA,
 AAD,

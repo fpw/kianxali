@@ -21,6 +21,13 @@ import kianxali.loader.ByteSequence;
 
 import org.xml.sax.SAXException;
 
+/**
+ * An instruction decoder for the x86 architecture.
+ * It uses an XML file to read the instruction set and creates a prefix
+ * tree from that in order to parse opcodes and their operands.
+ * @author fwi
+ *
+ */
 public final class X86Decoder implements Decoder {
     private static final Logger LOG = Logger.getLogger("kianxali.decoder.arch.x86");
     private static XMLParserX86 parser;
@@ -30,6 +37,16 @@ public final class X86Decoder implements Decoder {
         this.decodeTree = tree;
     }
 
+    /**
+     * Construct a decoder for a given CPU
+     * @param cpu the CPU model to use
+     * @param mode the execution mode to use
+     * @param xmlPath path to the XML file that contains the instruction set
+     * @param dtdPath path to the DTD file that describes the syntax of the XML file
+     * @return the configured decoder
+     * @throws SAXException if the XML file couldn't be parsed
+     * @throws IOException if the XML file couldn't be read
+     */
     public static synchronized X86Decoder fromXML(Model cpu, ExecutionMode mode, String xmlPath, String dtdPath) throws SAXException, IOException {
         DecodeTree<OpcodeSyntax> tree = createDecodeTree(cpu, mode, xmlPath, dtdPath);
         return new X86Decoder(tree);
@@ -147,6 +164,10 @@ public final class X86Decoder implements Decoder {
         return false;
     }
 
+    /**
+     * Return all available opcode syntaxes.
+     * @return a list of all available opcode syntaxes
+     */
     public List<OpcodeSyntax> getAllSyntaxes() {
         return getAllSyntaxesFromTree(decodeTree);
     }

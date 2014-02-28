@@ -6,7 +6,12 @@ import kianxali.decoder.arch.x86.X86CPU.X86Register;
 import kianxali.decoder.arch.x86.xml.OperandDesc;
 import kianxali.loader.ByteSequence;
 
-public class ModRM {
+/**
+ * Used to parse a ModR/M byte.
+ * @author fwi
+ *
+ */
+class ModRM {
     private final short codedMod;
     private final short codedReg;
     private final short codedMem;

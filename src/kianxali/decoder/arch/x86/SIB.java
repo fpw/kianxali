@@ -4,7 +4,12 @@ import kianxali.decoder.arch.x86.X86CPU.X86Register;
 import kianxali.decoder.arch.x86.xml.OperandDesc;
 import kianxali.loader.ByteSequence;
 
-public class SIB {
+/**
+ * This class is used to parse a SIB byte that can follow a ModR/M byte.
+ * @author fwi
+ *
+ */
+class SIB {
     private PointerOp sibOp;
 
     public SIB(ByteSequence seq, OperandDesc op, short mode, X86Context ctx) {

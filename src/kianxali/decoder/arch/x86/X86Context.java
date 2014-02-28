@@ -14,12 +14,23 @@ import kianxali.decoder.arch.x86.xml.OpcodeSyntax;
 
 import org.xml.sax.SAXException;
 
+/**
+ * This class stores information that is needed for and modified by parsing opcodes,
+ * e.g. CPU model, present prefixes and current execution mode of the CPU.
+ * @author fwi
+ *
+ */
 public class X86Context implements Context {
     private Model model;
     private ExecutionMode execMode;
     private long instructionPointer;
     private Prefix prefix;
 
+    /**
+     * Create a context for a certain CPU model in a given execution mode.
+     * @param model the CPU model to use
+     * @param execMode the execution mode to use
+     */
     public X86Context(Model model, ExecutionMode execMode) {
         this.model = model;
         this.execMode = execMode;
@@ -36,11 +47,11 @@ public class X86Context implements Context {
         return instructionPointer;
     }
 
-    public Prefix getPrefix() {
+    Prefix getPrefix() {
         return prefix;
     }
 
-    public boolean acceptsOpcode(OpcodeSyntax syntax) {
+    boolean acceptsOpcode(OpcodeSyntax syntax) {
         if(!syntax.getOpcodeEntry().isSupportedOn(model, execMode)) {
             return false;
         }
@@ -66,7 +77,7 @@ public class X86Context implements Context {
         return true;
     }
 
-    public void applyPrefix(X86Instruction inst) {
+    void applyPrefix(X86Instruction inst) {
         OpcodeEntry opcode = inst.getOpcode();
         if(!opcode.belongsTo(OpcodeGroup.PREFIX)) {
             throw new UnsupportedOperationException("not a prefix");
@@ -111,7 +122,7 @@ public class X86Context implements Context {
         }
     }
 
-    public void hidePrefix(short s) {
+    void hidePrefix(short s) {
         switch(s) {
         case 0xF0: prefix.lockPrefix = false; break;
         case 0xF2: prefix.repNZPrefix = false; break;

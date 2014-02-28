@@ -17,7 +17,14 @@ import kianxali.decoder.arch.x86.xml.OperandDesc;
 import kianxali.loader.ByteSequence;
 import kianxali.util.OutputFormatter;
 
-public class X86Instruction implements Instruction {
+/**
+ * This class represents a fully decoded x86 instruction, e.g. including
+ * all operands. Its main task is to select the correct syntax and parse
+ * all operands.
+ * @author fwi
+ *
+ */
+class X86Instruction implements Instruction {
     private final long memAddr;
     private final List<OpcodeSyntax> syntaxes;
     private OpcodeSyntax syntax;

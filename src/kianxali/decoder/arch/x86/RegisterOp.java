@@ -5,11 +5,17 @@ import kianxali.decoder.UsageType;
 import kianxali.decoder.arch.x86.X86CPU.X86Register;
 import kianxali.util.OutputFormatter;
 
+/**
+ * This class is used to describe operands that represent
+ * direct register access.
+ * @author fwi
+ *
+ */
 public class RegisterOp implements Operand {
     private final UsageType usage;
     private final X86Register register;
 
-    public RegisterOp(UsageType usage, X86Register register) {
+    RegisterOp(UsageType usage, X86Register register) {
         this.usage = usage;
         this.register = register;
     }

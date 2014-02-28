@@ -12,6 +12,13 @@ import kianxali.decoder.arch.x86.X86CPU.X86Register;
 import kianxali.decoder.arch.x86.xml.OperandDesc.OperandType;
 import kianxali.util.OutputFormatter;
 
+/**
+ * This class is used to represent operands that contain
+ * a dereferenced memory address, e.g. an operand of the
+ * type [baseRegister +  indexScale * indexRegister + offset]
+ * @author fwi
+ *
+ */
 public class PointerOp implements Operand {
     // TODO: context should be removed from here
     private static final Logger LOG = Logger.getLogger("kianxali.decoder.arch.x86");
@@ -25,25 +32,25 @@ public class PointerOp implements Operand {
     private boolean needSizeFix;
 
     // ptr [address]
-    public PointerOp(X86Context ctx, long offset) {
+    PointerOp(X86Context ctx, long offset) {
         this.context = ctx;
         this.offset = offset;
     }
 
     // ptr [register]
-    public PointerOp(X86Context ctx, X86Register baseRegister) {
+    PointerOp(X86Context ctx, X86Register baseRegister) {
         this.context = ctx;
         this.baseRegister = baseRegister;
     }
 
-    public PointerOp(X86Context ctx, X86Register baseRegister, long offset) {
+    PointerOp(X86Context ctx, X86Register baseRegister, long offset) {
         this.context = ctx;
         this.baseRegister = baseRegister;
         this.offset = offset;
     }
 
     // ptr [scale * register]
-    public PointerOp(X86Context ctx, X86Register indexRegister, int scale) {
+    PointerOp(X86Context ctx, X86Register indexRegister, int scale) {
         this.context = ctx;
         this.indexRegister = indexRegister;
         if(scale > 1 && indexRegister != null) {
@@ -52,7 +59,7 @@ public class PointerOp implements Operand {
     }
 
     // ptr [scale * register + offset]
-    public PointerOp(X86Context ctx, X86Register indexRegister, int scale, long offset) {
+    PointerOp(X86Context ctx, X86Register indexRegister, int scale, long offset) {
         this.context = ctx;
         this.indexRegister = indexRegister;
         if(scale > 1 && indexRegister != null) {
@@ -62,7 +69,7 @@ public class PointerOp implements Operand {
     }
 
     // ptr [base + scale * index]
-    public PointerOp(X86Context ctx, X86Register baseRegister, int scale, X86Register indexRegister) {
+    PointerOp(X86Context ctx, X86Register baseRegister, int scale, X86Register indexRegister) {
         this.context = ctx;
         this.baseRegister = baseRegister;
         if(scale > 1 && indexRegister != null) {
@@ -72,7 +79,7 @@ public class PointerOp implements Operand {
     }
 
     // ptr [scale * index + offset]
-    public PointerOp(X86Context ctx, int scale, X86Register indexRegister, long offset) {
+    PointerOp(X86Context ctx, int scale, X86Register indexRegister, long offset) {
         this.context = ctx;
         if(scale > 1 && indexRegister != null) {
             this.indexScale = scale;
@@ -82,7 +89,7 @@ public class PointerOp implements Operand {
     }
 
     // ptr [base + scale * index + offset]
-    public PointerOp(X86Context ctx, X86Register baseRegister, int scale, X86Register indexRegister, long offset) {
+    PointerOp(X86Context ctx, X86Register baseRegister, int scale, X86Register indexRegister, long offset) {
         this.context = ctx;
         this.baseRegister = baseRegister;
         if(scale > 1 && indexRegister != null) {
@@ -92,27 +99,35 @@ public class PointerOp implements Operand {
         this.offset = offset;
     }
 
+    /**
+     * Returns whether the offset part of the address is present
+     * @return true if the address contains an offset part
+     */
     public boolean hasOffset() {
         return offset != null;
     }
 
-    public void setOffset(long offset) {
+    void setOffset(long offset) {
         this.offset = offset;
     }
 
+    /**
+     * Returns the offset part of the address
+     * @return the offset, can be null
+     */
     public Long getOffset() {
         return offset;
     }
 
-    public void setOpType(OperandType opType) {
+    void setOpType(OperandType opType) {
         this.opType = opType;
     }
 
-    public void setUsage(UsageType usage) {
+    void setUsage(UsageType usage) {
         this.usage = usage;
     }
 
-    public void setSegment(Segment segment) {
+    void setSegment(Segment segment) {
         this.segment = segment;
     }
 
@@ -125,6 +140,11 @@ public class PointerOp implements Operand {
         return null;
     }
 
+    /**
+     * If possible, returns a {@link Data} object with address and type
+     * set to match this operand.
+     * @return
+     */
     public Data getProbableData() {
         if(offset == null) {
             // only register-based indexing, can't know address
@@ -159,6 +179,14 @@ public class PointerOp implements Operand {
             }
             return res;
         }
+    }
+
+    void setNeedSizeFix(boolean b) {
+        needSizeFix = b;
+    }
+
+    boolean needsSizeFix() {
+        return needSizeFix;
     }
 
     @Override
@@ -228,13 +256,5 @@ public class PointerOp implements Operand {
     @Override
     public UsageType getUsage() {
         return usage;
-    }
-
-    public void setNeedSizeFix(boolean b) {
-        needSizeFix = b;
-    }
-
-    public boolean needsSizeFix() {
-        return needSizeFix;
     }
 }

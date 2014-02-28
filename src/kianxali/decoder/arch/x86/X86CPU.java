@@ -4,7 +4,18 @@ import kianxali.decoder.Register;
 import kianxali.decoder.arch.x86.xml.OperandDesc;
 import kianxali.decoder.arch.x86.xml.OperandDesc.OperandType;
 
+/**
+ * This utility class contains several constants and helper methods used
+ * to work with the x86 architecture.
+ * @author fwi
+ *
+ */
 public final class X86CPU {
+    /**
+     * The different CPU models of the x86 architecture.
+     * @author fwi
+     *
+     */
     public enum Model {
         I8086, I80186, I80286, I80386, I80486,
         PENTIUM, PENTIUM_MMX, PENTIUM_PRO, PENTIUM_II, PENTIUM_III, PENTIUM_IV,
@@ -18,14 +29,29 @@ public final class X86CPU {
 
     }
 
+    /**
+     * Operand sizes in bits
+     * @author fwi
+     *
+     */
     public enum OperandSize {
         O8, O16, O32, O64, O80, O128, O512
     }
 
+    /**
+     * Address sizes in bits
+     * @author fwi
+     *
+     */
     public enum AddressSize {
         A16, A32, A64
     }
 
+    /**
+     * The x86 register set
+     * @author fwi
+     *
+     */
     public enum X86Register implements Register {
         // generic 8 bit
         AL, AH, BL, BH, CL, CH, DL, DH,
@@ -69,19 +95,39 @@ public final class X86CPU {
         XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15
     }
 
+    /**
+     * x86 execution modes
+     * @author fwi
+     *
+     */
     public enum ExecutionMode {
         REAL, PROTECTED, LONG, SMM
     }
 
+    /**
+     * x86 memory segments
+     * @author fwi
+     *
+     */
     public enum Segment {
         CS, DS, SS, ES, FS, GS
     }
 
+    /**
+     * x86 instruction set extensions
+     * @author fwi
+     *
+     */
     public enum InstructionSetExtension {
         MMX, SMX, VMX,
         SSE_1, SSE_2, SSE_3, SSE_4_1, SSE_4_2, SSSE_3
     }
 
+    /**
+     * Given a context, return the current default address size
+     * @param ctx the context used for the calculation
+     * @return the expected address size
+     */
     public static AddressSize getAddressSize(X86Context ctx) {
         switch(ctx.getExecMode()) {
         case SMM:
@@ -105,6 +151,11 @@ public final class X86CPU {
         }
     }
 
+    /**
+     * Given a context, return the default operand size
+     * @param ctx the context used for the calculation
+     * @return the expected operand size
+     */
     private static OperandSize getDefaultOperandSize(X86Context ctx) {
         switch(ctx.getExecMode()) {
         case SMM:
@@ -130,6 +181,13 @@ public final class X86CPU {
         }
     }
 
+    /**
+     * Given a context and an operand type, returns the expected size
+     * of the operand
+     * @param ctx the context to analyze
+     * @param opType the operand type
+     * @return the expected size of the operand
+     */
     public static OperandSize getOperandSize(X86Context ctx, OperandType opType) {
         switch(opType) {
         case BYTE:
@@ -407,6 +465,13 @@ public final class X86CPU {
         }
     }
 
+    /**
+     * Given a register number and a context, return the general address register
+     * that the number represents
+     * @param ctx the context to analyze
+     * @param id the register number
+     * @return the register represented by the number
+     */
     public static X86Register getGenericAddressRegister(X86Context ctx, short id) {
         if(ctx.getExecMode() != ExecutionMode.LONG && id > 7) {
             throw new UnsupportedOperationException("used 64 bit register id in 32 bit mode");
@@ -420,6 +485,14 @@ public final class X86CPU {
         }
     }
 
+    /**
+     * Given a register number and a context, return the general operand register
+     * that the number represents
+     * @param op the operand description of the operand
+     * @param ctx the context to analyze
+     * @param id the register number
+     * @return the register represented by the number
+     */
     private static X86Register getOperandRegisterGeneral(OperandDesc op, X86Context ctx, short id) {
         if(ctx.getExecMode() != ExecutionMode.LONG && id > 7) {
             throw new UnsupportedOperationException("used 64 bit register id in 32 bit mode");
@@ -434,6 +507,14 @@ public final class X86CPU {
         }
     }
 
+    /**
+     * Given a register number and a context, return the register
+     * that the number represents
+     * @param op the operand description of the operand
+     * @param ctx the context to analyze
+     * @param id the register number
+     * @return the register represented by the number
+     */
     public static X86Register getOperandRegister(OperandDesc op, X86Context ctx, short id) {
         switch(op.adrType) {
         case MOD_RM_R:

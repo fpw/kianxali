@@ -5,6 +5,14 @@ import java.util.List;
 
 import kianxali.decoder.arch.x86.X86CPU.Segment;
 
+/**
+ * This class is used to store the information that can be encoded in
+ * prefixes to opcodes. The information are stored in flags and as raw
+ * bytes (in case the opcode needs to check whether a mandatory prefix
+ * is present).
+ * @author fwi
+ *
+ */
 public class Prefix {
     public Segment overrideSegment;
     public boolean lockPrefix, waitPrefix;
