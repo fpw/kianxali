@@ -20,6 +20,13 @@ import kianxali.loader.ByteSequence;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
 
+/**
+ * This class implements a recursive-traversal disassembler. It gets
+ * an {@link ImageFile} and fills a {@link DisassemblyData} instance,
+ * informing {@link DisassemblyListener} implementations during the analysis.
+ * @author fwi
+ *
+ */
 public class Disassembler implements AddressNameResolver, AddressNameListener {
     private static final Logger LOG = Logger.getLogger("kianxali.disassembler");
 
@@ -54,6 +61,13 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         }
     }
 
+    /**
+     * Create a new disassembler that can analyze an image file to
+     * fill a disassembly data object. The actual analysis can be started
+     * by calling {@link Disassembler#startAnalyzer()}.
+     * @param imageFile the image file to disassemble
+     * @param data the data object to fill during the analysis
+     */
     public Disassembler(ImageFile imageFile, DisassemblyData data) {
         this.imageFile = imageFile;
         this.disassemblyData = data;
@@ -76,14 +90,28 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         addCodeWork(entry, false);
     }
 
+    /**
+     * Adds a listener that will be informed about the start, end and errors
+     * of the analysis.
+     * @param listener the listener to register
+     */
     public void addListener(DisassemblyListener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * Removes a listener
+     * @param listener
+     */
     public void removeListener(DisassemblyListener listener) {
         listeners.remove(listener);
     }
 
+    /**
+     * Starts the actual disassembly. It will be run in a separate thread, i.e. this method
+     * won't block. The listeners will be informed when the analysis is done or runs into
+     * an error.
+     */
     public synchronized void startAnalyzer() {
         if(analyzeThread != null) {
             throw new IllegalStateException("disassembler already running");
@@ -102,6 +130,9 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         analyzeThread.start();
     }
 
+    /**
+     * Stops the analysis thread. It can be started again with {@link Disassembler#startAnalyzer()}.
+     */
     public synchronized void stopAnalyzer() {
         if(analyzeThread != null) {
             analyzeThread.interrupt();
@@ -113,6 +144,11 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         }
     }
 
+    /**
+     * Informs the disassembler that the given address should be analyzed again.
+     * Subsequent addresses will also be analyzed.
+     * @param addr the address to visit again
+     */
     public synchronized void reanalyze(long addr) {
         disassemblyData.clearDecodedEntity(addr);
 

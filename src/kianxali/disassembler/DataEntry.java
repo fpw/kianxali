@@ -10,15 +10,15 @@ import kianxali.decoder.Instruction;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
 
-// an address can be associated with:
-//  * references to other entries
-//  * start of file
-//  * start of segment, end of segment
-//  * start of function, end of function
-//  * instruction or data
-//  * user comment
-//  * data comment
-
+/**
+ * This class represents all information that can be associated with a memory address,
+ * such as the start of a function, actual instructions, data, comments made by the user
+ * etc.
+ * The setter methods are package private because the entries should be made through the
+ * {@link DisassemblyData} class so the listeners get informed.
+ * @author fwi
+ *
+ */
 public class DataEntry {
     private final long address;
     private ImageFile startImageFile;
@@ -29,99 +29,150 @@ public class DataEntry {
     private String comment;
     private final Set<DataEntry> references;
 
-    public DataEntry(long address) {
+    DataEntry(long address) {
         this.address = address;
         references = new HashSet<>();
     }
 
+    /**
+     * Returns the memory address of this entry
+     * @return the memory address of this entry
+     */
     public long getAddress() {
         return address;
     }
 
-    public void attachData(Data data) {
+    void attachData(Data data) {
         this.attachedData = data;
     }
 
+    /**
+     * Get the data object that is associated with this entry,
+     * e.g. for lea eax, offset "some string" it will return the
+     * data entry for "some string"
+     * @return the data object associated with this entry or null
+     */
     public Data getAttachedData() {
         return attachedData;
     }
 
-    public void clearAttachedData() {
+    void clearAttachedData() {
         attachedData = null;
     }
 
-    public void addReferenceFrom(DataEntry src) {
+    void addReferenceFrom(DataEntry src) {
         references.add(src);
     }
 
-    public void removeReference(DataEntry src) {
+    void removeReference(DataEntry src) {
         references.remove(src);
     }
 
+    /**
+     * Get all from-references to this entry, i.e. all locations that
+     * refer to this address.
+     * @return a set of entries that refer to this address
+     */
     public Set<DataEntry> getReferences() {
         return Collections.unmodifiableSet(references);
     }
 
+    /**
+     * Checks if this entry is a data entry
+     * @return true if {@link DataEntry#getEntity()} is of type {@link Data}
+     */
     public boolean hasData() {
         return entity instanceof Data;
     }
 
+    /**
+     * Checks if this entry is an instruction entry
+     * @return true if {@link DataEntry#getEntity()} is of type {@link Instruction}
+     */
     public boolean hasInstruction() {
         return entity instanceof Instruction;
     }
 
-    public void setStartImageFile(ImageFile startImageFile) {
+    void setStartImageFile(ImageFile startImageFile) {
         this.startImageFile = startImageFile;
     }
 
-    public void setStartSection(Section startSection) {
+    void setStartSection(Section startSection) {
         this.startSection = startSection;
     }
 
-    public void setStartFunction(Function startFunction) {
+    void setStartFunction(Function startFunction) {
         this.startFunction = startFunction;
     }
 
-    public void setEntity(DecodedEntity entity) {
+    void setEntity(DecodedEntity entity) {
         this.entity = entity;
     }
 
-    public void setEndFunction(Function endFunction) {
+    void setEndFunction(Function endFunction) {
         this.endFunction = endFunction;
     }
 
-    public void setEndSection(Section endSection) {
+    void setEndSection(Section endSection) {
         this.endSection = endSection;
     }
 
-    public void setComment(String comment) {
+    void setComment(String comment) {
         this.comment = comment;
     }
 
+    /**
+     * Returns the image file if this address is the start of an image file
+     * @return the image file associated with this address if it starts the image, or null
+     */
     public ImageFile getStartImageFile() {
         return startImageFile;
     }
 
+    /**
+     * Returns the section if this address is the start of a section
+     * @return the section started by this address or null
+     */
     public Section getStartSection() {
         return startSection;
     }
 
+    /**
+     * Returns the function if this address is the start of a function
+     * @return the function started by this address or null
+     */
     public Function getStartFunction() {
         return startFunction;
     }
 
+    /**
+     * Returns the entity (instruction or data) stored at the address
+     * @return the entity contained in this entry or null
+     */
     public DecodedEntity getEntity() {
         return entity;
     }
 
+    /**
+     * Returns the user comment associated with this entry
+     * @return the user comment stored at this entry or null
+     */
     public String getComment() {
         return comment;
     }
 
+    /**
+     * Returns the function that ends on this address
+     * @return the function that ends on this address or null
+     */
     public Function getEndFunction() {
         return endFunction;
     }
 
+    /**
+     * Returns the section if this address is the end of a section
+     * @return the section ended by this address or null
+     */
     public Section getEndSection() {
         return endSection;
     }

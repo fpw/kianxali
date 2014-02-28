@@ -11,19 +11,39 @@ import kianxali.decoder.Instruction;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
 
+/**
+ * This data structure stores the result of the disassembly. It creates a memory map
+ * for the image file to reconstruct the actual runtime layout. It is passed to the
+ * disassembler that will fill it.
+ * @author fwi
+ *
+ */
 public class DisassemblyData {
     private final Set<DataListener> listeners;
     private final NavigableMap<Long, DataEntry> memoryMap;
 
+    /**
+     * Construct a new disassembly data object.
+     */
     public DisassemblyData() {
         this.listeners = new CopyOnWriteArraySet<>();
         this.memoryMap = new TreeMap<>();
     }
 
+    /**
+     * Adds a listener that will be informed about changes of
+     * the memory map, i.e. when a new instruction or data was found
+     * by the disassembler
+     * @param listener the listener to add
+     */
     public void addListener(DataListener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * Removes a listener
+     * @param listener the listener to remove
+     */
     public void removeListener(DataListener listener) {
         listeners.remove(listener);
     }
@@ -40,13 +60,13 @@ public class DisassemblyData {
         tellListeners(memAddr);
     }
 
-    public void clear(long addr) {
+    void clear(long addr) {
         memoryMap.remove(addr);
         tellListeners(addr);
     }
 
     // clears instruction or data and attached data, but not function start, image start etc.
-    public void clearDecodedEntity(long addr) {
+    void clearDecodedEntity(long addr) {
         DataEntry entry = getInfoCoveringAddress(addr);
         if(entry == null) {
             // nothing to do as there is no code or data
@@ -57,7 +77,7 @@ public class DisassemblyData {
         tellListeners(addr);
     }
 
-    public synchronized void insertImageFileWithSections(ImageFile file) {
+    synchronized void insertImageFileWithSections(ImageFile file) {
         long imageAddress = 0L;
         if(file.getSections().size() > 0) {
             imageAddress = file.getSections().get(0).getStartAddress();
@@ -97,7 +117,7 @@ public class DisassemblyData {
         }
     }
 
-    public synchronized DataEntry insertEntity(DecodedEntity entity) {
+    synchronized DataEntry insertEntity(DecodedEntity entity) {
         long memAddr = entity.getMemAddress();
         DataEntry old = getInfoOnExactAddress(memAddr);
         if(old != null) {
@@ -120,7 +140,7 @@ public class DisassemblyData {
         }
     }
 
-    public void insertFunction(Function function) {
+    void insertFunction(Function function) {
         long start = function.getStartAddress();
         long end = function.getEndAddress();
 
@@ -145,7 +165,7 @@ public class DisassemblyData {
         tellListeners(end);
     }
 
-    public void updateFunctionEnd(Function function, long newEnd) {
+    void updateFunctionEnd(Function function, long newEnd) {
         long oldEnd = function.getEndAddress();
 
         function.setEndAddress(newEnd);
@@ -166,7 +186,7 @@ public class DisassemblyData {
     }
 
 
-    public void insertReference(DataEntry srcEntry, long dstAddress) {
+    void insertReference(DataEntry srcEntry, long dstAddress) {
         DataEntry entry = getInfoOnExactAddress(dstAddress);
         if(entry == null) {
             entry = new DataEntry(dstAddress);
@@ -176,6 +196,11 @@ public class DisassemblyData {
         tellListeners(dstAddress);
     }
 
+    /**
+     * Attaches a user comment to a given memory address
+     * @param memAddr the memory address to attach the comment to
+     * @param comment the user comment
+     */
     public void insertComment(long memAddr, String comment) {
         DataEntry entry = getInfoOnExactAddress(memAddr);
         if(entry == null) {
@@ -186,11 +211,28 @@ public class DisassemblyData {
         tellListeners(memAddr);
     }
 
+    /**
+     * Retrieves the data entry for a given memory address.
+     * The address must be the exact starting address of the entry,
+     * i.e. if an address is passed that covers the middle of an entry,
+     * it will not be returned. {@link DisassemblyData#getInfoCoveringAddress(long)}
+     * should be used for those cases.
+     * @param memAddr the address to retrieve
+     * @return the data entry started at the given address or null
+     */
     public synchronized DataEntry getInfoOnExactAddress(long memAddr) {
         DataEntry entry = memoryMap.get(memAddr);
         return entry;
     }
 
+    /**
+     * Retrieves the data entry for a given memory address.
+     * The address needn't be the exact starting address of the entry,
+     * i.e. if an address is passed that covers the middle of an entry,
+     * it will still be returned.
+     * @param memAddr the address to retrieve
+     * @return the data entry that covers the given address or null
+     */
     public synchronized DataEntry getInfoCoveringAddress(long memAddr) {
         // check if the last instruction at lower addresses overlaps
         Entry<Long, DataEntry> floorEntry = memoryMap.floorEntry(memAddr);
@@ -209,6 +251,12 @@ public class DisassemblyData {
         return res;
     }
 
+    /**
+     * Returns the entity (instruction or data) associated with a given address.
+     * It will only be returned if the exact starting address is passed.
+     * @param memAddr the address to retrieve
+     * @return the entity starting at the exact given address or null
+     */
     public synchronized DecodedEntity getEntityOnExactAddress(long memAddr) {
         DataEntry entry = getInfoOnExactAddress(memAddr);
         if(entry == null) {
@@ -217,7 +265,7 @@ public class DisassemblyData {
         return entry.getEntity();
     }
 
-    public synchronized DecodedEntity findEntityOnAddress(long memAddr) {
+    synchronized DecodedEntity findEntityOnAddress(long memAddr) {
         DataEntry entry = getInfoCoveringAddress(memAddr);
         if(entry == null) {
             return null;
@@ -225,10 +273,18 @@ public class DisassemblyData {
         return entry.getEntity();
     }
 
-    public synchronized int getEntityCount() {
+    /**
+     * Returns the total number of entries in the memory map
+     * @return the number of entries contained in the memory map
+     */
+    public synchronized int getEntryCount() {
         return memoryMap.size();
     }
 
+    /**
+     * Allows a visitor to visit all entries in the memory map.
+     * @param visitor a visitor that will be called with each entry
+     */
     public void visitInstructions(InstructionVisitor visitor) {
         for(long addr : memoryMap.keySet()) {
             DataEntry entry = memoryMap.get(addr);

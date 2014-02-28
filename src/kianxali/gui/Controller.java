@@ -236,7 +236,7 @@ public class Controller implements DisassemblyListener, DataListener {
         double duration = (System.currentTimeMillis() - beginDisassembleTime) / 1000.0;
         LOG.info(String.format(
                     "Analysis finished after %.2f seconds, got %d entities",
-                    duration, disassemblyData.getEntityCount())
+                    duration, disassemblyData.getEntryCount())
                 );
 
         // only perform the following steps on the first run, i.e. not when a script calls reanalyze etc.
