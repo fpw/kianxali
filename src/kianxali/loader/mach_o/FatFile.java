@@ -12,6 +12,12 @@ import kianxali.decoder.Context;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
 
+/**
+ * Implements a parser for the fat file format that can include Mach-O files
+ * for difference architectures.
+ * @author fwi
+ *
+ */
 public class FatFile extends ImageFile {
     private final FatHeader fatHeader;
 

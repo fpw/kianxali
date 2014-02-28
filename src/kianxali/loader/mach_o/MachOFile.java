@@ -17,6 +17,12 @@ import kianxali.decoder.arch.x86.X86CPU.Model;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
 
+/**
+ * Implements a loader for the Mach-O format. See package info for
+ * the used references.
+ * @author fwi
+ *
+ */
 public class MachOFile extends ImageFile {
     private MachHeader machHeader;
 

@@ -18,6 +18,11 @@ import kianxali.decoder.arch.x86.X86CPU.Model;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
 
+/**
+ * Implements a loader for ELF files, see package info for used references.
+ * @author fwi
+ *
+ */
 public class ELFFile extends ImageFile {
     private static final Logger LOG = Logger.getLogger("kianxali.loader.elf");
     private final ELFHeader header;

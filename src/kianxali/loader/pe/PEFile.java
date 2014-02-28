@@ -17,6 +17,12 @@ import kianxali.decoder.arch.x86.X86CPU.Model;
 import kianxali.loader.ImageFile;
 import kianxali.loader.Section;
 
+/**
+ * Implements a loader for the PE file format. See the package info for the used
+ * references.
+ * @author fwi
+ *
+ */
 public class PEFile extends ImageFile implements AddressConverter {
     private static final Logger LOG = Logger.getLogger("kianxali.loader.pe");
     private DOSStub dosStub;
