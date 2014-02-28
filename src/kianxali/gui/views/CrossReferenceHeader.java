@@ -32,9 +32,13 @@ import kianxali.gui.Controller;
 import kianxali.gui.models.ImageDocument;
 
 public class CrossReferenceHeader extends JPanel implements DocumentListener {
-    private static final Logger LOG = Logger.getLogger("kianxali.gui.views");
     private static final long serialVersionUID = 1L;
-    private static final Color[] colors = {Color.GREEN, Color.ORANGE, Color.YELLOW, Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.CYAN, Color.MAGENTA, Color.PINK};
+    private static final Logger LOG = Logger.getLogger("kianxali.gui.views");
+    private static final Color[] DISTANT_COLORS = {
+        Color.GREEN, Color.ORANGE, Color.YELLOW,
+        Color.RED,   Color.BLUE,   Color.BLACK,
+        Color.WHITE, Color.CYAN,   Color.MAGENTA,
+        Color.PINK};
 
     private final Controller controller;
     private final JTextComponent component;
@@ -121,7 +125,7 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
         shiftReferences(references);
         for(LineEntry line : references) {
             int x = clip.width - 8 - line.shiftX * 4;
-            g2.setColor(colors[line.shiftX % colors.length]);
+            g2.setColor(DISTANT_COLORS[line.shiftX % DISTANT_COLORS.length]);
             g2.drawLine(x, line.fromY, clip.width, line.fromY);
             g2.drawLine(x, line.fromY, x, line.toY);
             g2.drawLine(x, line.toY, clip.width, line.toY);
