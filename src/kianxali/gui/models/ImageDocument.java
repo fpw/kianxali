@@ -295,10 +295,17 @@ public class ImageDocument extends DefaultStyledDocument {
             SimpleAttributeSet attr = new SimpleAttributeSet(mnemonicAttributes);
             attr.addAttribute(InstructionKey, inst);
             specs.add(contentTag(attr, mnemo));
+            List<Long> branches = inst.getBranchAddresses();
             int i = 0;
             for(Operand op : operands) {
+                Number opAsNum = op.asNumber();
+                MutableAttributeSet opAttrs = operandAttributes;
+                if(branches.contains(opAsNum)) {
+                    opAttrs = new SimpleAttributeSet(referenceAttributes);
+                    opAttrs.addAttribute(RefAddressKey, opAsNum);
+                }
                 String opString = op.asString(formatter) + ((i < operands.size() - 1) ? ", " : "");
-                specs.add(contentTag(operandAttributes, opString));
+                specs.add(contentTag(opAttrs, opString));
                 i++;
             }
         } else if(entity instanceof Data) {
