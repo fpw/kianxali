@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -50,6 +51,8 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
     private final Map<Line2D, LineEntry> visibleLines;
     private final Controller controller;
     private final JTextComponent component;
+    private final Stroke thickStroke = new BasicStroke(3.5f);
+    private final Stroke thinStroke = new BasicStroke(1.5f);
     private int lastHeight;
     private ImageDocument imageDoc;
     private boolean isHighlighting;
@@ -186,22 +189,18 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
         // check which lines must be highlighted
         LineEntry highlight = null;
         Point mouse = getMousePosition();
-        Rectangle2D mouseRect = null;
         if(mouse != null) {
-            mouseRect = new Rectangle2D.Float(mouse.x - 1, mouse.y - 1, 2, 2);
-            for(Line2D line : visibleLines.keySet()) {
-                if(mouseRect != null && line.intersects(mouseRect)) {
-                    highlight = visibleLines.get(line);
-                    break;
-                }
+            Line2D line = findLine(mouse);
+            if(line != null) {
+                highlight = visibleLines.get(line);
             }
         }
         for(Line2D line : visibleLines.keySet()) {
             LineEntry entry = visibleLines.get(line);
             if(highlight == entry) {
-                g2.setStroke(new BasicStroke(3.5f));
+                g2.setStroke(thickStroke);
             } else {
-                g2.setStroke(new BasicStroke(1.5f));
+                g2.setStroke(thinStroke);
             }
             g2.setColor(DISTANT_COLORS[entry.shiftX % DISTANT_COLORS.length]);
             g2.draw(line);
