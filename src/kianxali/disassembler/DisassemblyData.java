@@ -66,15 +66,21 @@ public class DisassemblyData {
     }
 
     // clears instruction or data and attached data, but not function start, image start etc.
-    void clearDecodedEntity(long addr) {
-        DataEntry entry = getInfoCoveringAddress(addr);
+    void clearDecodedEntity(long memAddr) {
+        DataEntry entry = getInfoCoveringAddress(memAddr);
         if(entry == null) {
             // nothing to do as there is no code or data
             return;
         }
         entry.setEntity(null);
         entry.clearAttachedData();
-        tellListeners(addr);
+        tellListeners(memAddr);
+
+        // clear from-references to here
+        for(long addr : memoryMap.keySet()) {
+            DataEntry refEntry = memoryMap.get(addr);
+            refEntry.removeReference(entry);
+        }
     }
 
     synchronized void insertImageFileWithSections(ImageFile file) {
