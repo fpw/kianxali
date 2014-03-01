@@ -134,7 +134,9 @@ public final class X86Decoder implements Decoder {
             if(syntax.getExtension() != extension) {
                 continue;
             }
-            if(syntax.getOpcodeEntry().getStartModel().ordinal() < latestStart.ordinal()) {
+
+            // the check for memFormat is a hack - otherwise FIADD will be removed in favor of FCMOVB
+            if(syntax.getOpcodeEntry().getStartModel().ordinal() < latestStart.ordinal() && syntax.getOpcodeEntry().memFormat == null) {
                 removeFrom.remove(syntax);
             }
         }

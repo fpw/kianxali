@@ -61,6 +61,8 @@ public class OpcodeEntry {
     // models where the opcode was first and last supported
     Model startModel, lastModel;
 
+    public Integer memFormat;
+
     OpcodeEntry() {
         this.groups = new HashSet<>();
         this.syntaxes = new ArrayList<>(4);

@@ -580,6 +580,8 @@ public class X86DecoderTest {
         checkOpcode32(new short[] {0xA2, 0x00, 0x00, 0x00, 0x00}, "mov byte ptr [0], al");
         checkOpcode32(new short[] {0x62, 0x03}, "bound eax, qword ptr [ebx]");
 
+        checkOpcode32(new short[] {0xDA,  0x87, 0x34, 0x04, 0x00, 0x00}, "fiadd dword ptr [edi + 434h]");
+
         // Prefixes
         checkOpcode32(new short[] {0x66,  0xD1, 0xEF}, "shr di, 1");
         checkOpcode64(new short[] {0x40, 0x53}, "push rbx");

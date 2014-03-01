@@ -391,6 +391,11 @@ public class XMLParserX86 {
             currentModeOpts.lock = true;
         }
 
+        String memFormat = atts.getValue("mem_format");
+        if(memFormat != null) {
+            currentModeOpts.memFormat = Integer.parseInt(memFormat);
+        }
+
         String attr = atts.getValue("attr");
         if(attr == null) {
             attr = "";
