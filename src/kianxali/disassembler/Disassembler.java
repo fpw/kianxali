@@ -269,7 +269,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 // couldn't decode instruction
                 // TODO: change to data
                 for(DisassemblyListener listener : listeners) {
-                    listener.onAnalyzeError(memAddr);
+                    listener.onAnalyzeError(memAddr, "Couldn't decode instruction");
                 }
                 break;
             }
@@ -329,7 +329,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             LOG.log(Level.WARNING, String.format("Data decode error (%s) at %08X", e, data.getMemAddress()));
             // TODO: change to raw data
             for(DisassemblyListener listener : listeners) {
-                listener.onAnalyzeError(data.getMemAddress());
+                listener.onAnalyzeError(data.getMemAddress(), "Couldn't decode data");
             }
             throw e;
         } finally {
@@ -406,11 +406,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 addCodeWork(addr, false);
                 return;
             } else {
-                // TODO: Issue warning event about invalid code address
                 LOG.warning(String.format("Code at %08X references invalid address %08X", inst.getMemAddress(), addr));
-                for(DisassemblyListener listener : listeners) {
-                    listener.onAnalyzeError(inst.getMemAddress());
-                }
             }
         }
 

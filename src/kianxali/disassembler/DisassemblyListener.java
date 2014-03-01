@@ -16,8 +16,9 @@ public interface DisassemblyListener {
     /**
      * Will be called when the analysis runs into an error
      * @param memAddr the erroneous memory address
+     * @param reason reason for the error
      */
-    void onAnalyzeError(long memAddr);
+    void onAnalyzeError(long memAddr, String reason);
 
     /**
      * Will be called when the analysis stops

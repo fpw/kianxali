@@ -255,7 +255,8 @@ public class Controller implements DisassemblyListener, DataListener {
     }
 
     @Override
-    public void onAnalyzeError(long memAddr) {
+    public void onAnalyzeError(long memAddr, String reason) {
+        LOG.warning(String.format("Analyze error at location %X: %s", memAddr, reason));
     }
 
     @Override
