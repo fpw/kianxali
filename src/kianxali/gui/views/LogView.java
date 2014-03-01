@@ -68,7 +68,7 @@ public class LogView extends JPanel {
         try {
             Document doc = logPane.getDocument();
             doc.insertString(doc.getLength(), line, logStyle);
-        } catch (BadLocationException e) {
+        } catch(BadLocationException e) {
             // can't use Logger here because this would call addLine again
             System.err.println("Can't add text to log: " + e.getMessage());
         }
@@ -78,7 +78,7 @@ public class LogView extends JPanel {
         try {
             Document doc = logPane.getDocument();
             doc.remove(0, doc.getLength());
-        } catch (BadLocationException e) {
+        } catch(BadLocationException e) {
             // don't care
         }
     }

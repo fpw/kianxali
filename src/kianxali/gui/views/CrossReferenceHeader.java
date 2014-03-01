@@ -153,7 +153,7 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
                         repaint();
                         lastHeight = rect.y;
                     }
-                } catch (BadLocationException e) {
+                } catch(BadLocationException e) {
                     // doesn't matter
                 }
             }
@@ -279,7 +279,7 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
                 } else {
                     curOffset = rowEnd + 1;
                 }
-            } catch (BadLocationException e) {
+            } catch(BadLocationException e) {
                 LOG.warning("Invalid location: " + curOffset);
                 break;
             }

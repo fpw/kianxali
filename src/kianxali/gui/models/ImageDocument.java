@@ -189,7 +189,7 @@ public class ImageDocument extends DefaultStyledDocument {
                 specs.toArray(specArr);
                 insert(offset, specArr);
             }
-        } catch (BadLocationException e) {
+        } catch(BadLocationException e) {
             e.printStackTrace();
         }
     }

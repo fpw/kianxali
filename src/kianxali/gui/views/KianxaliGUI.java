@@ -91,7 +91,7 @@ public class KianxaliGUI extends JFrame {
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
+        } catch(Exception e) {
             // doesn't matter, just use default laf
             LOG.info("Couldn't set system look and feel");
         }

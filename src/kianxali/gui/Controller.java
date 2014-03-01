@@ -190,7 +190,7 @@ public class Controller implements DisassemblyListener, DataListener {
             formatter.setAddressNameResolve(disassembler);
 
             disassembler.startAnalyzer();
-        } catch (Exception e) {
+        } catch(Exception e) {
             LOG.warning("Couldn't load image: " + e.getMessage());
             e.printStackTrace();
             gui.showError("Couldn't load file", "Error loading file: " + e.getMessage());
@@ -278,7 +278,7 @@ public class Controller implements DisassemblyListener, DataListener {
                 gui.getImageView().setDocument(imageDoc);
                 try {
                     gui.getImageView().scrollTo(imageFile.getCodeEntryPointMem());
-                } catch (BadLocationException e) {
+                } catch(BadLocationException e) {
                     // ignore if scrolling didn't work
                 }
                 gui.getFunctionListView().setModel(functionList);
@@ -291,7 +291,7 @@ public class Controller implements DisassemblyListener, DataListener {
     public void onFunctionDoubleClick(Function fun) {
         try {
             gui.getImageView().scrollTo(fun.getStartAddress());
-        } catch (BadLocationException e) {
+        } catch(BadLocationException e) {
             LOG.warning("Invalid scroll location when double clicking function");
         }
     }
@@ -299,7 +299,7 @@ public class Controller implements DisassemblyListener, DataListener {
     public void onStringDoubleClicked(Data data) {
         try {
             gui.getImageView().scrollTo(data.getMemAddress());
-        } catch (BadLocationException e) {
+        } catch(BadLocationException e) {
             LOG.warning("Invalid scroll location when double clicking string");
         }
     }
@@ -323,7 +323,7 @@ public class Controller implements DisassemblyListener, DataListener {
             long refAddr = (Long) ref;
             try {
                 gui.getImageView().scrollTo(refAddr);
-            } catch (BadLocationException e) {
+            } catch(BadLocationException e) {
                 LOG.warning("Invalid scroll location when left clicking reference");
             }
         }
@@ -352,7 +352,7 @@ public class Controller implements DisassemblyListener, DataListener {
         ByteSequence seq = imageFile.getByteSequence(imageFile.getCodeEntryPointMem(), true);
         try {
             seq.savePatched(path);
-        } catch (IOException e) {
+        } catch(IOException e) {
             gui.showError("Couldn't save file", e.getMessage());
         } finally {
             seq.unlock();
@@ -420,7 +420,7 @@ public class Controller implements DisassemblyListener, DataListener {
         try {
             long addr = Long.parseLong(where, 16);
             gui.getImageView().scrollTo(addr);
-        } catch (Exception e) {
+        } catch(Exception e) {
             showError("Invalid address: " + e.getMessage());
         }
     }
@@ -428,7 +428,7 @@ public class Controller implements DisassemblyListener, DataListener {
     public void onGotoRequest(long addr) {
         try {
             gui.getImageView().scrollTo(addr);
-        } catch (Exception e) {
+        } catch(Exception e) {
             showError("Invalid address: " + e.getMessage());
         }
     }

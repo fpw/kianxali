@@ -51,7 +51,7 @@ class X86Instruction implements Instruction {
             long oldPos = seq.getPosition();
             try {
                 score = tryDecode(seq, ctx);
-            } catch (Exception e) {
+            } catch(Exception e) {
                 continue;
             } finally {
                 seq.seek(oldPos);

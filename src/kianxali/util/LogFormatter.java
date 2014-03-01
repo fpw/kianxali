@@ -20,7 +20,7 @@ public class LogFormatter extends Formatter {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%7s: ", r.getLevel()));
         sb.append(formatMessage(r)).append(System.getProperty("line.separator"));
-        if (null != r.getThrown()) {
+        if(null != r.getThrown()) {
             sb.append("Throwable occurred: ");
             Throwable t = r.getThrown();
             PrintWriter pw = null;
@@ -30,10 +30,10 @@ public class LogFormatter extends Formatter {
                 t.printStackTrace(pw);
                 sb.append(sw.toString());
             } finally {
-                if (pw != null) {
+                if(pw != null) {
                     try {
                         pw.close();
-                    } catch (Exception e) {
+                    } catch(Exception e) {
                         e.printStackTrace();
                     }
                 }

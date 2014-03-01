@@ -186,7 +186,7 @@ public class X86Context implements Context {
     public Decoder createInstructionDecoder() {
         try {
             return X86Decoder.fromXML(model, execMode, "./xml/x86/x86reference.xml", "./xml/x86/x86reference.dtd");
-        } catch (SAXException | IOException e) {
+        } catch(SAXException | IOException e) {
             System.err.println("Couldn't create X86 decoder: " + e.getMessage());
             e.printStackTrace();
             return null;
