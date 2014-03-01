@@ -8,9 +8,16 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -40,12 +47,15 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
         Color.WHITE, Color.CYAN,   Color.MAGENTA,
         Color.PINK};
 
+    private final Map<Line2D, LineEntry> visibleLines;
     private final Controller controller;
     private final JTextComponent component;
     private int lastHeight;
     private ImageDocument imageDoc;
+    private boolean isHighlighting;
 
     private class LineEntry implements Comparable<LineEntry> {
+        long fromAddr;
         int fromY, toY, shiftX;
 
         public LineEntry(int from, int to) {
@@ -63,7 +73,8 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
         }
     }
 
-    public CrossReferenceHeader(Controller controller, final JTextComponent component) {
+    public CrossReferenceHeader(final Controller controller, final JTextComponent component) {
+        this.visibleLines = new HashMap<>();
         this.controller = controller;
         this.component = component;
 
@@ -86,6 +97,46 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
         // without this height, weird painting problems will occur :-/
         // but due to clipping, it shouldn't be too bad
         setPreferredSize(new Dimension(50, Integer.MAX_VALUE));
+
+        addMouseMotionListener(new MouseMotionListener() {
+            public void mouseDragged(MouseEvent e) { }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                Point p = e.getPoint();
+                Line2D line = findLine(p);
+                if(line != null) {
+                    isHighlighting = true;
+                    repaint();
+                } else if(isHighlighting) {
+                    isHighlighting = false;
+                    repaint();
+                }
+            }
+        });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Point p = e.getPoint();
+                Line2D line = findLine(p);
+                if(line != null) {
+                    LineEntry entry = visibleLines.get(line);
+                    if(entry != null) {
+                        controller.onGotoRequest(entry.fromAddr);
+                    }
+                }
+            }
+        });
+    }
+
+    private Line2D findLine(Point p) {
+        for(Line2D line : visibleLines.keySet()) {
+            if(line.intersects(new Rectangle2D.Float(p.x - 1, p.y - 1, 2, 2))) {
+                return line;
+            }
+        }
+        return null;
     }
 
     private void documentChanged() {
@@ -110,6 +161,7 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         super.paintComponent(g2);
+        visibleLines.clear();
         if(imageDoc == null) {
             return;
         }
@@ -120,18 +172,39 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
         int endOffset = component.viewToModel(new Point(0, clip.y + clip.height));
         g2.setColor(Color.GRAY);
         g2.fillRect(clip.x, clip.y, clip.width, clip.height);
-        g2.setStroke(new BasicStroke(1.5f));
-        NavigableSet<LineEntry> references = buildReferences(startOffset, endOffset);
-        shiftReferences(references);
-        for(LineEntry line : references) {
-            int x = clip.width - 8 - line.shiftX * 4;
-            g2.setColor(DISTANT_COLORS[line.shiftX % DISTANT_COLORS.length]);
-            g2.drawLine(x, line.fromY, clip.width, line.fromY);
-            g2.drawLine(x, line.fromY, x, line.toY);
-            g2.drawLine(x, line.toY, clip.width, line.toY);
-            // arrow tip
-            g2.drawLine(clip.width - 4, line.toY - 4, clip.width + 4, line.toY);
-            g2.drawLine(clip.width - 4, line.toY + 4, clip.width + 4, line.toY);
+        NavigableSet<LineEntry> lineEntries = buildReferences(startOffset, endOffset);
+        shiftReferences(lineEntries);
+        for(LineEntry entry : lineEntries) {
+            int x = clip.width - 8 - entry.shiftX * 4;
+            visibleLines.put(new Line2D.Float(x, entry.fromY, clip.width, entry.fromY), entry);
+            visibleLines.put(new Line2D.Float(x, entry.fromY, x, entry.toY), entry);
+            visibleLines.put(new Line2D.Float(x, entry.toY, clip.width, entry.toY), entry);
+            visibleLines.put(new Line2D.Float(clip.width - 4, entry.toY - 4, clip.width + 4, entry.toY), entry);
+            visibleLines.put(new Line2D.Float(clip.width - 4, entry.toY + 4, clip.width + 4, entry.toY), entry);
+        }
+
+        // check which lines must be highlighted
+        LineEntry highlight = null;
+        Point mouse = getMousePosition();
+        Rectangle2D mouseRect = null;
+        if(mouse != null) {
+            mouseRect = new Rectangle2D.Float(mouse.x - 1, mouse.y - 1, 2, 2);
+            for(Line2D line : visibleLines.keySet()) {
+                if(mouseRect != null && line.intersects(mouseRect)) {
+                    highlight = visibleLines.get(line);
+                    break;
+                }
+            }
+        }
+        for(Line2D line : visibleLines.keySet()) {
+            LineEntry entry = visibleLines.get(line);
+            if(highlight == entry) {
+                g2.setStroke(new BasicStroke(3.5f));
+            } else {
+                g2.setStroke(new BasicStroke(1.5f));
+            }
+            g2.setColor(DISTANT_COLORS[entry.shiftX % DISTANT_COLORS.length]);
+            g2.draw(line);
         }
     }
 
@@ -174,7 +247,9 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
                     if(!branchAddrs.isEmpty() && !inst.isFunctionCall()) {
                         for(Long branchAddr : inst.getBranchAddresses()) {
                             int toY = getYPosition(imageDoc.getOffsetForAddress(branchAddr));
-                            res.add(new LineEntry(thisY, toY));
+                            LineEntry line = new LineEntry(thisY, toY);
+                            line.fromAddr = memAddr;
+                            res.add(line);
                         }
                     }
                 }
@@ -187,7 +262,9 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
                             Instruction inst = (Instruction) fromEntry.getEntity();
                             if(!inst.isFunctionCall()) {
                                 int fromY = getYPosition(imageDoc.getOffsetForAddress(fromEntry.getAddress()));
-                                res.add(new LineEntry(fromY, thisY));
+                                LineEntry line = new LineEntry(fromY, thisY);
+                                line.fromAddr = fromEntry.getAddress();
+                                res.add(line);
                             }
                         }
                     }

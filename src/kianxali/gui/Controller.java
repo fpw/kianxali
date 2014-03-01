@@ -409,6 +409,14 @@ public class Controller implements DisassemblyListener, DataListener {
         }
     }
 
+    public void onGotoRequest(long addr) {
+        try {
+            gui.getImageView().scrollTo(addr);
+        } catch (Exception e) {
+            showError("Invalid address: " + e.getMessage());
+        }
+    }
+
     public void onExitRequest() {
         gui.dispose();
     }
