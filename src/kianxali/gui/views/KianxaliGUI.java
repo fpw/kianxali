@@ -152,7 +152,7 @@ public class KianxaliGUI extends JFrame {
         JMenuItem about = new JMenuItem("About");
         about.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(KianxaliGUI.this, "<html>Kianxali<br>© 2014 by Folke Will</html>", "About Kianxali", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(KianxaliGUI.this, "<html>Kianxali<br>&copy; 2014 by Folke Will</html>", "About Kianxali", JOptionPane.INFORMATION_MESSAGE);
             }
         });
         helpMenu.add(about);

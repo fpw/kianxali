@@ -286,7 +286,7 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
         }
 
         // filter double entries
-        for(Iterator<LineEntry> it = res.iterator(); it.hasNext(); ) {
+        for(Iterator<LineEntry> it = res.iterator(); it.hasNext();) {
             LineEntry entry = it.next();
             boolean remove = false;
             for(LineEntry otherEntry : res.tailSet(entry, false)) {
