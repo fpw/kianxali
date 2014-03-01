@@ -77,9 +77,11 @@ public class DisassemblyData {
         tellListeners(memAddr);
 
         // clear from-references to here
-        for(long addr : memoryMap.keySet()) {
-            DataEntry refEntry = memoryMap.get(addr);
-            refEntry.removeReference(entry);
+        for(long refAddr : memoryMap.keySet()) {
+            DataEntry refEntry = memoryMap.get(refAddr);
+            if(refEntry.removeReference(entry)) {
+                tellListeners(refAddr);
+            }
         }
     }
 

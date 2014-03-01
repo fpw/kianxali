@@ -211,7 +211,22 @@ public class Controller implements DisassemblyListener, DataListener {
     }
 
     @Override
-    public void onAnalyzeChange(long memAddr, DataEntry entry) {
+    public void onAnalyzeChange(final long memAddr, final DataEntry entry) {
+        if(gui.getImageView().getDocument() == imageDoc && !SwingUtilities.isEventDispatchThread()) {
+            // if the document is visible already, do it in the EDT
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    changeAnalyzeRaw(memAddr, entry);
+                }
+            });
+        } else {
+            // not visible or already in EDT: edit directly
+            changeAnalyzeRaw(memAddr, entry);
+        }
+    }
+
+    private void changeAnalyzeRaw(long memAddr, DataEntry entry) {
         // entry can be null if an entry was deleted
         try {
             imageDoc.updateDataEntry(memAddr, entry);

@@ -64,8 +64,8 @@ public class DataEntry {
         references.add(src);
     }
 
-    void removeReference(DataEntry src) {
-        references.remove(src);
+    boolean removeReference(DataEntry src) {
+        return references.remove(src);
     }
 
     /**

@@ -17,6 +17,7 @@ import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -58,7 +59,7 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
     private boolean isHighlighting;
 
     private class LineEntry implements Comparable<LineEntry> {
-        long fromAddr;
+        long fromAddr, toAddr;
         int fromY, toY, shiftX;
 
         public LineEntry(int from, int to) {
@@ -248,6 +249,7 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
                             int toY = getYPosition(imageDoc.getOffsetForAddress(branchAddr));
                             LineEntry line = new LineEntry(thisY, toY);
                             line.fromAddr = memAddr;
+                            line.toAddr = branchAddr;
                             res.add(line);
                         }
                     }
@@ -263,12 +265,12 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
                                 int fromY = getYPosition(imageDoc.getOffsetForAddress(fromEntry.getAddress()));
                                 LineEntry line = new LineEntry(fromY, thisY);
                                 line.fromAddr = fromEntry.getAddress();
+                                line.toAddr = memAddr;
                                 res.add(line);
                             }
                         }
                     }
                 }
-
 
                 // determine next model position
                 int rowEnd = Utilities.getRowEnd(component, curOffset);
@@ -282,6 +284,23 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
                 break;
             }
         }
+
+        // filter double entries
+        for(Iterator<LineEntry> it = res.iterator(); it.hasNext(); ) {
+            LineEntry entry = it.next();
+            boolean remove = false;
+            for(LineEntry otherEntry : res.tailSet(entry, false)) {
+                if(otherEntry.fromAddr == entry.fromAddr && otherEntry.toAddr == entry.toAddr) {
+                    remove = true;
+                    break;
+                }
+            }
+            if(remove) {
+                it.remove();
+            }
+        }
+
+
         return res;
     }
 

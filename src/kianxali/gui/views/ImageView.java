@@ -209,7 +209,11 @@ public class ImageView extends JPanel {
     }
 
     public ImageDocument getDocument() {
-        return (ImageDocument) editor.getDocument();
+        if(editor.getDocument() instanceof ImageDocument) {
+            return (ImageDocument) editor.getDocument();
+        } else {
+            return null;
+        }
     }
 
     public void setDocument(ImageDocument document) {
