@@ -190,6 +190,20 @@ public class PointerOp implements Operand {
     }
 
     @Override
+    public Short getPointerDestSize() {
+        switch(X86CPU.getOperandSize(context, opType)) {
+        case O8:    return 8;
+        case O16:   return 16;
+        case O32:   return 32;
+        case O64:   return 64;
+        case O80:   return 80;
+        case O128:  return 128;
+        case O512:  return 512;
+        default: throw new RuntimeException("invalid operand size: " + opType);
+        }
+    }
+
+    @Override
     public String asString(OutputFormatter formatter) {
         StringBuilder str = new StringBuilder();
 

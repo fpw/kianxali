@@ -342,7 +342,7 @@ public class Controller implements DisassemblyListener, DataListener {
         ByteSequence seq = imageFile.getByteSequence(addr, true);
         for(int i = 0; i < inst.getSize(); i++) {
             // TODO: 0x90 is x86 only
-            seq.patch(imageFile.toFileAddress(addr + i), (byte) 0x90);
+            seq.patchByte(imageFile.toFileAddress(addr + i), (byte) 0x90);
         }
         seq.unlock();
         disassembler.reanalyze(inst.getMemAddress());

@@ -65,4 +65,9 @@ public class ImmediateOp implements Operand {
     public Number asNumber() {
         return immediate;
     }
+
+    @Override
+    public Short getPointerDestSize() {
+        return null;
+    }
 }

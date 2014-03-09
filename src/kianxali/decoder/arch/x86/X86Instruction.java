@@ -596,5 +596,10 @@ class RelativeOp implements Operand {
     public Number asNumber() {
         return null;
     }
+
+    @Override
+    public Short getPointerDestSize() {
+        return null;
+    }
 }
 

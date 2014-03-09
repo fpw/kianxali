@@ -65,16 +65,40 @@ public final class ByteSequence {
      * @param offset the file offset to patch
      * @param b the byte to write at the given offset
      */
-    public void patch(long offset, byte b) {
-        data[(int) offset] = b;
+    public void patchByte(long offset, byte b) {
+        bytes.position((int) offset);
+        patchByte(b);
     }
 
     /**
      * Applies a patch to the current location.
      * @param b the byte to write at the current location
      */
-    public void patch(byte b) {
-        data[(int) getPosition()] = b;
+    public void patchByte(byte b) {
+        bytes.put(b);
+    }
+
+    /**
+     * Applies a patch to the current location.
+     * @param w the word to write at the current location
+     */
+    public void patchWord(short w) {
+        bytes.putShort(w);
+    }
+
+    /**
+     * Applies a patch to the current location.
+     * @param d the dword to write at the current location
+     */
+    public void patchDWord(int d) {
+        bytes.putInt(d);
+    }
+    /**
+     * Applies a patch to the current location.
+     * @param q the qword to write at the current location
+     */
+    public void patchQWord(long q) {
+        bytes.putLong(q);
     }
 
     /**

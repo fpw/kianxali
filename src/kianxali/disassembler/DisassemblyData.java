@@ -2,7 +2,6 @@ package kianxali.disassembler;
 
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -19,7 +18,7 @@ import kianxali.loader.Section;
  *
  */
 public class DisassemblyData {
-    private final Set<DataListener> listeners;
+    private final CopyOnWriteArraySet<DataListener> listeners;
     private final NavigableMap<Long, DataEntry> memoryMap;
 
     /**
@@ -77,7 +76,7 @@ public class DisassemblyData {
         tellListeners(memAddr);
 
         // clear from-references to here
-        for(long refAddr : memoryMap.keySet()) {
+        for(Long refAddr : memoryMap.keySet()) {
             DataEntry refEntry = memoryMap.get(refAddr);
             if(refEntry.removeReference(entry)) {
                 tellListeners(refAddr);

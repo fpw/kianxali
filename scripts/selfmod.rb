@@ -12,15 +12,16 @@ $api.traverseCode do |inst|
 
     # Try patching by evaluating the modifying instruction    
     instAddr = inst.getMemAddress
-    original = $api.readByte(destAddr)
+    destBits = op.getPointerDestSize()
+    original = $api.readBits(destAddr, destBits)
     case inst.getMnemonic
     when "XOR"
       puts "#{instAddr.to_s(16)} modifies code at #{destAddr.to_s(16)} using XOR, patched"
-      $api.patchByte(destAddr, original ^ inst.getSrcOperands.first.asNumber)
+      $api.patchBits(destAddr, original ^ inst.getSrcOperands.first.asNumber, destBits)
       changes << destAddr
     when "ADD"
       puts "#{instAddr.to_s(16)} modifies code at #{destAddr.to_s(16)} using ADD, patched"
-      $api.patchByte(destAddr, original + inst.getSrcOperands.first.asNumber)
+      $api.patchBits(destAddr, original + inst.getSrcOperands.first.asNumber, destBits)
       changes << destAddr
     else
       puts "Unhandled mnemonic at #{instAddr.to_s(16)}: #{inst.getMnemonic}"

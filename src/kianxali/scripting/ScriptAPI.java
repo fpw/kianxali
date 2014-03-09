@@ -35,18 +35,20 @@ public interface ScriptAPI {
     DecodedEntity getEntityAt(Long addr);
 
     /**
-     * Read a raw byte contained at a virtual memory address
+     * Read raw bits (8, 16, 32, or 64) contained at a virtual memory address
      * @param addr the address to examine
-     * @return the raw byte contained at the given memory address or null if invalid address
+     * @param size number of bits (8, 16, 32 or 64)
+     * @return the raw value contained at the given memory address or null if invalid address
      */
-    Short readByte(Long addr);
+    Long readBits(Long addr, Short size);
 
     /**
      * Applies a patch to a virtual memory address
      * @param addr the address to patch
-     * @param b the byte to write at the given address
+     * @param data the data to write at the given address
+     * @param size number of bits (8, 16, 32 or 64) at destination
      */
-    void patchByte(Long addr, Short b);
+    void patchBits(Long addr, Long data, Short size);
 
     /**
      * Causes the disassembler to reanalyze the trace at the given address

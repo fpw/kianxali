@@ -15,6 +15,12 @@ public interface Operand {
     UsageType getUsage();
 
     /**
+     * If the operand is a pointer, returns the destination size in bits
+     * @return the dereferences size in bits or null if not applicable
+     */
+    Short getPointerDestSize();
+
+    /**
      * Tries to coerce this operand into a number representation
      * @return a number if the operand can be deterministically converted to a number, null otherwise
      */

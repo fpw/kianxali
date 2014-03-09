@@ -99,9 +99,9 @@ public class ScriptManager implements ScriptAPI {
     }
 
     @Override
-    public void patchByte(Long addr, Short b) {
-        if(addr == null || b == null) {
-            throw new IllegalArgumentException("null-address or byte");
+    public void patchBits(Long addr, Long data, Short size) {
+        if(addr == null || data == null || size == null) {
+            throw new IllegalArgumentException("null-address or data or size");
         }
 
         ImageFile image = controller.getImageFile();
@@ -110,7 +110,13 @@ public class ScriptManager implements ScriptAPI {
         }
 
         ByteSequence seq = image.getByteSequence(addr, true);
-        seq.patch((byte) (b & 0xFF));
+        switch(size) {
+        case 8:  seq.patchByte(((byte) (data & 0xFF))); break;
+        case 16: seq.patchWord(((short) (data & 0xFFFF))); break;
+        case 32: seq.patchDWord(((int) (data & 0xFFFFFFFF))); break;
+        case 64: seq.patchQWord(data); break;
+        default: seq.unlock(); throw new UnsupportedOperationException("Invalid size: " + size);
+        }
         seq.unlock();
     }
 
@@ -129,9 +135,12 @@ public class ScriptManager implements ScriptAPI {
     }
 
     @Override
-    public Short readByte(Long addr) {
+    public Long readBits(Long addr, Short size) {
         if(addr == null) {
             throw new IllegalArgumentException("null-address");
+        }
+        if(size == null) {
+            throw new IllegalArgumentException("null-size");
         }
 
         ImageFile image = controller.getImageFile();
@@ -140,7 +149,14 @@ public class ScriptManager implements ScriptAPI {
         }
 
         ByteSequence seq = image.getByteSequence(addr, true);
-        Short res = seq.readUByte();
+        long res;
+        switch(size) {
+        case 8:  res = seq.readUByte(); break;
+        case 16: res = seq.readUWord(); break;
+        case 32: res = seq.readUDword(); break;
+        case 64: res = seq.readSQword(); break;
+        default: seq.unlock(); throw new UnsupportedOperationException("Invalid size: " + size);
+        }
         seq.unlock();
         return res;
     }
