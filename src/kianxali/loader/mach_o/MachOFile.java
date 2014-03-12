@@ -68,7 +68,11 @@ public class MachOFile extends ImageFile {
 
     @Override
     public long getCodeEntryPointMem() {
-        return toMemAddress(machHeader.getEntryPoint());
+        if(machHeader.isEntryPointMem()) {
+            return machHeader.getEntryPoint();
+        } else {
+            return toMemAddress(machHeader.getEntryPoint());
+        }
     }
 
     @Override

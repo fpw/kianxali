@@ -10,13 +10,17 @@ public class MachHeader {
     public static final long MH_MAGIC_64        = 0xFEEDFACFL;
     public static final long CPU_TYPE_X86       = 7L;
     public static final long CPU_TYPE_X86_64    = 0x01000007L;
+    public static final long THREAD_STATE_32    = 0x1L;
+    public static final long THREAD_STATE_64    = 0x4L;
     public static final long LC_SEGMENT         = 0x1L;
+    public static final long LC_UNIXTHREAD      = 0x5L;
     public static final long LC_DYLD_INFO_ONLY  = 0x80000022L;
     public static final long LC_SEGMENT_64      = 0x19L;
     public static final long LC_MAIN            = 0x80000028L;
 
     private boolean mach64;
     private final long startOffset;
+    private boolean entryPointIsMem;
     private long entryPoint;
     private final List<MachSegment> segments;
     private final List<MachSection> sections;
@@ -74,7 +78,23 @@ public class MachHeader {
                 segments.add(segment);
             } else if(cmd == LC_DYLD_INFO_ONLY) {
                 symbolTable = new SymbolTable(seq, startOffset, mach64);
+            } else if(cmd == LC_UNIXTHREAD) {
+                entryPointIsMem = true;
+                long flavor = seq.readUDword();
+                seq.readUDword();
+                if(flavor == THREAD_STATE_32) {
+                    seq.skip(10 * 4);
+                    entryPoint = seq.readUDword();
+                    seq.skip(5 * 4);
+                } else if(flavor == THREAD_STATE_64) {
+                    seq.skip(16 * 8);
+                    entryPoint = seq.readSQword();
+                    seq.skip(4 * 8);
+                } else {
+                    throw new UnsupportedOperationException("Invalid Mach-O thread flavor: " + flavor);
+                }
             } else if(cmd == LC_MAIN) {
+                entryPointIsMem = false;
                 if(mach64) {
                     entryPoint = startOffset + seq.readSQword();
                     seq.readSQword();
@@ -102,6 +122,10 @@ public class MachHeader {
 
     public boolean isMach64() {
         return mach64;
+    }
+
+    public boolean isEntryPointMem() {
+        return entryPointIsMem;
     }
 
     public long getEntryPoint() {
