@@ -59,13 +59,13 @@ public class DisassemblyData {
         tellListeners(memAddr);
     }
 
-    void clear(long addr) {
+    synchronized void clear(long addr) {
         memoryMap.remove(addr);
         tellListeners(addr);
     }
 
     // clears instruction or data and attached data, but not function start, image start etc.
-    void clearDecodedEntity(long memAddr) {
+    synchronized void clearDecodedEntity(long memAddr) {
         DataEntry entry = getInfoCoveringAddress(memAddr);
         if(entry == null) {
             // nothing to do as there is no code or data
@@ -73,9 +73,10 @@ public class DisassemblyData {
         }
         entry.setEntity(null);
         entry.clearAttachedData();
+        // entry.clearReferences();
         tellListeners(memAddr);
 
-        // clear from-references to here
+        // clear to-references (stored as from-references at destination)
         for(Long refAddr : memoryMap.keySet()) {
             DataEntry refEntry = memoryMap.get(refAddr);
             if(refEntry.removeReference(entry)) {
@@ -147,7 +148,7 @@ public class DisassemblyData {
         }
     }
 
-    void insertFunction(Function function) {
+    synchronized void insertFunction(Function function) {
         long start = function.getStartAddress();
         long end = function.getEndAddress();
 
@@ -172,7 +173,7 @@ public class DisassemblyData {
         tellListeners(end);
     }
 
-    void updateFunctionEnd(Function function, long newEnd) {
+    synchronized void updateFunctionEnd(Function function, long newEnd) {
         long oldEnd = function.getEndAddress();
 
         function.setEndAddress(newEnd);
@@ -193,7 +194,7 @@ public class DisassemblyData {
     }
 
 
-    void insertReference(DataEntry srcEntry, long dstAddress) {
+    synchronized void insertReference(DataEntry srcEntry, long dstAddress) {
         DataEntry entry = getInfoOnExactAddress(dstAddress);
         if(entry == null) {
             entry = new DataEntry(dstAddress);
@@ -208,7 +209,7 @@ public class DisassemblyData {
      * @param memAddr the memory address to attach the comment to
      * @param comment the user comment
      */
-    public void insertComment(long memAddr, String comment) {
+    public synchronized void insertComment(long memAddr, String comment) {
         DataEntry entry = getInfoOnExactAddress(memAddr);
         if(entry == null) {
             entry = new DataEntry(memAddr);
@@ -292,7 +293,7 @@ public class DisassemblyData {
      * Allows a visitor to visit all entries in the memory map.
      * @param visitor a visitor that will be called with each entry
      */
-    public void visitInstructions(InstructionVisitor visitor) {
+    public synchronized void visitInstructions(InstructionVisitor visitor) {
         for(long addr : memoryMap.keySet()) {
             DataEntry entry = memoryMap.get(addr);
             DecodedEntity entity = entry.getEntity();

@@ -60,6 +60,10 @@ public class DataEntry {
         attachedData = null;
     }
 
+    void clearReferences() {
+        references.clear();
+    }
+
     void addReferenceFrom(DataEntry src) {
         references.add(src);
     }
