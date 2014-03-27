@@ -246,6 +246,9 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
                     List<Long> branchAddrs = inst.getBranchAddresses();
                     if(!branchAddrs.isEmpty() && !inst.isFunctionCall()) {
                         for(Long branchAddr : inst.getBranchAddresses()) {
+                            if(!controller.getImageFile().isCodeAddress(branchAddr)) {
+                                continue;
+                            }
                             int toY = getYPosition(imageDoc.getOffsetForAddress(branchAddr));
                             LineEntry line = new LineEntry(thisY, toY);
                             line.fromAddr = memAddr;
