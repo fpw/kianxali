@@ -90,6 +90,10 @@ public class ImageView extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    public void setCaretPos(int offset) {
+        editor.setCaretPosition(offset);
+    }
+
     public void scrollTo(long memAddr) throws BadLocationException {
         Document doc = editor.getDocument();
         if(doc instanceof ImageDocument) {
@@ -101,6 +105,7 @@ public class ImageView extends JPanel {
                 // TODO: Hack or supposed to be like this?
                 editor.scrollRectToVisible(new Rectangle(0, 0, 0, 0));
                 editor.scrollRectToVisible(rect);
+                editor.setCaretPosition(pos);
             }
         }
     }

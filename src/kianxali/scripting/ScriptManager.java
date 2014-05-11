@@ -160,4 +160,9 @@ public class ScriptManager implements ScriptAPI {
         seq.unlock();
         return res;
     }
+
+    @Override
+    public long toMemAddress(Long fileOffset) {
+        return controller.getImageFile().toMemAddress(fileOffset);
+    }
 }

@@ -214,6 +214,8 @@ public class Controller implements DisassemblyListener, DataListener {
     public void onAnalyzeChange(final long memAddr, final DataEntry entry) {
         if(gui.getImageView().getDocument() == imageDoc && !SwingUtilities.isEventDispatchThread()) {
             // if the document is visible already, do it in the EDT
+            // TODO: invokeAndWait deadlocks because this causes the cross references to repaint,
+            // requiring lock to disassemblydata which is held by disassembler -> data.updateEntity
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -338,6 +340,7 @@ public class Controller implements DisassemblyListener, DataListener {
         if(!(entity instanceof Instruction)) {
             return;
         }
+        gui.getImageView().setCaretPos(index);
         Instruction inst = (Instruction) entity;
         ByteSequence seq = imageFile.getByteSequence(addr, true);
         for(int i = 0; i < inst.getSize(); i++) {

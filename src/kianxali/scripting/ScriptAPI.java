@@ -55,4 +55,12 @@ public interface ScriptAPI {
      * @param addr the memory address to reanalyze, subsequent address will also be reanalyzed
      */
     void reanalyze(Long addr);
+
+    /**
+     * Convert from physical file offset to virtual address space
+     *
+     * @param fileOffset
+     * @return
+     */
+    long toMemAddress(Long fileOffset);
 }
