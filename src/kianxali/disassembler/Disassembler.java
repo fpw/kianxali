@@ -462,14 +462,14 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 continue;
             }
 
-            // searching for signature 55 8B EC or 55 89 EF (both are push ebp; mov ebp, esp)
+            // searching for signature 55 8B EC or 55 89 E5 (both are push ebp; mov ebp, esp)
             boolean got55 = false, got558B = false, got5589 = false;
             long startAddr = section.getStartAddress();
             ByteSequence seq = imageFile.getByteSequence(startAddr, false);
             long size = section.getEndAddress() - startAddr;
             for(long i = 0; i < size; i++) {
                 short s = seq.readUByte();
-                if(disassemblyData.getInfoCoveringAddress(startAddr + i) != null) {
+                if(disassemblyData.findEntityOnAddress(startAddr + i) != null) {
                     continue;
                 }
 
@@ -485,7 +485,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                     got55 = false;
                     got558B = false;
                     got5589 = true;
-                } else if((s == 0xEC && got558B) || (s == 0xEF && got5589)) {
+                } else if((s == 0xEC && got558B) || (s == 0xE5 && got5589)) {
                     // found signature
                     got55 = false;
                     got558B = false;
@@ -500,6 +500,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 } else {
                     got55 = false;
                     got558B = false;
+                    got5589 = false;
                 }
             }
         }
