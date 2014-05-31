@@ -3,8 +3,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Element;
@@ -253,15 +252,19 @@ public class ImageDocument extends DefaultStyledDocument {
         endLine(specs);
     }
 
-    private void addReferences(long memAddr, Set<DataEntry> references, List<ElementSpec> specs) {
+    private void addReferences(long memAddr, Map<DataEntry, Boolean> references, List<ElementSpec> specs) {
         if(references.size() == 0) {
             return;
         }
         startLine(memAddr, specs);
         specs.add(contentTag(referenceAttributes, "; Referenced by: "));
-        for(DataEntry ref : references) {
+        for(DataEntry ref : references.keySet()) {
             MutableAttributeSet attr = new SimpleAttributeSet(referenceAttributes);
             attr.addAttribute(RefAddressKey, ref.getAddress());
+            if(references.get(ref)) {
+                // write access
+                StyleConstants.setForeground(attr, Color.red);
+            }
             specs.add(contentTag(attr, String.format("%08X ", ref.getAddress())));
         }
         endLine(specs);

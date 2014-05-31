@@ -194,13 +194,13 @@ public class DisassemblyData {
     }
 
 
-    synchronized void insertReference(DataEntry srcEntry, long dstAddress) {
+    synchronized void insertReference(DataEntry srcEntry, long dstAddress, boolean isWrite) {
         DataEntry entry = getInfoOnExactAddress(dstAddress);
         if(entry == null) {
             entry = new DataEntry(dstAddress);
             put(dstAddress, entry);
         }
-        entry.addReferenceFrom(srcEntry);
+        entry.addReferenceFrom(srcEntry, isWrite);
         tellListeners(dstAddress);
     }
 

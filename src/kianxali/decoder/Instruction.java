@@ -1,6 +1,7 @@
 package kianxali.decoder;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This interface represents a decoded instruction. To have the
@@ -65,18 +66,18 @@ public interface Instruction extends DecodedEntity {
     List<Long> getBranchAddresses();
 
     /**
-     * Return a list of data references that are referenced
-     * by this instruction
+     * Return a map of data references that are referenced
+     * by this instruction, the boolean is a flag for write access
      * @return a list of data references, may not be null
      */
-    List<Data> getAssociatedData();
+    Map<Data, Boolean> getAssociatedData();
 
     /**
-     * Return a list of numbers that are likely to refer
-     * to memory addresses of data.
+     * Return a map of numbers that are likely to refer
+     * to memory addresses of data, the boolean is a flag for write access
      * @return a list of likely data addresses
      */
-    List<Long> getProbableDataPointers();
+    Map<Long, Boolean> getProbableDataPointers();
 
     /**
      * Return the full instruction including operands as an array of bytes

@@ -2,7 +2,9 @@ package kianxali.decoder.arch.x86;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import kianxali.decoder.Data;
 import kianxali.decoder.Instruction;
@@ -509,13 +511,13 @@ class X86Instruction implements Instruction {
     }
 
     @Override
-    public List<Data> getAssociatedData() {
-        List<Data> res = new ArrayList<Data>(3);
+    public Map<Data, Boolean> getAssociatedData() {
+        Map<Data, Boolean> res = new HashMap<Data, Boolean>();
         for(Operand op : operands) {
             if(op instanceof PointerOp) {
                 Data data = ((PointerOp) op).getProbableData();
                 if(data != null) {
-                    res.add(data);
+                    res.put(data, op.getUsage() == UsageType.DEST);
                 }
             }
         }
@@ -523,11 +525,11 @@ class X86Instruction implements Instruction {
     }
 
     @Override
-    public List<Long> getProbableDataPointers() {
-        List<Long> res = new ArrayList<Long>(3);
+    public Map<Long, Boolean> getProbableDataPointers() {
+        Map<Long, Boolean> res = new HashMap<Long, Boolean>();
         for(Operand op : operands) {
             if(op instanceof ImmediateOp) {
-                res.add(((ImmediateOp) op).getImmediate());
+                res.put(((ImmediateOp) op).getImmediate(), op.getUsage() == UsageType.DEST);
             }
         }
         return res;

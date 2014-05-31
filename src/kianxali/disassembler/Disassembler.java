@@ -193,7 +193,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 Instruction inst = (Instruction) entry.getEntity();
                 if(inst.isUnconditionalJump() && inst.getAssociatedData().size() == 1) {
                     // the function immediately jumps somewhere else, take name from there
-                    Data data = inst.getAssociatedData().get(0);
+                    Data data = inst.getAssociatedData().keySet().iterator().next();
                     long branch = data.getMemAddress();
                     Function realFun = functionInfo.get(branch);
                     if(realFun != null) {
@@ -321,7 +321,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
             DataEntry entry = disassemblyData.insertEntity(data);
 
             // attach data information to entries that point to this data
-            for(DataEntry ref : entry.getReferences()) {
+            for(DataEntry ref : entry.getReferences().keySet()) {
                 ref.attachData(data);
                 disassemblyData.tellListeners(ref.getAddress());
             }
@@ -396,7 +396,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         // check if we have branch addresses to be analyzed later
         for(long addr : inst.getBranchAddresses()) {
             if(imageFile.isValidAddress(addr)) {
-                disassemblyData.insertReference(srcEntry, addr);
+                disassemblyData.insertReference(srcEntry, addr, false);
                 if(inst.isFunctionCall()) {
                     detectFunction(addr, null);
                 } else if(function != null) {
@@ -411,7 +411,8 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
         }
 
         // check if we have associated data to be analyzed later
-        for(Data data : inst.getAssociatedData()) {
+        Map<Data, Boolean> dataMap = inst.getAssociatedData();
+        for(Data data : dataMap.keySet()) {
             long addr = data.getMemAddress();
             if(!imageFile.isValidAddress(addr)) {
                 continue;
@@ -429,21 +430,22 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
                 } else {
                     table.setTableScaling(data.getTableScaling());
                 }
-                disassemblyData.insertReference(srcEntry, addr);
+                disassemblyData.insertReference(srcEntry, addr, dataMap.get(data));
                 addDataWork(table);
             } else {
-                disassemblyData.insertReference(srcEntry, addr);
+                disassemblyData.insertReference(srcEntry, addr, dataMap.get(data));
                 addDataWork(data);
             }
         }
 
         // Check for probable pointers
-        for(long addr : inst.getProbableDataPointers()) {
+        Map<Long, Boolean> pointers = inst.getProbableDataPointers();
+        for(long addr : pointers.keySet()) {
             if(imageFile.isValidAddress(addr)) {
                 if(disassemblyData.getEntityOnExactAddress(addr) != null) {
                     continue;
                 }
-                disassemblyData.insertReference(srcEntry, addr);
+                disassemblyData.insertReference(srcEntry, addr, pointers.get(addr));
 
                 if(imageFile.isCodeAddress(addr)) {
                     addCodeWork(addr, true);
@@ -527,7 +529,7 @@ public class Disassembler implements AddressNameResolver, AddressNameListener {
 
         disassemblyData.tellListeners(fun.getStartAddress());
         disassemblyData.tellListeners(fun.getEndAddress());
-        for(DataEntry ref : entry.getReferences()) {
+        for(DataEntry ref : entry.getReferences().keySet()) {
             disassemblyData.tellListeners(ref.getAddress());
         }
     }

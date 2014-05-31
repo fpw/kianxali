@@ -1,9 +1,8 @@
 package kianxali.disassembler;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
+import java.util.HashMap;
+import java.util.Map;
 import kianxali.decoder.Data;
 import kianxali.decoder.DecodedEntity;
 import kianxali.decoder.Instruction;
@@ -27,11 +26,11 @@ public class DataEntry {
     private DecodedEntity entity;
     private Data attachedData;
     private String comment;
-    private final Set<DataEntry> references;
+    private final Map<DataEntry, Boolean> references;
 
     DataEntry(long address) {
         this.address = address;
-        references = new HashSet<>();
+        references = new HashMap<>();
     }
 
     /**
@@ -64,8 +63,8 @@ public class DataEntry {
         references.clear();
     }
 
-    void addReferenceFrom(DataEntry src) {
-        references.add(src);
+    void addReferenceFrom(DataEntry src, boolean isWrite) {
+        references.put(src, isWrite);
     }
 
     boolean removeReference(DataEntry src) {
@@ -74,11 +73,11 @@ public class DataEntry {
 
     /**
      * Get all from-references to this entry, i.e. all locations that
-     * refer to this address.
+     * refer to this address. The boolean is true iff it is a write-access.
      * @return a set of entries that refer to this address
      */
-    public Set<DataEntry> getReferences() {
-        return Collections.unmodifiableSet(references);
+    public Map<DataEntry, Boolean> getReferences() {
+        return Collections.unmodifiableMap(references);
     }
 
     /**

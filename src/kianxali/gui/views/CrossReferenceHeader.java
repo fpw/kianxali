@@ -261,7 +261,7 @@ public class CrossReferenceHeader extends JPanel implements DocumentListener {
                 // add from-references
                 DataEntry entry = data.getInfoOnExactAddress(memAddr);
                 if(entry != null && entry.getEntity() instanceof Instruction) {
-                    for(DataEntry fromEntry : entry.getReferences()) {
+                    for(DataEntry fromEntry : entry.getReferences().keySet()) {
                         if(fromEntry.getEntity() instanceof Instruction) {
                             Instruction inst = (Instruction) fromEntry.getEntity();
                             if(!inst.isFunctionCall()) {
