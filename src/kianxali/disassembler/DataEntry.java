@@ -68,7 +68,8 @@ public class DataEntry {
     }
 
     boolean removeReference(DataEntry src) {
-        return references.remove(src);
+        Boolean res = references.remove(src);
+        return (res != null);
     }
 
     /**
