@@ -247,7 +247,9 @@ public class ImageDocument extends DefaultStyledDocument {
             return;
         }
         startLine(memAddr, specs);
-        String line = String.format("; Function %s starts", fun.getName());
+        endLine(specs);
+        startLine(memAddr, specs);
+        String line = String.format("%s:", fun.getName());
         specs.add(contentTag(infoAttributes, line));
         endLine(specs);
     }
