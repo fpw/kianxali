@@ -20,6 +20,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -56,6 +57,8 @@ public class ImageView extends JPanel {
             }
         };
         editor.setEditable(false);
+        DefaultCaret caret = (DefaultCaret)editor.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         editor.setEditorKit(new ImageEditorKit());
         editor.addMouseMotionListener(new MouseMotionListener() {
             public void mouseDragged(MouseEvent e) { }
