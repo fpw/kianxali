@@ -197,10 +197,7 @@ public class ImageView extends JPanel {
                 // Commenting
                 menu.add("Change Comment").addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        String comment = JOptionPane.showInputDialog("Comment: ", data.getComment());
-                        if(comment != null) {
-                            controller.onCommentChangeReq(data, comment);
-                        }
+                        controller.onCommentChangeReq(data);
                     }
                 });
                 hasEntries = true;

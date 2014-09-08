@@ -414,6 +414,13 @@ public class Controller implements DisassemblyListener, DataListener {
         disassemblyData.insertComment(data.getAddress(), comment);
     }
 
+    public void onCommentChangeReq(DataEntry data) {
+        String comment = JOptionPane.showInputDialog("Comment: ", data.getComment());
+        if(comment != null) {
+            onCommentChangeReq(data, comment);
+        }
+    }
+
     public void onGotoRequest(String where) {
         if(imageFile == null) {
             showError("No image file loaded");
