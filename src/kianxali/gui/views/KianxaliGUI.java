@@ -102,7 +102,8 @@ public class KianxaliGUI extends JFrame {
 
         // File menu
         JMenu fileMenu = new JMenu("File");
-        JMenuItem fileOpen = new JMenuItem("Open");
+        JMenuItem fileOpen = new JMenuItem("Open", 'O');
+        fileOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK));
         fileOpen.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 controller.onOpenFileRequest();
