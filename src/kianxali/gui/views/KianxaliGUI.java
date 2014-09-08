@@ -21,6 +21,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
+import kianxali.disassembler.DataEntry;
 import kianxali.gui.Controller;
 
 public class KianxaliGUI extends JFrame {
@@ -140,6 +141,16 @@ public class KianxaliGUI extends JFrame {
         });
         gotoAddr.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, Event.CTRL_MASK));
         editMenu.add(gotoAddr);
+
+        JMenuItem changeComment = new JMenuItem("Change comment");
+        changeComment.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final DataEntry data = controller.getCurrentData();
+                controller.onCommentChangeReq(data);
+            }
+        });
+        changeComment.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_SEMICOLON, 0));
+        editMenu.add(changeComment);
 
         JMenuItem clearLog = new JMenuItem("Clear log");
         clearLog.addActionListener(new ActionListener() {
