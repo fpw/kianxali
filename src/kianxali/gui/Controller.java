@@ -401,6 +401,14 @@ public class Controller implements DisassemblyListener, DataListener {
         return disassembler;
     }
 
+    public DataEntry getData(final int index) {
+        return gui.getImageView().getData(index);
+    }
+
+    public DataEntry getCurrentData() {
+        return getData(gui.getImageView().getCurrentIndex());
+    }
+
     public void onFunctionRenameReq(Function fun, String newName) {
         if(newName.length() == 0) {
             showError("Function name cannot be empty");

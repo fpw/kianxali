@@ -145,6 +145,32 @@ public class ImageView extends JPanel {
         }
     }
 
+    public int getCurrentIndex() {
+        return editor.getCaretPosition();
+    }
+
+    public DataEntry getData(final int index) {
+        Document doc = editor.getDocument();
+        if(!(doc instanceof ImageDocument)) {
+            return null;
+        }
+
+        ImageDocument imageDoc = (ImageDocument) doc;
+
+        Element elem = imageDoc.getCharacterElement(index);
+        if(elem == null) {
+            return null;
+        }
+
+        Object memAddrObj = elem.getAttributes().getAttribute(ImageDocument.MemAddressKey);
+        if(!(memAddrObj instanceof Long)) {
+            return null;
+        }
+        long memAddr = (Long) memAddrObj;
+        final DataEntry data = controller.getDisassemblyData().getInfoOnExactAddress(memAddr);
+        return data;
+    }
+
     private void onRightClick(final int index, Point p) {
         boolean hasEntries = false;
         if(index < 0) {
