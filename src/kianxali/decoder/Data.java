@@ -126,7 +126,7 @@ public class Data implements DecodedEntity {
         case FLOAT:         return 4;
         case DOUBLE:        return 8;
         case FUN_PTR:       return 4; // FIXME
-        case STRING:        return 1; // FIXME
+        case STRING:        return ((String)content).length() + 1; // Consider making NUL char be part of string?
         case UNKNOWN:       return 1;
         default:            return 1;
         }
