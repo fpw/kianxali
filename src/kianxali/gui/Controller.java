@@ -427,6 +427,8 @@ public class Controller implements DisassemblyListener, DataListener {
         if(comment != null) {
             onCommentChangeReq(data, comment);
         }
+        // For some reason, caret is disabled after popup
+        gui.getImageView().enableCaret();
     }
 
     public void onGotoRequest(String where) {

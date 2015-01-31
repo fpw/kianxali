@@ -253,6 +253,10 @@ public class ImageView extends JPanel {
         } else {
             editor.setDocument(new DefaultStyledDocument());
         }
+        enableCaret();
+    }
+
+    final public void enableCaret() {
         editor.getCaret().setVisible(true);
     }
 }
